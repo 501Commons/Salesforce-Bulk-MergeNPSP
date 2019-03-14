@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomLabels xmlns="http://soap.sforce.com/2006/04/metadata">
+    <labels>
+        <fullName>LineBreak</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>LineBreak</shortDescription>
+        <value>-
+-</value>
+    </labels>
+    <labels>
+        <fullName>PageMessagesConfirm</fullName>
+        <categories>PageMessages</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>PageMessagesConfirm</shortDescription>
+        <value>Success</value>
+    </labels>
+    <labels>
+        <fullName>PageMessagesError</fullName>
+        <categories>PageMessages</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>PageMessagesError</shortDescription>
+        <value>Error</value>
+    </labels>
+    <labels>
+        <fullName>PageMessagesFatal</fullName>
+        <categories>PageMessages</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>PageMessagesFatal</shortDescription>
+        <value>Error</value>
+    </labels>
+    <labels>
+        <fullName>PageMessagesWarning</fullName>
+        <categories>PageMessages</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>PageMessagesWarning</shortDescription>
+        <value>Warning</value>
+    </labels>
+    <labels>
+        <fullName>PermissionCreateException</fullName>
+        <categories>CampaignTools,Exceptions</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>PermissionCreateException</shortDescription>
+        <value>User does not have permissions to create {0}.</value>
+    </labels>
+    <labels>
+        <fullName>PermissionDeleteException</fullName>
+        <categories>CampaignTools,Exceptions</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>PermissionDeleteException</shortDescription>
+        <value>User does not have permissions to delete {0}.</value>
+    </labels>
+    <labels>
+        <fullName>PermissionReadException</fullName>
+        <categories>CampaignTools,Exceptions</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>PermissionReadException</shortDescription>
+        <value>User does not have permissions to view {0}.</value>
+    </labels>
+    <labels>
+        <fullName>PermissionUpdateException</fullName>
+        <categories>CampaignTools,Exceptions</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>PermissionUpdateException</shortDescription>
+        <value>User does not have permissions to update {0}.</value>
+    </labels>
+    <labels>
+        <fullName>labelButtonCancel</fullName>
+        <categories>MassMergeAccounts</categories>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>label for the Cancel button used on several pages.</shortDescription>
+        <value>Cancel</value>
+    </labels>
+    <labels>
+        <fullName>labelButtonClose</fullName>
+        <categories>MassMergeAccounts</categories>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>label for the Close button on various pages</shortDescription>
+        <value>Close</value>
+    </labels>
+    <labels>
+        <fullName>labelButtonEdit</fullName>
+        <categories>PersonalSiteUserInfo</categories>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>label for Update button</shortDescription>
+        <value>Update</value>
+    </labels>
+    <labels>
+        <fullName>labelButtonSave</fullName>
+        <categories>MassMergeAccounts</categories>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>The label for the Save button used on several pages.</shortDescription>
+        <value>Save</value>
+    </labels>
+    <labels>
+        <fullName>labelButtonSaveAndClose</fullName>
+        <categories>MassMergeAccounts</categories>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>label for the Save and Close button used on several pages</shortDescription>
+        <value>Save &amp; Close</value>
+    </labels>
+    <labels>
+        <fullName>labelLinkAddMoreRows</fullName>
+        <categories>MassMergeAccounts</categories>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>label for Add More Rows link in Mass Edit page.</shortDescription>
+        <value>Add new row</value>
+    </labels>
+    <labels>
+        <fullName>labelListViewFirst</fullName>
+        <categories>MassMergeAccounts</categories>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>label for First link in list view</shortDescription>
+        <value>First</value>
+    </labels>
+    <labels>
+        <fullName>labelListViewLast</fullName>
+        <categories>MassMergeAccounts</categories>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>label for Last link in list view</shortDescription>
+        <value>Last</value>
+    </labels>
+    <labels>
+        <fullName>labelListViewNext</fullName>
+        <categories>MassMergeAccounts</categories>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>label for Next link in list view</shortDescription>
+        <value>Next</value>
+    </labels>
+    <labels>
+        <fullName>labelListViewPageInfo</fullName>
+        <categories>MassMergeAccounts</categories>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>label for page info in list view</shortDescription>
+        <value>&amp;nbsp;&amp;nbsp;&amp;nbsp;Page {0} of {1} &amp;nbsp;&amp;nbsp;({2} records)</value>
+    </labels>
+    <labels>
+        <fullName>labelListViewPrevious</fullName>
+        <categories>MassMergeAccounts</categories>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>label for Previous link in list view</shortDescription>
+        <value>Previous</value>
+    </labels>
+    <labels>
+        <fullName>labelMassMergeErrorOnSave</fullName>
+        <categories>MassMergeAccounts</categories>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>error message when Mass Merge Accounts save fails.</shortDescription>
+        <value>Errors were encountered trying to save the Requests.</value>
+    </labels>
+    <labels>
+        <fullName>labelMassMergeFilterConfidenceFrom</fullName>
+        <categories>MassMergeAccounts</categories>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>label for the merge confidence filter From field.</shortDescription>
+        <value>Merge Confidence From %</value>
+    </labels>
+    <labels>
+        <fullName>labelMassMergeFilterConfidenceTo</fullName>
+        <categories>MassMergeAccounts</categories>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>label for the merge confidence filter section To field.</shortDescription>
+        <value>To %</value>
+    </labels>
+    <labels>
+        <fullName>labelMassMergeHelp</fullName>
+        <categories>MassMergeAccounts</categories>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>help text for the Mass Merge Accounts page</shortDescription>
+        <value>Choose the Household then the page will display any existing account merge records.  Update all rows as appropriate, and then click Save.</value>
+    </labels>
+    <labels>
+        <fullName>labelMassMergeOptional</fullName>
+        <categories>MassMergeAccounts</categories>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>label for the optional comment on the label.</shortDescription>
+        <value>(optional)</value>
+    </labels>
+    <labels>
+        <fullName>labelMassMergeSaveSuccess</fullName>
+        <categories>MassMergeAccounts</categories>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>message displayed when Mass Merge Accounts saves successfully.</shortDescription>
+        <value>Account records have been saved.</value>
+    </labels>
+    <labels>
+        <fullName>labelMassMergeTitle</fullName>
+        <categories>MassMergeAccounts</categories>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>title for the Mass Edit page</shortDescription>
+        <value>Mass Merge Accounts</value>
+    </labels>
+    <labels>
+        <fullName>labelMessageLoading</fullName>
+        <categories>MassMergeAccounts</categories>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>label for the loading... message used in some pages</shortDescription>
+        <value>Loading...</value>
+    </labels>
+    <labels>
+        <fullName>labelMessageSaving</fullName>
+        <categories>MassMergeAccounts</categories>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>label for the Saving... message on several pages</shortDescription>
+        <value>Saving...</value>
+    </labels>
+    <labels>
+        <fullName>labelShowMore</fullName>
+        <categories>MassMergeAccounts</categories>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>label for Show More on list views</shortDescription>
+        <value>Show more</value>
+    </labels>
+</CustomLabels>

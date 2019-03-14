@@ -1,0 +1,7 @@
+project:
+    name: Salesforce-Bulk-MergeNPSP
+    package:
+        name:  Salesforce-Bulk-MergeNPSP
+        api_version: '43.0'
+
+
