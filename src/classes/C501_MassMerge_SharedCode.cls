@@ -32,34 +32,85 @@ global with sharing class C501_MassMerge_SharedCode {
 
     public class C501_CTRL_MassMergeAccountsException extends Exception {}
 
+    global String GetAllIterableFields(String sObjectType) {
+
+        Set<String> fieldNames = schema.describeSObjects(new String[] { sObjectType })[0].fields.getMap().keyset();
+        List<String> iterableFields = new List<String>(fieldNames);
+
+        return String.join(iterableFields, ',');
+    }
+
     global void AccountsMerge(Account masterAccount, List<Account> duplicateAccounts) {
 
         // Merge accounts into master
-        Database.MergeResult[] results = Database.merge(masterAccount, duplicateAccounts, false);
+        System.debug('C501_MassMerge_SharedCodeMaster::AccountsMerge masterAccount: ' + String.valueOf(masterAccount) + ' duplicateAccounts: ' + String.valueOf(duplicateAccounts));
 
-        for(Database.MergeResult res : results) {
+        Database.MergeResult[] accountResults = Database.merge(masterAccount, duplicateAccounts, false);
+
+        for(Database.MergeResult res : accountResults) {
             if (res.isSuccess()) {
-                // Get the master ID from the result and validate it
-                System.debug('Master record ID: ' + res.getId());
-                System.assertEquals(masterAccount.Id, res.getId());              
-                
-                // Get the IDs of the merged records and display them
-                List<Id> mergedIds = res.getMergedRecordIds();
-                System.debug('IDs of merged records: ' + mergedIds);                
-                
-                // Get the ID of the reparented record and 
-                // validate that this the contact ID.
-                System.debug('Reparented record ID: ' + res.getUpdatedRelatedIds());
-
-                // Make sure there are two IDs (contact ID and account contact relation ID); the order isn't defined
-                System.assertEquals(2, res.getUpdatedRelatedIds().size() );    
+                System.debug('C501_MassMerge_SharedCodeMaster::AccountsMerge Account Merge Successful');
             }
             else {
-                for(Database.Error err : res.getErrors()) {
-                    // Write each error to the debug output
-                    System.debug(err.getMessage());
+                for (Database.Error err : res.getErrors()) {
+                    System.debug('C501_MassMerge_SharedCodeMaster::AccountsMerge Account Merge Exception: ' + err.getMessage());
+                }
+
+                return;
+            }
+        }
+
+        Set<Id> accountIds = new Set<Id> { masterAccount.Id };
+        for (Account duplicateAccount :duplicateAccounts) {
+            accountIds.add(duplicateAccount.Id);
+        }
+
+        // Merge Master Contacts - load all fields to make sure merge process does not hit a null reference
+        String strSoql  = 'SELECT Id, FirstName, LastName, Birthdate FROM Contact WHERE AccountId = \'' + masterAccount.Id + '\' AND FirstName <> null AND Birthdate <> null ORDER BY CreatedDate DESC';
+        List<Contact> masterContacts = Database.Query(strSoql);
+
+        Set<Id> contactsProcessed = new Set<Id>();
+        for (Contact masterContact :masterContacts) {
+            for (Contact duplicateContact :masterContacts) {
+
+                if (masterContact.Id == duplicateContact.Id || contactsProcessed.contains(masterContact.Id) || contactsProcessed.contains(duplicateContact.Id)) {
+                    continue;
+                }
+
+                if (masterContact.FirstName == duplicateContact.FirstName && masterContact.LastName == duplicateContact.LastName && masterContact.Birthdate == duplicateContact.Birthdate) {
+
+                    contactsProcessed.add(masterContact.Id);
+                    contactsProcessed.add(duplicateContact.Id);
+
+                    // Merge contact into master
+                    System.debug('C501_MassMerge_SharedCodeMaster::AccountsMerge masterContact: ' + String.valueOf(masterContact) + ' duplicateContact: ' + String.valueOf(duplicateContact));
+
+                    Database.MergeResult[] contactResults = Database.merge(masterContact, new List<Contact> { duplicateContact }, false);
+
+                    for(Database.MergeResult res : contactResults) {
+                        if (res.isSuccess()) {
+                            System.debug('C501_MassMerge_SharedCodeMaster::AccountsMerge Contact Merge Successful');
+                        }
+                        else {
+                            for(Database.Error err : res.getErrors()) {
+                                System.debug('C501_MassMerge_SharedCodeMaster::AccountsMerge Contact Merge Exception: ' + err.getMessage());
+                            }
+                        }
+                    }
                 }
             }
+        }
+
+        List<C501_Account_Merge__c> deleteMerges = [
+            SELECT Id
+            FROM C501_Account_Merge__c
+            WHERE Account__c = null
+                OR Merge_Target_Account__c = null
+                OR Account__c in :accountIds
+                OR Merge_Target_Account__c in :accountIds];
+
+        if (!deleteMerges.isEmpty()) {
+            delete deleteMerges;
         }
     }
 

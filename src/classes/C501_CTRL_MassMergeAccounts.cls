@@ -79,6 +79,9 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
                 listSORules = new List<System.SelectOption>();
                 listSORules.add(new SelectOption('', ''));
                 listSORules.add(new SelectOption('Contact_NameDOB', 'Contact_NameDOB'));
+                listSORules.add(new SelectOption('Contact_NameEmail', 'Contact_NameEmail'));
+                listSORules.add(new SelectOption('Account_Address', 'Account_Address'));
+                listSORules.add(new SelectOption('Account_Website', 'Account_Website'));
             }
 
             return listSORules;
@@ -292,11 +295,8 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
         
         try {
             Map<String, List<Account>> listAccountsMerge = new Map<String, List<Account>>();
-            list<C501_Account_Merge__c> listAccountsMergeIgnore = new list<C501_Account_Merge__c>();
+            List<C501_Account_Merge__c> listAccountsMergeIgnore = new List<C501_Account_Merge__c>();
             for (Account account : listAccounts) {
-
-                system.debug('***** C501_CTRL_MassMergeAccounts::SaveAccounts Update Merge Action - account.Id: ' + account.Id 
-                    + ' account.C501_Merge_Action__c: ' + account.C501_Merge_Action__c);
 
                 if (account.Id != null && account.C501_Merge_Action__c == 'Merge') {
 
@@ -325,6 +325,9 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
                         Merge_Action__c = account.C501_Merge_Action__c
                     ));
                 }
+
+                system.debug('***** C501_CTRL_MassMergeAccounts::SaveAccounts Update Merge Action - account: ' + String.valueOf(account)
+                    + ' listAccountsMerge: ' + String.valueOf(listAccountsMerge));
             }
 
             Integer recordsUpdated = listAccountsMergeIgnore.size() + listAccountsMerge.size();
@@ -337,20 +340,19 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
             for (List<Account> accounts :listAccountsMerge.values()) {
                 if (accounts.size() >= 2) {
 
+                    // Investigation Needed: Scheduling in batch the merge throws an exception in NPSP code
+/*
                     List<String> accountsMergeIds = new List<String>();
                     for (Account account :accounts) {
                         accountsMergeIds.add(String.valueOf(account.Id));
                     }
 
-                    string strSoql = 
-                        'SELECT ' + String.join(listStrFields, ',');
-                    strSoql += ' FROM Account WHERE Id in (\'' + String.join(accountsMergeIds, '\',\'') + '\')';
-
                     // Schedule Batch Job in Flex Queue (can schedule up to 100 jobs)
                     C501_MassMerge_Batch batchMerge = new C501_MassMerge_Batch();
-                    batchMerge.query = strSoql;
-
+                    batchMerge.query = 'SELECT Id FROM Account WHERE Id in (\'' + String.join(accountsMergeIds, '\',\'') + '\') ORDER BY CreatedDate DESC';
                     Database.executeBatch(batchMerge);
+*/
+                    c501MassMerge_SharedCode.AccountsMerge(new Account(Id = accounts[0].Id), new List<Account> { new Account( Id = accounts[1].Id) });
                 }
             }
 

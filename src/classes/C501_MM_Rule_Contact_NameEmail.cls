@@ -3,23 +3,23 @@
 //  1) Debug -> Open Execute Anonymous Window
 //  2) paste code
 /*
-      C501_MM_Rule_Contact_NameDOB contactNameDOBSchedule = new C501_MM_Rule_Contact_NameDOB();
-      contactNameDOBSchedule.execute(null);
+      C501_MM_Rule_Contact_NameEmail contactNameEmailSchedule = new C501_MM_Rule_Contact_NameEmail();
+      contactNameEmailSchedule.execute(null);
 */
 //  3) click Execute
 //
 
-global class C501_MM_Rule_Contact_NameDOB implements Schedulable {
+global class C501_MM_Rule_Contact_NameEmail implements Schedulable {
 
     global void execute(SchedulableContext SC) {
 
-        system.debug('***** C501_MM_Rule_Contact_NameDOB:execute');
+        system.debug('***** C501_MM_Rule_Contact_NameEmail:execute');
 
 		//
 		// Perform all SOQL Queries outside of loop to avoid Salesforce Governor Limits: https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/apex_gov_limits.htm
 		//
 
-        String mergeMetricName = 'Contact_NameDOB';
+        String mergeMetricName = 'Contact_NameEmail';
 
         // Get Merge Metric
         List<C501_Merge_Metric__c> mergeMetrics = [
@@ -50,11 +50,11 @@ global class C501_MM_Rule_Contact_NameDOB implements Schedulable {
                 MAX(AccountId)MaxAccountId,
                 MIN(AccountId)MinAccountId
             FROM Contact
-            WHERE FirstName <> ''
-                and Birthdate <> null
+            WHERE FirstName <> null
+                and Email <> null
             GROUP BY FirstName,
                 LastName,
-                Birthdate
+                Email
             HAVING Count(AccountId) > 1
             ORDER BY Count(AccountId) DESC];
 

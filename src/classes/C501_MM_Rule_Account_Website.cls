@@ -3,23 +3,23 @@
 //  1) Debug -> Open Execute Anonymous Window
 //  2) paste code
 /*
-      C501_MM_Rule_Contact_NameDOB contactNameDOBSchedule = new C501_MM_Rule_Contact_NameDOB();
-      contactNameDOBSchedule.execute(null);
+      C501_MM_Rule_Account_Website accountWebsiteSchedule = new C501_MM_Rule_Account_Website();
+      accountWebsiteSchedule.execute(null);
 */
 //  3) click Execute
 //
 
-global class C501_MM_Rule_Contact_NameDOB implements Schedulable {
+global class C501_MM_Rule_Account_Website implements Schedulable {
 
     global void execute(SchedulableContext SC) {
 
-        system.debug('***** C501_MM_Rule_Contact_NameDOB:execute');
+        system.debug('***** C501_MM_Rule_Account_Website:execute');
 
 		//
 		// Perform all SOQL Queries outside of loop to avoid Salesforce Governor Limits: https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/apex_gov_limits.htm
 		//
 
-        String mergeMetricName = 'Contact_NameDOB';
+        String mergeMetricName = 'Account_Website';
 
         // Get Merge Metric
         List<C501_Merge_Metric__c> mergeMetrics = [
@@ -45,22 +45,23 @@ global class C501_MM_Rule_Contact_NameDOB implements Schedulable {
         // Testing in Workbench tips
         //      add LIMIT 10 at the end
 
-		AggregateResult[] allAggregatedByContacts = [
-            SELECT Count(AccountId),
-                MAX(AccountId)MaxAccountId,
-                MIN(AccountId)MinAccountId
-            FROM Contact
-            WHERE FirstName <> ''
-                and Birthdate <> null
-            GROUP BY FirstName,
-                LastName,
-                Birthdate
-            HAVING Count(AccountId) > 1
-            ORDER BY Count(AccountId) DESC];
+		AggregateResult[] allAggregatedByShippingAddress = [
+            SELECT Count(Id),
+                MAX(Id)MaxAccountId,
+                MIN(Id)MinAccountId
+            FROM Account
+            WHERE Website <> null
+            GROUP BY Website,
+                RecordTypeId
+            HAVING Count(Id) > 1
+            ORDER BY Count(Id) DESC];
 
+        // Future Check - If you enable Geo Rules then you get ShippingGeocodeAccuracy, ShippingLatitude, and ShippingLongitude
+        //      The problem is you can't use them in a GROUP BY so would need to add different strategy.  This would help for address
+        //      values that are not exact text but same location like using St. vs Street or N. vs North would be same Long/Lat
         Map<String, C501_Account_Merge__c> mergeAccounts = new Map<String, C501_Account_Merge__c>();
         String uniqueId, minId, maxId;
-        for (AggregateResult result : allAggregatedByContacts)  {
+        for (AggregateResult result : allAggregatedByShippingAddress)  {
             maxId = result.get('MaxAccountId').toString();
             minId = result.get('MinAccountId').toString();
 
