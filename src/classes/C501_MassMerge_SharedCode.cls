@@ -66,7 +66,7 @@ global with sharing class C501_MassMerge_SharedCode {
         }
 
         // Merge Master Contacts - load all fields to make sure merge process does not hit a null reference
-        String strSoql  = 'SELECT Id, FirstName, LastName, Birthdate FROM Contact WHERE AccountId = \'' + masterAccount.Id + '\' AND FirstName <> null AND Birthdate <> null ORDER BY CreatedDate DESC';
+        String strSoql  = 'SELECT Id, FirstName, LastName, Birthdate, Email FROM Contact WHERE AccountId = \'' + masterAccount.Id + '\' AND FirstName <> null AND (Birthdate <> null OR Email <> null) ORDER BY CreatedDate DESC';
         List<Contact> masterContacts = Database.Query(strSoql);
 
         Set<Id> contactsProcessed = new Set<Id>();
@@ -77,7 +77,8 @@ global with sharing class C501_MassMerge_SharedCode {
                     continue;
                 }
 
-                if (masterContact.FirstName == duplicateContact.FirstName && masterContact.LastName == duplicateContact.LastName && masterContact.Birthdate == duplicateContact.Birthdate) {
+                if (masterContact.FirstName == duplicateContact.FirstName && masterContact.LastName == duplicateContact.LastName 
+                    && (masterContact.Birthdate == duplicateContact.Birthdate || masterContact.Email == duplicateContact.Email)) {
 
                     contactsProcessed.add(masterContact.Id);
                     contactsProcessed.add(duplicateContact.Id);
