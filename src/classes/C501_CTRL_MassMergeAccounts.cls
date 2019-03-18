@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2019, 501Commons.org
+    Copyright (c) 2016, Salesforce.org
     All rights reserved.
     
     Redistribution and use in source and binary forms, with or without
@@ -165,8 +165,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
 
         if (accountFilter.Id <> null) {
         
-            accountsMerge.put(accountFilter.Id, new C501_Account_Merge__c(
-                Merge_Confidence__c = 100.0));
+            accountsMerge.put(accountFilter.Id, new C501_Account_Merge__c());
 
             for(C501_Account_Merge__c accountMerge : [
                 SELECT Id, Account__c, Merge_Target_Account__c, Merge_Confidence__c, Merge_Action__c, Merge_Metric__c, Merge_Metric__r.Name
@@ -204,7 +203,6 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
                 ORDER BY Account__r.Name ASC]) {
 
                     accountsMerge.put(accountMerge.Account__c, new C501_Account_Merge__c(
-                        Merge_Confidence__c = 100.0,
                         Merge_Metric__c = accountMerge.Merge_Metric__c,
                         Merge_Metric_Name__c = 'Merge ' + mergeBuffer + mergeIndex + ' ' + accountMerge.Merge_Metric__r.Name
                     ));
