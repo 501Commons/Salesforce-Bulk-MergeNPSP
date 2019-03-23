@@ -8,6 +8,15 @@
 */
 //  3) click Execute
 //
+// Abort scheduled jobs
+/*
+    List<CronJobDetail> scheduledJobs = [SELECT Id FROM CronJobDetail WHERE Name like 'Contact_%' or Name like 'Account_%'];
+    for (CronJobDetail scheduledJob :scheduledJobs) {
+        Id jobId = [SELECT Id FROM CronTrigger WHERE CronJobDetailId = :scheduledJob.Id].Id;
+        System.abortJob(jobId);
+    }
+*/
+//
 
 global class C501_MM_Rule_Account_Address implements Schedulable {
 
@@ -36,17 +45,17 @@ global class C501_MM_Rule_Account_Address implements Schedulable {
             ));
 
             insert mergeMetrics;
-
-            List<CronJobDetail> cronJobs = [
-                SELECT Id,JobType,Name FROM CronJobDetail WHERE Name = :mergeMetricName];
-            if (cronJobs.isEmpty()) {
-                // Schedule to run daily at 12:30am
-                system.schedule(mergeMetricName, '0 30 0 * * ?', new C501_SM_Rule_Contact_NameDOBService());
-            }
         }
 
         if (!mergeMetrics[0].Enable__c) {
             return;
+        }
+
+        List<CronJobDetail> cronJobs = [
+            SELECT Id,JobType,Name FROM CronJobDetail WHERE Name = :mergeMetricName];
+        if (cronJobs.isEmpty()) {
+            // Schedule to run daily at 12:30am
+            system.schedule(mergeMetricName, '0 30 0 * * ?', new C501_MM_Rule_Account_Address());
         }
 
         //

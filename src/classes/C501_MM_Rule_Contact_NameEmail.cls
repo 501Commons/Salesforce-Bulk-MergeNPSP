@@ -36,17 +36,17 @@ global class C501_MM_Rule_Contact_NameEmail implements Schedulable {
             ));
 
             insert mergeMetrics;
-
-            List<CronJobDetail> cronJobs = [
-                SELECT Id,JobType,Name FROM CronJobDetail WHERE Name = :mergeMetricName];
-            if (cronJobs.isEmpty()) {
-                // Schedule to run daily at 3:30am
-                system.schedule(mergeMetricName, '0 30 3 * * ?', new C501_SM_Rule_Contact_NameDOBService());
-            }
         }
 
         if (!mergeMetrics[0].Enable__c) {
             return;
+        }
+
+        List<CronJobDetail> cronJobs = [
+            SELECT Id,JobType,Name FROM CronJobDetail WHERE Name = :mergeMetricName];
+        if (cronJobs.isEmpty()) {
+            // Schedule to run daily at 3:30am
+            system.schedule(mergeMetricName, '0 30 3 * * ?', new C501_MM_Rule_Contact_NameEmail());
         }
 
         //
