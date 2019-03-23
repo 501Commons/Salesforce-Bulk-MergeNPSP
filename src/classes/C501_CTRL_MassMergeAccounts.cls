@@ -78,10 +78,17 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
             if (listSORules == null ) {
                 listSORules = new List<System.SelectOption>();
                 listSORules.add(new SelectOption('', ''));
-                listSORules.add(new SelectOption('Contact_NameDOB', 'Contact_NameDOB'));
-                listSORules.add(new SelectOption('Contact_NameEmail', 'Contact_NameEmail'));
-                listSORules.add(new SelectOption('Account_Address', 'Account_Address'));
-                listSORules.add(new SelectOption('Account_Website', 'Account_Website'));
+
+          		AggregateResult[] allAggregatedByRule = [
+                    SELECT Merge_Metric__r.Name
+                    FROM C501_Account_Merge__c
+                    GROUP BY Merge_Metric__r.Name
+                    ORDER BY Merge_Metric__r.Name ASC];
+
+                for (AggregateResult result : allAggregatedByRule)  {
+                    String ruleName = result.get('Name').toString();
+                    listSORules.add(new SelectOption(ruleName, ruleName));
+                }
             }
 
             return listSORules;
@@ -202,19 +209,26 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
                 WHERE (Account__c in :accountIds OR Merge_Target_Account__c in :accountIds) AND isDeleted = false
                 ORDER BY Account__r.Name ASC]) {
 
-                    accountsMerge.put(accountMerge.Account__c, new C501_Account_Merge__c(
-                        Merge_Metric__c = accountMerge.Merge_Metric__c,
-                        Merge_Metric_Name__c = 'Merge ' + mergeBuffer + mergeIndex + ' ' + accountMerge.Merge_Metric__r.Name
+                    accountsMerge.put(
+                        accountMerge.Account__c,
+                        new C501_Account_Merge__c(
+                            Merge_Action__c = accountMerge.Merge_Action__c,
+                            Merge_Confidence__c = null,
+                            Account__c = accountMerge.Account__c,
+                            Merge_Target_Account__c = accountMerge.Merge_Target_Account__c,
+                            Merge_Metric__c = accountMerge.Merge_Metric__c,
+                            Merge_Metric_Name__c = 'Merge ' + mergeBuffer + mergeIndex + ' ' + accountMerge.Merge_Metric__r.Name
                     ));
 
-                    accountsMerge.put(accountMerge.Merge_Target_Account__c, new C501_Account_Merge__c(
-                        Id = accountMerge.Id,
-                        Merge_Action__c = accountMerge.Merge_Action__c,
-                        Merge_Confidence__c = accountMerge.Merge_Confidence__c,
-                        Merge_Target_Account__c = accountMerge.Merge_Target_Account__c,
-                        Account__c = accountMerge.Account__c,
-                        Merge_Metric__c = accountMerge.Merge_Metric__c,
-                        Merge_Metric_Name__c = 'Merge ' + mergeBuffer + mergeIndex + ' ' + accountMerge.Merge_Metric__r.Name
+                    accountsMerge.put(
+                        accountMerge.Merge_Target_Account__c,
+                        new C501_Account_Merge__c(
+                            Merge_Action__c = accountMerge.Merge_Action__c,
+                            Merge_Confidence__c = accountMerge.Merge_Confidence__c,
+                            Account__c = accountMerge.Account__c,
+                            Merge_Target_Account__c = accountMerge.Merge_Target_Account__c,
+                            Merge_Metric__c = accountMerge.Merge_Metric__c,
+                            Merge_Metric_Name__c = 'Merge ' + mergeBuffer + mergeIndex + ' ' + accountMerge.Merge_Metric__r.Name
                     ));
 
                     mergeIndex++;
@@ -238,8 +252,8 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
                 C501_Account_Merge__c mergeAccount = accountsMerge.get(account.Id);
                 account.C501_Merge_Action__c = mergeAccount.Merge_Action__c;
                 account.C501_Merge_Confidence__c = mergeAccount.Merge_Confidence__c;
+                account.C501_Merge_Account__c = mergeAccount.Account__c;
                 account.C501_Merge_Target__c = mergeAccount.Merge_Target_Account__c;
-                account.C501_Merge_Account__c = mergeAccount.Id;
                 account.C501_Merge_Metric_Name__c = mergeAccount.Merge_Metric_Name__c;
             }
         }
@@ -298,6 +312,8 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
 
                 if (account.Id != null && account.C501_Merge_Action__c == 'Merge') {
 
+                    system.debug('***** C501_CTRL_MassMergeAccounts::SaveAccounts Check Merge Action - Merge Rule: ' + account.C501_Merge_Metric_Name__c);
+
                     // we couldn't reliably mark dirty records in all scenarios,
                     // so we've decided it is better to always update all records.
                     //if (setAccountsIdDirty.contains(account.Id)) 
@@ -309,6 +325,9 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
                     else {
                         listAccountsMerge.put(account.C501_Merge_Metric_Name__c, new List<Account> { account });
                     }
+
+                    system.debug('***** C501_CTRL_MassMergeAccounts::SaveAccounts Update Merge Action - account: ' + String.valueOf(account)
+                        + ' listAccountsMerge Keys: ' + String.valueOf(listAccountsMerge.Keys()));
                 }
 
                 if (account.Id != null && account.C501_Merge_Action__c == 'Ignore') {
@@ -323,9 +342,6 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
                         Merge_Action__c = account.C501_Merge_Action__c
                     ));
                 }
-
-                system.debug('***** C501_CTRL_MassMergeAccounts::SaveAccounts Update Merge Action - account: ' + String.valueOf(account)
-                    + ' listAccountsMerge: ' + String.valueOf(listAccountsMerge));
             }
 
             Integer recordsUpdated = listAccountsMergeIgnore.size() + listAccountsMerge.size();
