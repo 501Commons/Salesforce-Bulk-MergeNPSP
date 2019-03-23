@@ -200,6 +200,7 @@ global with sharing class C501_MassMerge_SharedCode {
 		if (!mergeAccounts.isEmpty()) {
 			Database.SaveResult[] insertResults = Database.insert(mergeAccounts, false);
 
+            system.debug('***** C501_MassMerge_SharedCode::ProcessMergeCandidates Merge Results: ' + String.valueOf(insertResults));
             // TBD - Look for anything other than Duplicate Id Error on Unique_Id__c which is expected
 		}
 
