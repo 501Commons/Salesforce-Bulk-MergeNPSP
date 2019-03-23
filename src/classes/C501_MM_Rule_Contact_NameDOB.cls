@@ -3,8 +3,8 @@
 //  1) Debug -> Open Execute Anonymous Window
 //  2) paste code
 /*
-      C501_MM_Rule_Contact_NameDOB contactNameDOBSchedule = new C501_MM_Rule_Contact_NameDOB();
-      contactNameDOBSchedule.execute(null);
+      C501_MM_Rule_Contact_NameDOB contactNameDOB = new C501_MM_Rule_Contact_NameDOB();
+      contactNameDOB.execute(null);
 */
 //  3) click Execute
 //

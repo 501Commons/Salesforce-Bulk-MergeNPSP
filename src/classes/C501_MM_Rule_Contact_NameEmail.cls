@@ -3,8 +3,8 @@
 //  1) Debug -> Open Execute Anonymous Window
 //  2) paste code
 /*
-      C501_MM_Rule_Contact_NameEmail contactNameEmailSchedule = new C501_MM_Rule_Contact_NameEmail();
-      contactNameEmailSchedule.execute(null);
+      C501_MM_Rule_Contact_NameEmail contactNameEmail = new C501_MM_Rule_Contact_NameEmail();
+      contactNameEmail.execute(null);
 */
 //  3) click Execute
 //

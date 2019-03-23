@@ -3,8 +3,8 @@
 //  1) Debug -> Open Execute Anonymous Window
 //  2) paste code
 /*
-      C501_MM_Rule_Account_Website accountWebsiteSchedule = new C501_MM_Rule_Account_Website();
-      accountWebsiteSchedule.execute(null);
+      C501_MM_Rule_Account_Website accountWebsite = new C501_MM_Rule_Account_Website();
+      accountWebsite.execute(null);
 */
 //  3) click Execute
 //

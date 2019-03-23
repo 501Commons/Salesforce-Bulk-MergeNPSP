@@ -3,8 +3,8 @@
 //  1) Debug -> Open Execute Anonymous Window
 //  2) paste code
 /*
-      C501_MM_Rule_Account_Address schedule = new C501_MM_Rule_Account_Address();
-      schedule.execute(null);
+      C501_MM_Rule_Account_Address accountAddress = new C501_MM_Rule_Account_Address();
+      accountAddress.execute(null);
 */
 //  3) click Execute
 //

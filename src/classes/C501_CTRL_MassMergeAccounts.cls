@@ -327,7 +327,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
                     }
 
                     system.debug('***** C501_CTRL_MassMergeAccounts::SaveAccounts Update Merge Action - account: ' + String.valueOf(account)
-                        + ' listAccountsMerge Keys: ' + String.valueOf(listAccountsMerge.Keys()));
+                        + ' listAccountsMerge Keys: ' + String.valueOf(listAccountsMerge.keySet()));
                 }
 
                 if (account.Id != null && account.C501_Merge_Action__c == 'Ignore') {
