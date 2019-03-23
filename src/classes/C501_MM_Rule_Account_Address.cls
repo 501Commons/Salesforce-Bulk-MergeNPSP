@@ -31,10 +31,18 @@ global class C501_MM_Rule_Account_Address implements Schedulable {
             mergeMetrics.add( new C501_Merge_Metric__c (
                 Name = mergeMetricName,
                 Confidence__c = 90.0,
-                AutoMerge_Percentage__c = 0.0
+                AutoMerge_Percentage__c = 0.0,
+                Description__c = 'Shipping Street, City, State, PostalCode or Billing Street, City, State, PostalCode exact match between two accounts.  Two accounts must have the same Shipping or the same Billing Addresses.'
             ));
 
             insert mergeMetrics;
+
+            List<CronJobDetail> cronJobs = [
+                SELECT Id,JobType,Name FROM CronJobDetail WHERE Name = :mergeMetricName];
+            if (cronJobs.isEmpty()) {
+                // Schedule to run daily at 12:30am
+                system.schedule(mergeMetricName, '0 30 0 * * ?', new C501_SM_Rule_Contact_NameDOBService());
+            }
         }
 
         if (!mergeMetrics[0].Enable__c) {

@@ -71,17 +71,6 @@
         </valueSet>
     </fields>
     <fields>
-        <fullName>C501_Merge_Rule__c</fullName>
-        <externalId>false</externalId>
-        <label>Merge Rule</label>
-        <length>64</length>
-        <required>false</required>
-        <trackFeedHistory>false</trackFeedHistory>
-        <trackHistory>false</trackHistory>
-        <type>Text</type>
-        <unique>false</unique>
-    </fields>
-    <fields>
         <fullName>C501_Merge_Confidence_From__c</fullName>
         <externalId>false</externalId>
         <label>Merge Confidence From</label>
@@ -119,6 +108,17 @@
         <externalId>false</externalId>
         <label>Rule</label>
         <length>80</length>
+        <required>false</required>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>C501_Merge_Rule__c</fullName>
+        <externalId>false</externalId>
+        <label>Merge Rule</label>
+        <length>64</length>
         <required>false</required>
         <trackFeedHistory>false</trackFeedHistory>
         <trackHistory>false</trackHistory>
