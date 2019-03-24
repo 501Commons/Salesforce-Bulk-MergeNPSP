@@ -140,8 +140,8 @@
                 </apex:column> 
 
                 <apex:column styleClass="myTD reference" >
-                    <apex:facet name="header">Id</apex:facet>
-                    <apex:outputLink value="/{!account.Id}">{!account.Id}</apex:outputLink>
+                    <apex:facet name="header">Account</apex:facet>
+                    <apex:outputLink value="/{!account.Id}">Go To Account</apex:outputLink>
                 </apex:column> 
 
                 <!-- Add FieldSet Fields -->
