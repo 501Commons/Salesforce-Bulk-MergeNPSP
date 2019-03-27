@@ -38,6 +38,15 @@ private with sharing class C501_CTRL_MassMergeAccounts_TEST {
         C501_MM_Rule_Contact_NameDOB scheduleNameDOB = new C501_MM_Rule_Contact_NameDOB();
         scheduleNameDOB.execute(null);
 
+        C501_MM_Rule_Contact_NameEmail scheduleNameEmail = new C501_MM_Rule_Contact_NameEmail();
+        scheduleNameEmail.execute(null);
+
+        C501_MM_Rule_Account_Address scheduleAccountAddress = new C501_MM_Rule_Account_Address();
+        scheduleAccountAddress.execute(null);
+
+        C501_MM_Rule_Account_Website scheduleAccountWebsite = new C501_MM_Rule_Account_Website();
+        scheduleAccountWebsite.execute(null);
+
         List<C501_Merge_Metric__c> listMergeMetrics = new List<C501_Merge_Metric__c>();
         for (C501_Merge_Metric__c mergeMetric :[SELECT Id FROM C501_Merge_Metric__c]) {
             mergeMetric.Enable__c = true;
@@ -50,9 +59,15 @@ private with sharing class C501_CTRL_MassMergeAccounts_TEST {
 
         // Create Account Merges
         scheduleNameDOB.execute(null);
+        scheduleNameEmail.execute(null);
+        scheduleAccountAddress.execute(null);
+        scheduleAccountWebsite.execute(null);
 
         // Attempt to create Account Merges again
         scheduleNameDOB.execute(null);
+        scheduleNameEmail.execute(null);
+        scheduleAccountAddress.execute(null);
+        scheduleAccountWebsite.execute(null);
     }
 
     //==================== TEST METHOD(s) ======================================
@@ -118,8 +133,12 @@ private with sharing class C501_CTRL_MassMergeAccounts_TEST {
         System.debug('***** C501_CTRL_MassMergeAccounts_TEST::CodeCoverageTests' + ctrl.strSaveResults);
         //System.Assert(ctrl.strSaveResults.startsWith('Error'));
         ctrl.ChangeRule();
-        ctrl.SaveAndCloseAccounts();      
+        ctrl.SaveAccounts();      
         //System.AssertEquals(0, ctrl.numberOfRecordsDirty);  
+
+        // Clear out household filter
+        ctrl.accountFilter.Id = null;
+        ctrl.SaveAndCloseAccounts();      
     }
 
     private static testMethod void testPageMessagesController() {

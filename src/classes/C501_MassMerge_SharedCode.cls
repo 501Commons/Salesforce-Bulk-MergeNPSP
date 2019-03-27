@@ -290,8 +290,12 @@ global with sharing class C501_MassMerge_SharedCode {
         for (integer i = 0; i < cAccounts; i++) {
             Account account = new Account(
                 
-                // Request Information
-                Name='Account Name'
+                Name='Account Name',
+                BillingStreet = 'BillingStreet',
+                BillingCity = 'City',
+                BillingState = 'WA',
+                BillingPostalCode =  '12345',
+                Website = 'https://www.web.org'
             );
             listAccounts.add(account);
         }                      
@@ -312,7 +316,8 @@ global with sharing class C501_MassMerge_SharedCode {
                 LastName = 'Test1',
                 FirstName = 'Test1',
                 AccountId = account.Id,
-                Birthdate = date.today().addYears(-21)
+                Birthdate = date.today().addYears(-21),
+                Email = 'fred@bedrock.org'
             ));
         }
 
