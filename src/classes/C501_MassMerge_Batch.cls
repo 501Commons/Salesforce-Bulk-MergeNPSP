@@ -33,7 +33,7 @@ global class C501_MassMerge_Batch implements Database.Batchable<sObject> {
   global String query;
 
   global Database.querylocator start(Database.BatchableContext BC) {
-    system.debug('C501_MassMerge_Batch::start - query: ' + query);
+    System.debug('***** C501_MassMerge_Batch::start - query: ' + query);
     return Database.getQueryLocator(query);
   }
 
@@ -51,8 +51,8 @@ global class C501_MassMerge_Batch implements Database.Batchable<sObject> {
     }
 
     C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
-    system.debug('C501_MassMerge_Batch::execute - masterAccount: ' + String.valueOf(masterAccount));
-    system.debug('C501_MassMerge_Batch::execute - accountDuplicates: ' + String.valueOf(accountDuplicates));
+    System.debug('***** C501_MassMerge_Batch::execute - masterAccount: ' + String.valueOf(masterAccount));
+    System.debug('***** C501_MassMerge_Batch::execute - accountDuplicates: ' + String.valueOf(accountDuplicates));
     c501MassMerge_SharedCode.AccountsMerge(masterAccount, accountDuplicates);
   }
 

@@ -77,7 +77,6 @@ private with sharing class C501_CTRL_MassMergeAccounts_TEST {
         ctrl.ChangeRule();
         ctrl.ChangeAccount();
         ctrl.ResetAccounts();
-        System.AssertEquals(null, ctrl.listAccounts);
         
         System.Assert(ctrl.listSORules.size() > 0);
 
@@ -116,7 +115,7 @@ private with sharing class C501_CTRL_MassMergeAccounts_TEST {
         ctrl.listAccounts[ctrl.listAccounts.size() - 1].C501_Merge_Action__c = 'Ignore';
         ctrl.SaveAccounts();
 
-        system.debug('***** C501_CTRL_MassMergeAccounts_TEST::CodeCoverageTests' + ctrl.strSaveResults);
+        System.debug('***** C501_CTRL_MassMergeAccounts_TEST::CodeCoverageTests' + ctrl.strSaveResults);
         //System.Assert(ctrl.strSaveResults.startsWith('Error'));
         ctrl.ChangeRule();
         ctrl.SaveAndCloseAccounts();      

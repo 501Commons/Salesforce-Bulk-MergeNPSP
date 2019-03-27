@@ -43,17 +43,17 @@ global with sharing class C501_MassMerge_SharedCode {
     global void AccountsMerge(Account masterAccount, List<Account> duplicateAccounts) {
 
         // Merge accounts into master
-        System.debug('C501_MassMerge_SharedCodeMaster::AccountsMerge masterAccount: ' + String.valueOf(masterAccount) + ' duplicateAccounts: ' + String.valueOf(duplicateAccounts));
+        System.debug('***** C501_MassMerge_SharedCode::AccountsMerge masterAccount: ' + String.valueOf(masterAccount) + ' duplicateAccounts: ' + String.valueOf(duplicateAccounts));
 
         Database.MergeResult[] accountResults = Database.merge(masterAccount, duplicateAccounts, false);
 
         for(Database.MergeResult res : accountResults) {
             if (res.isSuccess()) {
-                System.debug('C501_MassMerge_SharedCodeMaster::AccountsMerge Account Merge Successful');
+                System.debug('***** C501_MassMerge_SharedCode::AccountsMerge Account Merge Successful');
             }
             else {
                 for (Database.Error err : res.getErrors()) {
-                    System.debug('C501_MassMerge_SharedCodeMaster::AccountsMerge Account Merge Exception: ' + err.getMessage());
+                    System.debug('***** C501_MassMerge_SharedCode::AccountsMerge Account Merge Exception: ' + err.getMessage());
                 }
 
                 return;
@@ -84,17 +84,17 @@ global with sharing class C501_MassMerge_SharedCode {
                     contactsProcessed.add(duplicateContact.Id);
 
                     // Merge contact into master
-                    System.debug('C501_MassMerge_SharedCodeMaster::AccountsMerge masterContact: ' + String.valueOf(masterContact) + ' duplicateContact: ' + String.valueOf(duplicateContact));
+                    System.debug('***** C501_MassMerge_SharedCode::AccountsMerge masterContact: ' + String.valueOf(masterContact) + ' duplicateContact: ' + String.valueOf(duplicateContact));
 
                     Database.MergeResult[] contactResults = Database.merge(masterContact, new List<Contact> { duplicateContact }, false);
 
                     for(Database.MergeResult res : contactResults) {
                         if (res.isSuccess()) {
-                            System.debug('C501_MassMerge_SharedCodeMaster::AccountsMerge Contact Merge Successful');
+                            System.debug('***** C501_MassMerge_SharedCode::AccountsMerge Contact Merge Successful');
                         }
                         else {
                             for(Database.Error err : res.getErrors()) {
-                                System.debug('C501_MassMerge_SharedCodeMaster::AccountsMerge Contact Merge Exception: ' + err.getMessage());
+                                System.debug('***** C501_MassMerge_SharedCode::AccountsMerge Contact Merge Exception: ' + err.getMessage());
                             }
                         }
                     }
@@ -118,7 +118,7 @@ global with sharing class C501_MassMerge_SharedCode {
     // the list of Accounts
     global list<SelectOption> listSOAccountsWithConfidence(String mergeRule, Decimal fromMergeConfidence, Decimal toMergeConfidence) {
 
-        system.debug('***** C501_MassMerge_SharedCode::listSOAccountsWithConfidence - mergeRule: ' + mergeRule 
+        System.debug('***** C501_MassMerge_SharedCode::listSOAccountsWithConfidence - mergeRule: ' + mergeRule 
             + ' fromMergeConfidence: ' + fromMergeConfidence.toPlainString()
             + ' toMergeConfidence: ' + toMergeConfidence.toPlainString());
 
@@ -200,7 +200,7 @@ global with sharing class C501_MassMerge_SharedCode {
 		if (!mergeAccounts.isEmpty()) {
 			Database.SaveResult[] insertResults = Database.insert(mergeAccounts, false);
 
-            system.debug('***** C501_MassMerge_SharedCode::ProcessMergeCandidates Merge Results: ' + String.valueOf(insertResults));
+            System.debug('***** C501_MassMerge_SharedCode::ProcessMergeCandidates Merge Results: ' + String.valueOf(insertResults));
             // TBD - Look for anything other than Duplicate Id Error on Unique_Id__c which is expected
 		}
 
@@ -220,7 +220,7 @@ global with sharing class C501_MassMerge_SharedCode {
         }
 
         // Check if AutoMerge Enabled
-        system.debug('***** C501_MassMerge_SharedCode::ProcessMergeCandidates Check AutoMerge AutoMerge_Percentage__c: ' + mergeMetric.AutoMerge_Percentage__c);
+        System.debug('***** C501_MassMerge_SharedCode::ProcessMergeCandidates Check AutoMerge AutoMerge_Percentage__c: ' + mergeMetric.AutoMerge_Percentage__c);
         if (mergeMetric.AutoMerge_Percentage__c == null || mergeMetric.AutoMerge_Percentage__c <= 0.0) {
             return;
         }
@@ -229,7 +229,6 @@ global with sharing class C501_MassMerge_SharedCode {
         Integer mergeAttemptsRemaining = 99;
 
         Set<Id> accountsProcessed = new Set<Id>();
-        List<C501_Account_Merge__c> deleteMerges = new List<C501_Account_Merge__c>();
         for (C501_Account_Merge__c mergeCandidate : [
             SELECT Id, Account__c, Merge_Target_Account__c, Merge_Confidence__c
             FROM C501_Account_Merge__c
@@ -238,20 +237,18 @@ global with sharing class C501_MassMerge_SharedCode {
 
             // Check whether Account or Target Account Id merge already attempted
             if (accountsProcessed.contains(mergeCandidate.Account__c) || accountsProcessed.contains(mergeCandidate.Merge_Target_Account__c)) {
-                deleteMerges.add(mergeCandidate);
                 continue;
             }
 
             // Check Account and Target Account same Id
             if (mergeCandidate.Account__c == mergeCandidate.Merge_Target_Account__c) {
-                deleteMerges.add(mergeCandidate);
                 continue;
             }
 
             accountsProcessed.add(mergeCandidate.Account__c);
             accountsProcessed.add(mergeCandidate.Merge_Target_Account__c);
 
-            system.debug('***** C501_MassMerge_SharedCode::ProcessMergeCandidates AutoMerge ' + mergeMetric.Name + ' - Account__c: ' + mergeCandidate.Account__c + ' Merge_Target_Account__c: ' + mergeCandidate.Merge_Target_Account__c);
+            System.debug('***** C501_MassMerge_SharedCode::ProcessMergeCandidates AutoMerge ' + mergeMetric.Name + ' - Account__c: ' + mergeCandidate.Account__c + ' Merge_Target_Account__c: ' + mergeCandidate.Merge_Target_Account__c);
 
             if (mergeAttemptsRemaining-- <= 0) {
                 break;
@@ -279,17 +276,11 @@ global with sharing class C501_MassMerge_SharedCode {
             } catch (Exception e) {
 
                 // NoOp for now since Sandbox has partial data
-                system.debug('***** C501_MassMerge_SharedCode::ProcessMergeCandidates ' + mergeMetric.Name + ' Account__c: ' + mergeCandidate.Account__c + ' Merge_Target_Account__c: ' + mergeCandidate.Merge_Target_Account__c);
-                system.debug('***** C501_MassMerge_SharedCode::ProcessMergeCandidates ' + mergeMetric.Name + ' General Exception: ' + String.valueOf(e) + '\n\n' + e.getStackTraceString());
+                System.debug('***** C501_MassMerge_SharedCode::ProcessMergeCandidates ' + mergeMetric.Name + ' Account__c: ' + mergeCandidate.Account__c + ' Merge_Target_Account__c: ' + mergeCandidate.Merge_Target_Account__c);
+                System.debug('***** C501_MassMerge_SharedCode::ProcessMergeCandidates ' + mergeMetric.Name + ' General Exception: ' + String.valueOf(e) + '\n\n' + e.getStackTraceString());
 
                 continue;
             }
-
-            deleteMerges.add(mergeCandidate);
-        }
-
-        if (!deleteMerges.isEmpty()) {
-            delete deleteMerges;
         }
     }
 
@@ -312,7 +303,9 @@ global with sharing class C501_MassMerge_SharedCode {
         for (Account account :listAccounts) {
 
             listOpportunityHouseholds.put(account.Id, new Opportunity(
-                Name = 'Name ' + account.Id
+                Name = 'Name ' + account.Id,
+                StageName = 'Closed Won',
+                CloseDate = System.today()
             ));
 
             listContacts.add( new Contact(
@@ -332,10 +325,10 @@ global with sharing class C501_MassMerge_SharedCode {
 
     global void PrintSalesforceStructure() {
 
-        system.debug('***** C501_MassMerge_SharedCode::PrintSalesforceStructure');
+        System.debug('***** C501_MassMerge_SharedCode::PrintSalesforceStructure');
 
-        system.debug('***** C501_MassMerge_SharedCode::PrintSalesforceStructure - Account ' + String.valueOf([select Id, Name from Account]));
-        system.debug('***** C501_MassMerge_SharedCode::PrintSalesforceStructure - Contact ' + String.valueOf([select Id, AccountId, LastName, Birthdate from Contact]));
-        system.debug('***** C501_MassMerge_SharedCode::PrintSalesforceStructure - Opportunity ' + String.valueOf([select Id, Name from Opportunity]));
+        System.debug('***** C501_MassMerge_SharedCode::PrintSalesforceStructure - Account ' + String.valueOf([select Id, Name from Account]));
+        System.debug('***** C501_MassMerge_SharedCode::PrintSalesforceStructure - Contact ' + String.valueOf([select Id, AccountId, LastName, Birthdate from Contact]));
+        System.debug('***** C501_MassMerge_SharedCode::PrintSalesforceStructure - Opportunity ' + String.valueOf([select Id, Name from Opportunity]));
     }
 }

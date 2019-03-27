@@ -13,7 +13,7 @@ global class C501_MM_Rule_Account_Website implements Schedulable {
 
     global void execute(SchedulableContext SC) {
 
-        system.debug('***** C501_MM_Rule_Account_Website:execute');
+        System.debug('***** C501_MM_Rule_Account_Website:execute');
 
 		//
 		// Perform all SOQL Queries outside of loop to avoid Salesforce Governor Limits: https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/apex_gov_limits.htm
@@ -46,7 +46,7 @@ global class C501_MM_Rule_Account_Website implements Schedulable {
             SELECT Id,JobType,Name FROM CronJobDetail WHERE Name = :mergeMetricName];
         if (cronJobs.isEmpty()) {
             // Schedule to run daily at 1:30am
-            system.schedule(mergeMetricName, '0 30 1 * * ?', new C501_MM_Rule_Account_Website());
+            System.schedule(mergeMetricName, '0 30 1 * * ?', new C501_MM_Rule_Account_Website());
         }
 
         //

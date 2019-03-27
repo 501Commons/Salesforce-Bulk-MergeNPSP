@@ -44,6 +44,9 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
     
     // constructor
     global C501_CTRL_MassMergeAccounts() {
+
+        System.debug('***** C501_CTRL_MassMergeAccounts::C501_CTRL_MassMergeAccounts Constructor');
+
         redirect = false;
         c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
         
@@ -145,6 +148,8 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
 
     global virtual void ResetAccounts() {
 
+        System.debug('***** C501_CTRL_MassMergeAccounts::ResetAccounts');
+
         listSOAccounts = null;
         accountFilter.Id = null;
         listAccounts = null;
@@ -158,7 +163,10 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
         get {
             if (listAccounts == null) {
                 FillListAccounts();
+
+                System.debug('***** C501_CTRL_MassMergeAccounts::listAccounts listAccounts: ' + String.valueOf(listAccounts));
             }
+
             return listAccounts;
         }
         
@@ -172,20 +180,31 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
 
         if (accountFilter.Id <> null) {
         
-            accountsMerge.put(accountFilter.Id, new C501_Account_Merge__c());
-
             for(C501_Account_Merge__c accountMerge : [
                 SELECT Id, Account__c, Merge_Target_Account__c, Merge_Confidence__c, Merge_Action__c, Merge_Metric__c, Merge_Metric__r.Name
                 FROM C501_Account_Merge__c
                 WHERE (Account__c = :accountFilter.Id OR Merge_Target_Account__c = :accountFilter.Id) AND isDeleted = false]) {
-                    accountsMerge.put(accountMerge.Merge_Target_Account__c, new C501_Account_Merge__c(
-                        Id = accountMerge.Id,
-                        Merge_Action__c = accountMerge.Merge_Action__c,
-                        Merge_Confidence__c = accountMerge.Merge_Confidence__c,
-                        Merge_Target_Account__c = accountMerge.Merge_Target_Account__c,
-                        Account__c = accountMerge.Account__c,
-                        Merge_Metric__c = accountMerge.Merge_Metric__c,
-                        Merge_Metric_Name__c = accountMerge.Merge_Metric__r.Name
+
+                    accountsMerge.put(
+                        accountMerge.Account__c,
+                        new C501_Account_Merge__c(
+                            Merge_Action__c = accountMerge.Merge_Action__c,
+                            Merge_Confidence__c = null,
+                            Account__c = accountMerge.Account__c,
+                            Merge_Target_Account__c = accountMerge.Merge_Target_Account__c,
+                            Merge_Metric__c = accountMerge.Merge_Metric__c,
+                            Merge_Metric_Name__c = 'Merge ' + accountMerge.Merge_Metric__r.Name
+                    ));
+
+                    accountsMerge.put(
+                        accountMerge.Merge_Target_Account__c,
+                        new C501_Account_Merge__c(
+                            Merge_Action__c = accountMerge.Merge_Action__c,
+                            Merge_Confidence__c = accountMerge.Merge_Confidence__c,
+                            Account__c = accountMerge.Account__c,
+                            Merge_Target_Account__c = accountMerge.Merge_Target_Account__c,
+                            Merge_Metric__c = accountMerge.Merge_Metric__c,
+                            Merge_Metric_Name__c = 'Merge ' + accountMerge.Merge_Metric__r.Name
                     ));
             }
         }
@@ -260,6 +279,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
 
         // Update Accounts w/ Merge fields then query to get the correct sort order by Metric Name
         update listAccounts;
+
         listAccounts = Database.Query(strSoql);
     }
     
@@ -308,11 +328,14 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
         try {
             Map<String, List<Account>> listAccountsMerge = new Map<String, List<Account>>();
             List<C501_Account_Merge__c> listAccountsMergeIgnore = new List<C501_Account_Merge__c>();
+
+            System.debug('***** C501_CTRL_MassMergeAccounts::SaveAccounts listAccounts: ' + String.valueOf(listAccounts));
+
             for (Account account : listAccounts) {
 
                 if (account.Id != null && account.C501_Merge_Action__c == 'Merge') {
 
-                    system.debug('***** C501_CTRL_MassMergeAccounts::SaveAccounts Check Merge Action - Merge Rule: ' + account.C501_Merge_Metric_Name__c);
+                    System.debug('***** C501_CTRL_MassMergeAccounts::SaveAccounts Check Merge Action - Merge Rule: ' + account.C501_Merge_Metric_Name__c);
 
                     // we couldn't reliably mark dirty records in all scenarios,
                     // so we've decided it is better to always update all records.
@@ -326,7 +349,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
                         listAccountsMerge.put(account.C501_Merge_Metric_Name__c, new List<Account> { account });
                     }
 
-                    system.debug('***** C501_CTRL_MassMergeAccounts::SaveAccounts Update Merge Action - account: ' + String.valueOf(account)
+                    System.debug('***** C501_CTRL_MassMergeAccounts::SaveAccounts Update Merge Action - account: ' + String.valueOf(account)
                         + ' listAccountsMerge Keys: ' + String.valueOf(listAccountsMerge.keySet()));
                 }
 
