@@ -222,12 +222,26 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
 
             Integer mergeIndex = 1;
             String mergeBuffer = '0';
-            for(C501_Account_Merge__c accountMerge : [
-                SELECT Id, Account__c, Merge_Target_Account__c, Merge_Confidence__c, Merge_Action__c, Merge_Metric__c, Merge_Metric__r.Name
-                FROM C501_Account_Merge__c
-                WHERE (Account__c in :accountIds OR Merge_Target_Account__c in :accountIds) AND isDeleted = false
-                ORDER BY Account__r.Name ASC]) {
 
+            String mergeRule = accountFilter.C501_Merge_Rule__c;
+            String strRuleSoql = '';
+            if (mergeRule <> null && !String.isBlank(mergeRule)) {
+                strRuleSoql = ' and Merge_Metric__r.Name = :mergeRule';
+            }
+
+            string strSoql = 'SELECT Id, Account__c, Merge_Target_Account__c, Merge_Confidence__c, Merge_Action__c, Merge_Metric__c, Merge_Metric__r.Name';
+
+            strSoql += ' FROM C501_Account_Merge__c';
+            strSoql += ' WHERE (Account__c in :accountIds OR Merge_Target_Account__c in :accountIds) AND isDeleted = false';
+            strSoql += strRuleSoql;
+            strSoql += ' ORDER BY Account__r.Name ASC';
+
+            for(C501_Account_Merge__c accountMerge : Database.Query(strSoql)) {
+
+                    if (accountsMerge.containsKey(accountMerge.Account__c) || accountsMerge.containsKey(accountMerge.Merge_Target_Account__c)) {
+                        continue;
+                    }
+                    
                     accountsMerge.put(
                         accountMerge.Account__c,
                         new C501_Account_Merge__c(
@@ -257,8 +271,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
             }
         }
 
-        string strSoql = 
-            'SELECT ' + String.join(listStrFields, ',');
+        String strSoql = 'SELECT ' + String.join(listStrFields, ',');
 
         Set<Id> accountsMergeIds = accountsMerge.keySet();
         strSoql += ' FROM Account WHERE Id in :accountsMergeIds';

@@ -116,7 +116,7 @@ global with sharing class C501_MassMerge_SharedCode {
     }
 
     // the list of Accounts
-    global list<SelectOption> listSOAccountsWithConfidence(String mergeRule, Decimal fromMergeConfidence, Decimal toMergeConfidence) {
+    global List<SelectOption> listSOAccountsWithConfidence(String mergeRule, Decimal fromMergeConfidence, Decimal toMergeConfidence) {
 
         System.debug('***** C501_MassMerge_SharedCode::listSOAccountsWithConfidence - mergeRule: ' + mergeRule 
             + ' fromMergeConfidence: ' + fromMergeConfidence.toPlainString()
