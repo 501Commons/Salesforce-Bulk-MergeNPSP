@@ -337,7 +337,7 @@ global with sharing class C501_MassMerge_SharedCode {
             }
 
             if (mergeSuccesses > 0) {
-                mergeMetric.Total_Merge__c = (mergeMetric.Total_Merge__c == null) ? mergeSuccesses : (mergeMetric.Total_Merge__c + mergeSuccesses);
+                mergeMetric.Total_Merge_Accounts__c = (mergeMetric.Total_Merge_Accounts__c == null) ? mergeSuccesses : (mergeMetric.Total_Merge_Accounts__c + mergeSuccesses);
                 update mergeMetric;
             }
         }
@@ -443,7 +443,7 @@ global with sharing class C501_MassMerge_SharedCode {
             }
 
             if (mergeSuccesses > 0) {
-                mergeMetric.Total_Merge__c = (mergeMetric.Total_Merge__c == null) ? mergeSuccesses : (mergeMetric.Total_Merge__c + mergeSuccesses);
+                mergeMetric.Total_Merge_Contacts__c = (mergeMetric.Total_Merge_Contacts__c == null) ? mergeSuccesses : (mergeMetric.Total_Merge_Contacts__c + mergeSuccesses);
                 update mergeMetric;
             }
         }
