@@ -285,7 +285,9 @@ global with sharing class C501_MassMerge_SharedCode {
                 SELECT Id, Account__c, Merge_Target_Account__c, Merge_Confidence__c
                 FROM C501_Account_Merge__c
                 WHERE Merge_Metric__r.Name = :mergeMetric.Name 
-                    AND Merge_Confidence__c <= :mergeMetric.AutoMerge_Percentage__c]) {
+                    AND Merge_Confidence__c <= :mergeMetric.AutoMerge_Percentage__c
+                    AND Merge_Action__c <> 'Ignore'
+                LIMIT 100]) {
 
                 // Check whether Account or Target Account Id merge already attempted
                 if (accountsProcessed.contains(mergeCandidate.Account__c) || accountsProcessed.contains(mergeCandidate.Merge_Target_Account__c)) {
@@ -389,7 +391,9 @@ global with sharing class C501_MassMerge_SharedCode {
                 SELECT Id, Contact__c, Merge_Target_Contact__c, Merge_Confidence__c
                 FROM C501_Contact_Merge__c
                 WHERE Merge_Metric__r.Name = :mergeMetric.Name 
-                    AND Merge_Confidence__c <= :mergeMetric.AutoMerge_Percentage__c]) {
+                    AND Merge_Confidence__c <= :mergeMetric.AutoMerge_Percentage__c
+                    AND Merge_Action__c <> 'Ignore'
+                LIMIT 100]) {
 
                 // Check whether Contact or Target Contact Id merge already attempted
                 if (contactsProcessed.contains(mergeCandidate.Contact__c) || contactsProcessed.contains(mergeCandidate.Merge_Target_Contact__c)) {
