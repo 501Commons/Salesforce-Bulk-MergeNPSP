@@ -32,7 +32,9 @@ global class C501_MM_Rule_Account_Address implements Schedulable {
 
         // Get Merge Metric
         List<C501_Merge_Metric__c> mergeMetrics = [
-            SELECT Id, Name, Confidence__c, Total_Merge__c,
+            SELECT
+                Id, Name, Confidence__c,
+                Total_Merge__c, Total_Unassigned_Accounts__c, Total_Unassigned_Contacts__c,
                 Enable__c,
                 AutoMerge_Percentage__c, AutoMerge_Objects__c
             FROM C501_Merge_Metric__c
@@ -53,7 +55,7 @@ global class C501_MM_Rule_Account_Address implements Schedulable {
         }
 
         C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
-        c501MassMerge_SharedCode.ScheduleJobs();
+        c501MassMerge_SharedCode.ScheduleJobs(mergeMetrics[0]);
 
         //
         // Testing in Workbench tips
