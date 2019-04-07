@@ -272,6 +272,11 @@ global with sharing class C501_MassMerge_SharedCode {
             return;
         }
 
+        List<String> automergeObjects = mergeMetric.AutoMerge_Objects__c.split(';');
+        if (!automergeObjects.contains('Account')) {
+            return;
+        }
+
         // 100 is the max merge job that can be sent to Flex Queue
         Integer mergeAttemptsRemaining = 99;
 
@@ -401,6 +406,11 @@ global with sharing class C501_MassMerge_SharedCode {
         // Check if AutoMerge Enabled
         System.debug('***** C501_MassMerge_SharedCode::ProcessContactMergeCandidates Check AutoMerge AutoMerge_Percentage__c: ' + mergeMetric.AutoMerge_Percentage__c);
         if (mergeMetric.AutoMerge_Percentage__c == null || mergeMetric.AutoMerge_Percentage__c <= 0.0) {
+            return;
+        }
+
+        List<String> automergeObjects = mergeMetric.AutoMerge_Objects__c.split(';');
+        if (!automergeObjects.contains('Contact')) {
             return;
         }
 

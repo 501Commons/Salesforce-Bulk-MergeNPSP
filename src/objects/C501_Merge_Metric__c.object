@@ -53,6 +53,31 @@
     <enableSharing>true</enableSharing>
     <enableStreamingApi>true</enableStreamingApi>
     <fields>
+        <fullName>AutoMerge_Objects__c</fullName>
+        <externalId>false</externalId>
+        <label>AutoMerge Objects</label>
+        <required>false</required>
+        <trackTrending>false</trackTrending>
+        <type>MultiselectPicklist</type>
+        <valueSet>
+            <restricted>true</restricted>
+            <valueSetDefinition>
+                <sorted>false</sorted>
+                <value>
+                    <fullName>Account</fullName>
+                    <default>false</default>
+                    <label>Account</label>
+                </value>
+                <value>
+                    <fullName>Contact</fullName>
+                    <default>false</default>
+                    <label>Contact</label>
+                </value>
+            </valueSetDefinition>
+        </valueSet>
+        <visibleLines>4</visibleLines>
+    </fields>
+    <fields>
         <fullName>AutoMerge_Percentage__c</fullName>
         <externalId>false</externalId>
         <label>AutoMerge Percentage</label>
@@ -89,6 +114,20 @@
         <label>Enable</label>
         <trackTrending>false</trackTrending>
         <type>Checkbox</type>
+    </fields>
+    <fields>
+        <fullName>Enabled_Programs__c</fullName>
+        <description>Which Programs are enabled for the rule to run to create potential merge candidates.</description>
+        <externalId>false</externalId>
+        <label>Enabled Programs</label>
+        <required>false</required>
+        <trackTrending>false</trackTrending>
+        <type>MultiselectPicklist</type>
+        <valueSet>
+            <restricted>true</restricted>
+            <valueSetName>C501_Intake_Programs</valueSetName>
+        </valueSet>
+        <visibleLines>4</visibleLines>
     </fields>
     <fields>
         <fullName>Total_Ignore__c</fullName>
@@ -135,6 +174,7 @@
         <columns>NAME</columns>
         <columns>Total_Unassigned__c</columns>
         <columns>Enable__c</columns>
+        <columns>Enabled_Programs__c</columns>
         <columns>Confidence__c</columns>
         <columns>AutoMerge_Percentage__c</columns>
         <filterScope>Everything</filterScope>

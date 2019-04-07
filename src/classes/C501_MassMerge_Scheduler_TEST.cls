@@ -63,7 +63,8 @@ class C501_MassMerge_Scheduler_TEST {
         C501_Merge_Metric__c mergeMetric = new C501_Merge_Metric__c(
             Name = 'MergeMetric',
             Enable__c = true,
-            AutoMerge_Percentage__c = 100.0
+            AutoMerge_Percentage__c = 100.0,
+            AutoMerge_Objects__c = 'Account;Contact'
         );
 
         insert mergeMetric;
@@ -137,6 +138,7 @@ class C501_MassMerge_Scheduler_TEST {
         for (C501_Merge_Metric__c mergeMetric :[SELECT Id FROM C501_Merge_Metric__c]) {
             mergeMetric.Enable__c = true;
             mergeMetric.AutoMerge_Percentage__c = 90.0;
+            mergeMetric.AutoMerge_Objects__c = 'Account;Contact';
 
             listMergeMetrics.add(mergeMetric);
         }

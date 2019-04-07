@@ -24,7 +24,8 @@ global class C501_MM_Rule_Account_Website implements Schedulable {
         // Get Merge Metric
         List<C501_Merge_Metric__c> mergeMetrics = [
             SELECT Id, Name, Confidence__c, Total_Merge__c,
-                Enable__c, AutoMerge_Percentage__c
+                Enable__c,
+                AutoMerge_Percentage__c, AutoMerge_Objects__c
             FROM C501_Merge_Metric__c
             WHERE Name = :mergeMetricName];
         if (mergeMetrics.isEmpty()) {
