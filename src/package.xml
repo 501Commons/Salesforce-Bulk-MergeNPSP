@@ -61,7 +61,8 @@
         <members>C501_Merge_Metric__c.Description__c</members>
         <members>C501_Merge_Metric__c.Total_Ignore__c</members>
         <members>C501_Merge_Metric__c.Total_Merge__c</members>
-        <members>C501_Merge_Metric__c.Total_Unassigned__c</members>
+        <members>C501_Merge_Metric__c.Total_Unassigned_Accounts__c</members>
+        <members>C501_Merge_Metric__c.Total_Unassigned_Contacts__c</members>
         <members>Contact.C501_Mailing_Address__c</members>
         <members>Contact.C501_Merge_Action__c</members>
         <members>Contact.C501_Merge_Confidence_From__c</members>

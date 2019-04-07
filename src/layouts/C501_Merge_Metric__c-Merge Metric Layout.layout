@@ -31,7 +31,7 @@
             </layoutItems>
             <layoutItems>
                 <behavior>Readonly</behavior>
-                <field>Total_Unassigned__c</field>
+                <field>Total_Unassigned_Accounts__c</field>
             </layoutItems>
             <layoutItems>
                 <behavior>Edit</behavior>

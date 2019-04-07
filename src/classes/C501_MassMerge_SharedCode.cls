@@ -273,63 +273,175 @@ global with sharing class C501_MassMerge_SharedCode {
         }
 
         List<String> automergeObjects = mergeMetric.AutoMerge_Objects__c.split(';');
-        if (!automergeObjects.contains('Account')) {
-            return;
-        }
+        if (automergeObjects.contains('Account')) {
 
-        // 100 is the max merge job that can be sent to Flex Queue
-        Integer mergeAttemptsRemaining = 99;
+            System.debug('***** C501_MassMerge_SharedCode::ProcessMergeCandidates Process Merge Object: Account on Rule: ' + mergeMetric.Name);
 
-        Set<Id> accountsProcessed = new Set<Id>();
-        for (C501_Account_Merge__c mergeCandidate : [
-            SELECT Id, Account__c, Merge_Target_Account__c, Merge_Confidence__c
-            FROM C501_Account_Merge__c
-            WHERE Merge_Metric__r.Name = :mergeMetric.Name 
-                AND Merge_Confidence__c <= :mergeMetric.AutoMerge_Percentage__c]) {
+            // 100 is the max merge job that can be sent to Flex Queue
+            Integer mergeAttemptsRemaining = 99, mergeSuccesses = 0;
 
-            // Check whether Account or Target Account Id merge already attempted
-            if (accountsProcessed.contains(mergeCandidate.Account__c) || accountsProcessed.contains(mergeCandidate.Merge_Target_Account__c)) {
-                continue;
-            }
+            Set<Id> accountsProcessed = new Set<Id>();
+            for (C501_Account_Merge__c mergeCandidate : [
+                SELECT Id, Account__c, Merge_Target_Account__c, Merge_Confidence__c
+                FROM C501_Account_Merge__c
+                WHERE Merge_Metric__r.Name = :mergeMetric.Name 
+                    AND Merge_Confidence__c <= :mergeMetric.AutoMerge_Percentage__c]) {
 
-            // Check Account and Target Account same Id
-            if (mergeCandidate.Account__c == mergeCandidate.Merge_Target_Account__c) {
-                continue;
-            }
+                // Check whether Account or Target Account Id merge already attempted
+                if (accountsProcessed.contains(mergeCandidate.Account__c) || accountsProcessed.contains(mergeCandidate.Merge_Target_Account__c)) {
+                    continue;
+                }
 
-            accountsProcessed.add(mergeCandidate.Account__c);
-            accountsProcessed.add(mergeCandidate.Merge_Target_Account__c);
+                // Check Account and Target Account same Id
+                if (mergeCandidate.Account__c == mergeCandidate.Merge_Target_Account__c) {
+                    continue;
+                }
 
-            System.debug('***** C501_MassMerge_SharedCode::ProcessMergeCandidates AutoMerge ' + mergeMetric.Name + ' - Account__c: ' + mergeCandidate.Account__c + ' Merge_Target_Account__c: ' + mergeCandidate.Merge_Target_Account__c);
+                accountsProcessed.add(mergeCandidate.Account__c);
+                accountsProcessed.add(mergeCandidate.Merge_Target_Account__c);
 
-            if (mergeAttemptsRemaining-- <= 0) {
+                System.debug('***** C501_MassMerge_SharedCode::ProcessMergeCandidates AutoMerge ' + mergeMetric.Name + ' - Account__c: ' + mergeCandidate.Account__c + ' Merge_Target_Account__c: ' + mergeCandidate.Merge_Target_Account__c);
+
+                if (mergeAttemptsRemaining-- <= 0) {
+                    break;
+                }
+
+                // Performance - Should be putting this on a Batch call but there is an exception thrown in NPSP code when this call is batched - look at C501_CTRL_MassMergeAccounts::SaveAccounts for details
+                //
+                AccountsMerge( 
+                    new Account(
+                        Id = mergeCandidate.Account__c,
+                        C501_Merge_Action__c = 'Merge',
+                        C501_Merge_Confidence__c = mergeCandidate.Merge_Confidence__c,
+                        C501_Merge_Target__c = mergeCandidate.Merge_Target_Account__c,
+                        C501_Merge_Metric_Name__c = mergeMetric.Name,
+                        C501_Merge_Account__c = mergeCandidate.Id
+                    ),
+                    new List<Account> { new Account(
+                        Id = mergeCandidate.Merge_Target_Account__c,
+                        C501_Merge_Action__c = 'Merge',
+                        C501_Merge_Confidence__c = mergeCandidate.Merge_Confidence__c,
+                        C501_Merge_Target__c = mergeCandidate.Merge_Target_Account__c,
+                        C501_Merge_Metric_Name__c = mergeMetric.Name,
+                        C501_Merge_Account__c = mergeCandidate.Id
+                    )
+                } );
+
+                mergeSuccesses++;
+
+                // Limit to 1 account merge because an account merge with 5 contact merges is at SOQL limit of 100 - DML Merge must trigger a bunch of other SOQL calls (e.g., triggers).
+                //      If more than 5 contacts then will probably throw exception and won't finish other contact merges.  Need a new rule Contact only merges that looks at contcats within a single account to catch these unmerged contacts
                 break;
             }
 
-            // Performance - Should be putting this on a Batch call but there is an exception thrown in NPSP code when this call is batched - look at C501_CTRL_MassMergeAccounts::SaveAccounts for details
-            //
-            AccountsMerge( 
-                new Account(
-                    Id = mergeCandidate.Account__c,
-                    C501_Merge_Action__c = 'Merge',
-                    C501_Merge_Confidence__c = mergeCandidate.Merge_Confidence__c,
-                    C501_Merge_Target__c = mergeCandidate.Merge_Target_Account__c,
-                    C501_Merge_Metric_Name__c = mergeMetric.Name,
-                    C501_Merge_Account__c = mergeCandidate.Id
-                ),
-                new List<Account> { new Account(
-                    Id = mergeCandidate.Merge_Target_Account__c,
-                    C501_Merge_Action__c = 'Merge',
-                    C501_Merge_Confidence__c = mergeCandidate.Merge_Confidence__c,
-                    C501_Merge_Target__c = mergeCandidate.Merge_Target_Account__c,
-                    C501_Merge_Metric_Name__c = mergeMetric.Name,
-                    C501_Merge_Account__c = mergeCandidate.Id
-                )
-            } );
+            if (mergeSuccesses > 0) {
+                mergeMetric.Total_Merge__c = (mergeMetric.Total_Merge__c == null) ? mergeSuccesses : (mergeMetric.Total_Merge__c + mergeSuccesses);
+                update mergeMetric;
+            }
+        }
+    }
 
-            // Limit to 1 account merge because an account merge with 5 contact merges is at SOQL limit of 100 - DML Merge must trigger a bunch of other SOQL calls (e.g., triggers).
-            //      If more than 5 contacts then will probably throw exception and won't finish other contact merges.  Need a new rule Contact only merges that looks at contcats within a single account to catch these unmerged contacts
-            break;
+    global void ProcessContactMergeCandidates(C501_Merge_Metric__c mergeMetric, List<C501_Contact_Merge__c> mergeContacts) {
+
+        //
+		// Perform all DML (Data Manipulation Language) calls (insert, update, merge, delete, restore) outside of loop to avoid Salesforce Governor Limits: https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/apex_gov_limits.htm
+        //
+		if (!mergeContacts.isEmpty()) {
+			Database.SaveResult[] insertResults = Database.insert(mergeContacts, false);
+
+            for (Database.SaveResult result : insertResults) {
+                System.debug('***** C501_MassMerge_SharedCode::ProcessContactMergeCandidates Merge Results: ' + String.valueOf(result));
+                // TBD - Look for anything other than Duplicate Id Error on Unique_Id__c which is expected
+            }
+		}
+
+        // Delete Merge Candidates that do not have valid Contacts
+        List<C501_Contact_Merge__c> invalidMerges = new List<C501_Contact_Merge__c>();
+        for (C501_Contact_Merge__c contactMerge :[
+            SELECT Id, Contact__c, Merge_Target_Contact__c
+            FROM C501_Contact_Merge__c
+            WHERE Merge_Metric__r.Name = :mergeMetric.Name
+                AND (Contact__c = null OR Merge_Target_Contact__c = null)]) {
+                
+                invalidMerges.add(contactMerge);
+            }
+
+        if (!invalidMerges.IsEmpty()) {
+            delete invalidMerges;
+        }
+
+        // Check if AutoMerge Enabled
+        System.debug('***** C501_MassMerge_SharedCode::ProcessContactMergeCandidates Check AutoMerge AutoMerge_Percentage__c: ' + mergeMetric.AutoMerge_Percentage__c);
+        if (mergeMetric.AutoMerge_Percentage__c == null || mergeMetric.AutoMerge_Percentage__c <= 0.0) {
+            return;
+        }
+
+        List<String> automergeObjects = mergeMetric.AutoMerge_Objects__c.split(';');
+        if (automergeObjects.contains('Contact')) {
+
+            System.debug('***** C501_MassMerge_SharedCode::ProcessContactMergeCandidates Process Merge Object: Contact on Rule: ' + mergeMetric.Name);
+
+            // 100 is the max merge job that can be sent to Flex Queue
+            Integer mergeAttemptsRemaining = 99, mergeSuccesses = 0;
+
+            Set<Id> contactsProcessed = new Set<Id>();
+            for (C501_Contact_Merge__c mergeCandidate : [
+                SELECT Id, Contact__c, Merge_Target_Contact__c, Merge_Confidence__c
+                FROM C501_Contact_Merge__c
+                WHERE Merge_Metric__r.Name = :mergeMetric.Name 
+                    AND Merge_Confidence__c <= :mergeMetric.AutoMerge_Percentage__c]) {
+
+                // Check whether Contact or Target Contact Id merge already attempted
+                if (contactsProcessed.contains(mergeCandidate.Contact__c) || contactsProcessed.contains(mergeCandidate.Merge_Target_Contact__c)) {
+                    continue;
+                }
+
+                // Check Contact and Target Contact same Id
+                if (mergeCandidate.Contact__c == mergeCandidate.Merge_Target_Contact__c) {
+                    continue;
+                }
+
+                contactsProcessed.add(mergeCandidate.Contact__c);
+                contactsProcessed.add(mergeCandidate.Merge_Target_Contact__c);
+
+                System.debug('***** C501_MassMerge_SharedCode::ProcessContactMergeCandidates AutoMerge ' + mergeMetric.Name + ' - Contact__c: ' + mergeCandidate.Contact__c + ' Merge_Target_Contact__c: ' + mergeCandidate.Merge_Target_Contact__c);
+
+                if (mergeAttemptsRemaining-- <= 0) {
+                    break;
+                }
+
+                // Performance - Should be putting this on a Batch call but there is an exception thrown in NPSP code when this call is batched - look at C501_CTRL_MassMergeContacts::SaveContacts for details
+                //
+                ContactsMerge( 
+                    new Contact(
+                        Id = mergeCandidate.Contact__c,
+                        C501_Merge_Action__c = 'Merge',
+                        C501_Merge_Confidence__c = mergeCandidate.Merge_Confidence__c,
+                        C501_Merge_Target__c = mergeCandidate.Merge_Target_Contact__c,
+                        C501_Merge_Metric_Name__c = mergeMetric.Name,
+                        C501_Merge_Contact__c = mergeCandidate.Id
+                    ),
+                    new List<Contact> { new Contact(
+                        Id = mergeCandidate.Merge_Target_Contact__c,
+                        C501_Merge_Action__c = 'Merge',
+                        C501_Merge_Confidence__c = mergeCandidate.Merge_Confidence__c,
+                        C501_Merge_Target__c = mergeCandidate.Merge_Target_Contact__c,
+                        C501_Merge_Metric_Name__c = mergeMetric.Name,
+                        C501_Merge_Contact__c = mergeCandidate.Id
+                    )
+                } );
+
+                mergeSuccesses++;
+
+                // Limit to 1 Contact merge because an Contact merge with 5 contact merges is at SOQL limit of 100 - DML Merge must trigger a bunch of other SOQL calls (e.g., triggers).
+                //      If more than 5 contacts then will probably throw exception and won't finish other contact merges.  Need a new rule Contact only merges that looks at contcats within a single Contact to catch these unmerged contacts
+                break;
+            }
+
+            if (mergeSuccesses > 0) {
+                mergeMetric.Total_Merge__c = (mergeMetric.Total_Merge__c == null) ? mergeSuccesses : (mergeMetric.Total_Merge__c + mergeSuccesses);
+                update mergeMetric;
+            }
         }
     }
 
@@ -371,102 +483,6 @@ global with sharing class C501_MassMerge_SharedCode {
                     }
                 }
             }
-        }
-    }
-
-    global void ProcessContactMergeCandidates(C501_Merge_Metric__c mergeMetric, List<C501_Contact_Merge__c> mergeContacts) {
-
-        //
-		// Perform all DML (Data Manipulation Language) calls (insert, update, merge, delete, restore) outside of loop to avoid Salesforce Governor Limits: https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/apex_gov_limits.htm
-        //
-		if (!mergeContacts.isEmpty()) {
-			Database.SaveResult[] insertResults = Database.insert(mergeContacts, false);
-
-            for (Database.SaveResult result : insertResults) {
-                System.debug('***** C501_MassMerge_SharedCode::ProcessContactMergeCandidates Merge Results: ' + String.valueOf(result));
-                // TBD - Look for anything other than Duplicate Id Error on Unique_Id__c which is expected
-            }
-		}
-
-        // Delete Merge Candidates that do not have valid Contacts
-        List<C501_Contact_Merge__c> invalidMerges = new List<C501_Contact_Merge__c>();
-        for (C501_Contact_Merge__c contactMerge :[
-            SELECT Id, Contact__c, Merge_Target_Contact__c
-            FROM C501_Contact_Merge__c
-            WHERE Merge_Metric__r.Name = :mergeMetric.Name
-                AND (Contact__c = null OR Merge_Target_Contact__c = null)]) {
-                
-                invalidMerges.add(contactMerge);
-            }
-
-        if (!invalidMerges.IsEmpty()) {
-            delete invalidMerges;
-        }
-
-        // Check if AutoMerge Enabled
-        System.debug('***** C501_MassMerge_SharedCode::ProcessContactMergeCandidates Check AutoMerge AutoMerge_Percentage__c: ' + mergeMetric.AutoMerge_Percentage__c);
-        if (mergeMetric.AutoMerge_Percentage__c == null || mergeMetric.AutoMerge_Percentage__c <= 0.0) {
-            return;
-        }
-
-        List<String> automergeObjects = mergeMetric.AutoMerge_Objects__c.split(';');
-        if (!automergeObjects.contains('Contact')) {
-            return;
-        }
-
-        // 100 is the max merge job that can be sent to Flex Queue
-        Integer mergeAttemptsRemaining = 99;
-
-        Set<Id> contactsProcessed = new Set<Id>();
-        for (C501_Contact_Merge__c mergeCandidate : [
-            SELECT Id, Contact__c, Merge_Target_Contact__c, Merge_Confidence__c
-            FROM C501_Contact_Merge__c
-            WHERE Merge_Metric__r.Name = :mergeMetric.Name 
-                AND Merge_Confidence__c <= :mergeMetric.AutoMerge_Percentage__c]) {
-
-            // Check whether Contact or Target Contact Id merge already attempted
-            if (contactsProcessed.contains(mergeCandidate.Contact__c) || contactsProcessed.contains(mergeCandidate.Merge_Target_Contact__c)) {
-                continue;
-            }
-
-            // Check Contact and Target Contact same Id
-            if (mergeCandidate.Contact__c == mergeCandidate.Merge_Target_Contact__c) {
-                continue;
-            }
-
-            contactsProcessed.add(mergeCandidate.Contact__c);
-            contactsProcessed.add(mergeCandidate.Merge_Target_Contact__c);
-
-            System.debug('***** C501_MassMerge_SharedCode::ProcessContactMergeCandidates AutoMerge ' + mergeMetric.Name + ' - Contact__c: ' + mergeCandidate.Contact__c + ' Merge_Target_Contact__c: ' + mergeCandidate.Merge_Target_Contact__c);
-
-            if (mergeAttemptsRemaining-- <= 0) {
-                break;
-            }
-
-            // Performance - Should be putting this on a Batch call but there is an exception thrown in NPSP code when this call is batched - look at C501_CTRL_MassMergeContacts::SaveContacts for details
-            //
-            ContactsMerge( 
-                new Contact(
-                    Id = mergeCandidate.Contact__c,
-                    C501_Merge_Action__c = 'Merge',
-                    C501_Merge_Confidence__c = mergeCandidate.Merge_Confidence__c,
-                    C501_Merge_Target__c = mergeCandidate.Merge_Target_Contact__c,
-                    C501_Merge_Metric_Name__c = mergeMetric.Name,
-                    C501_Merge_Contact__c = mergeCandidate.Id
-                ),
-                new List<Contact> { new Contact(
-                    Id = mergeCandidate.Merge_Target_Contact__c,
-                    C501_Merge_Action__c = 'Merge',
-                    C501_Merge_Confidence__c = mergeCandidate.Merge_Confidence__c,
-                    C501_Merge_Target__c = mergeCandidate.Merge_Target_Contact__c,
-                    C501_Merge_Metric_Name__c = mergeMetric.Name,
-                    C501_Merge_Contact__c = mergeCandidate.Id
-                )
-            } );
-
-            // Limit to 1 Contact merge because an Contact merge with 5 contact merges is at SOQL limit of 100 - DML Merge must trigger a bunch of other SOQL calls (e.g., triggers).
-            //      If more than 5 contacts then will probably throw exception and won't finish other contact merges.  Need a new rule Contact only merges that looks at contcats within a single Contact to catch these unmerged contacts
-            break;
         }
     }
 
