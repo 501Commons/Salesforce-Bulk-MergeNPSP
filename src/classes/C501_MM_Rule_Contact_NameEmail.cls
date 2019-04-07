@@ -42,27 +42,30 @@ global class C501_MM_Rule_Contact_NameEmail implements Schedulable {
             return;
         }
 
-        List<CronJobDetail> cronJobs = [
-            SELECT Id,JobType,Name FROM CronJobDetail WHERE Name = :mergeMetricName];
-        if (cronJobs.isEmpty()) {
-            // Schedule to run daily at 3:30am
-            System.schedule(mergeMetricName, '0 30 3 * * ?', new C501_MM_Rule_Contact_NameEmail());
-        }
+        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
+        c501MassMerge_SharedCode.ScheduleJobs();
 
         //
         // Testing in Workbench tips
         //      add LIMIT 10 at the end
 
+        // Find Contact matches across Accounts
+        //
 		AggregateResult[] allAggregatedByContacts = [
-            SELECT Count(AccountId),
+            SELECT
+                Count(AccountId),
                 MAX(AccountId)MaxAccountId,
                 MIN(AccountId)MinAccountId
             FROM Contact
-            WHERE FirstName <> null
+            WHERE
+                FirstName <> null
                 and Email <> null
-            GROUP BY FirstName,
+                and Gender__c <> null
+            GROUP BY
+                FirstName,
                 LastName,
-                Email
+                Email,
+                Gender__c
             HAVING Count(AccountId) > 1
             ORDER BY Count(AccountId) DESC];
 
@@ -86,7 +89,49 @@ global class C501_MM_Rule_Contact_NameEmail implements Schedulable {
             ));
         }
 
-        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
         c501MassMerge_SharedCode.ProcessMergeCandidates(mergeMetrics[0], mergeAccounts.values());
+
+        // Find Contact matches within an Account
+        //
+		AggregateResult[] allAggregatedByContactsWithinAccount = [
+            SELECT
+                Count(Id),
+                MAX(Id)MaxContactId,
+                MIN(Id)MinContactId
+            FROM
+                Contact
+            WHERE
+                FirstName <> null
+                and Email <> null
+                and Gender__c <> null
+            GROUP BY
+                AccountId,
+                FirstName,
+                LastName,
+                Email,
+                Gender__c
+            HAVING Count(Id) > 1
+            ORDER BY Count(Id) DESC];
+
+        Map<String, C501_Contact_Merge__c> mergeContacts = new Map<String, C501_Contact_Merge__c>();
+        for (AggregateResult result : allAggregatedByContactsWithinAccount)  {
+            maxId = result.get('MaxContactId').toString();
+            minId = result.get('MinContactId').toString();
+
+            if (String.isEmpty(maxId) || String.isEmpty(minId) || maxId == minId) {
+                continue;
+            }
+
+            uniqueId = mergeMetricName + maxId + minId;
+            mergeContacts.put(uniqueId, new C501_Contact_Merge__c(
+                Unique_Id__c = uniqueId,
+                Merge_Confidence__c = mergeMetrics[0].Confidence__c,
+                Contact__c = minId,
+                Merge_Target_Contact__c = maxId,
+                Merge_Metric__c = mergeMetrics[0].Id
+            ));
+        }
+
+        c501MassMerge_SharedCode.ProcessContactMergeCandidates(mergeMetrics[0], mergeContacts.values());
    }
 }

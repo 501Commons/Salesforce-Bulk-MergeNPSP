@@ -19,12 +19,46 @@ class C501_MassMerge_Scheduler_TEST {
         );
         insert account1;
 
+        Contact contact11 = new Contact(
+            LastName = 'LastName',
+            FirstName = 'FirstName',
+            Birthdate = System.today(),
+            AccountId = account1.Id
+        );
+        insert contact11;
+
+        Contact contact12 = new Contact(
+            LastName = 'LastName',
+            FirstName = 'FirstName',
+            Birthdate = System.today(),
+            AccountId = account1.Id
+        );
+        insert contact12;
+
         Account account2 = new Account(
             Name = 'Account2',
             BillingStreet = '123 Street',
             Phone = '(123) 456-7890'
         );
         insert account2;
+
+        Contact contact21 = new Contact(
+            LastName = 'LastName',
+            FirstName = 'FirstName',
+            Email = 'email@email.com',
+            Gender__c = 'Male',
+            AccountId = account2.Id
+        );
+        insert contact21;
+
+        Contact contact22 = new Contact(
+            LastName = 'LastName',
+            FirstName = 'FirstName',
+            Email = 'email@email.com',
+            Gender__c = 'Male',
+            AccountId = account2.Id
+        );
+        insert contact22;
 
         C501_Merge_Metric__c mergeMetric = new C501_Merge_Metric__c(
             Name = 'MergeMetric',
@@ -43,6 +77,26 @@ class C501_MassMerge_Scheduler_TEST {
                 Merge_Action__c = 'Merge');
 
         insert accountMerge;
+
+        C501_Contact_Merge__c contactMerge1 = new C501_Contact_Merge__c(
+                Unique_Id__c = 'Name ' + contact11.Id,
+                Merge_Metric__c = mergeMetric.Id,
+                Contact__c = contact11.Id,
+                Merge_Target_Contact__c = contact12.Id,
+                Merge_Confidence__c = 100.0,
+                Merge_Action__c = 'Merge');
+
+        insert contactMerge1;
+
+        C501_Contact_Merge__c contactMerge2 = new C501_Contact_Merge__c(
+                Unique_Id__c = 'Name ' + contact22.Id,
+                Merge_Metric__c = mergeMetric.Id,
+                Contact__c = contact21.Id,
+                Merge_Target_Contact__c = contact22.Id,
+                Merge_Confidence__c = 100.0,
+                Merge_Action__c = 'Merge');
+
+        insert contactMerge2;
 
         // Schedule the test job
         String jobId = System.schedule('testBasicScheduledApex',

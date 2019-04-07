@@ -3,9 +3,11 @@
     <defaultLandingTab>standard-home</defaultLandingTab>
     <formFactors>Large</formFactors>
     <label>Mass Merge Classic</label>
-    <tabs>Mass_Merge</tabs>
+    <tabs>Mass_Merge_Accounts</tabs>
+    <tabs>Mass_Merge_Contacts</tabs>
     <tabs>C501_Merge_Metric__c</tabs>
     <tabs>C501_Account_Merge__c</tabs>
+    <tabs>C501_Contact_Merge__c</tabs>
     <tabs>standard-Contact</tabs>
     <tabs>standard-Account</tabs>
 </CustomApplication>

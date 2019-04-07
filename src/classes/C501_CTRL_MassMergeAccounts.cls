@@ -68,7 +68,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
     global list<SelectOption> listSOAccounts {
         get {
             if (listSOAccounts == null )
-                listSOAccounts = c501MassMerge_SharedCode.listSOAccountsWithConfidence(accountFilter.C501_Merge_Rule__c, accountFilter.C501_Merge_Confidence_From__c, accountFilter.C501_Merge_Confidence_To__c);
+                listSOAccounts = c501MassMerge_SharedCode.listAccountsWithConfidence(accountFilter.C501_Merge_Rule__c, accountFilter.C501_Merge_Confidence_From__c, accountFilter.C501_Merge_Confidence_To__c);
 
             return listSOAccounts;
         }
@@ -241,7 +241,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
                     if (accountsMerge.containsKey(accountMerge.Account__c) || accountsMerge.containsKey(accountMerge.Merge_Target_Account__c)) {
                         continue;
                     }
-                    
+
                     accountsMerge.put(
                         accountMerge.Account__c,
                         new C501_Account_Merge__c(
@@ -403,6 +403,10 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
                     Database.executeBatch(batchMerge);
 */
                     c501MassMerge_SharedCode.AccountsMerge(new Account(Id = accounts[0].Id), new List<Account> { new Account( Id = accounts[1].Id) });
+
+                    // Limit to 1 account merge because an account merge with 5 contact merges is at SOQL limit of 100 - DML Merge must trigger a bunch of other SOQL calls (e.g., triggers).
+                    //      If more than 5 contacts then will probably throw exception and won't finish other contact merges.  Need a new rule Contact only merges that looks at contcats within a single account to catch these unmerged contacts
+                    break;
                 }
             }
 

@@ -30,7 +30,7 @@
 
 global with sharing class C501_MassMerge_SharedCode { 
 
-    public class C501_CTRL_MassMergeAccountsException extends Exception {}
+    public class C501_MassMerge_SharedCodeException extends Exception {}
 
     global String GetAllIterableFields(String sObjectType) {
 
@@ -56,7 +56,7 @@ global with sharing class C501_MassMerge_SharedCode {
                     System.debug('***** C501_MassMerge_SharedCode::AccountsMerge Account Merge Exception: ' + err.getMessage());
                 }
 
-                return;
+                throw new C501_MassMerge_SharedCodeException('Account Merge Attempt - ' + String.valueOf(res.getErrors()));
             }
         }
 
@@ -65,41 +65,42 @@ global with sharing class C501_MassMerge_SharedCode {
             accountIds.add(duplicateAccount.Id);
         }
 
-        // Merge Master Contacts - load all fields to make sure merge process does not hit a null reference
-        String strSoql  = 'SELECT Id, FirstName, LastName, Birthdate, Email FROM Contact WHERE AccountId = \'' + masterAccount.Id + '\' AND FirstName <> null AND (Birthdate <> null OR Email <> null) ORDER BY CreatedDate DESC';
-        List<Contact> masterContacts = Database.Query(strSoql);
+        List<C501_Account_Merge__c> deleteMerges = [
+            SELECT Id
+            FROM C501_Account_Merge__c
+            WHERE Account__c = null
+                OR Merge_Target_Account__c = null
+                OR Account__c in :accountIds
+                OR Merge_Target_Account__c in :accountIds];
 
-        Set<Id> contactsProcessed = new Set<Id>();
-        for (Contact masterContact :masterContacts) {
-            for (Contact duplicateContact :masterContacts) {
+        if (!deleteMerges.isEmpty()) {
+            delete deleteMerges;
+        }
+    }
 
-                if (masterContact.Id == duplicateContact.Id || contactsProcessed.contains(masterContact.Id) || contactsProcessed.contains(duplicateContact.Id)) {
-                    continue;
-                }
+    global void ContactsMerge(Contact masterContact, List<Contact> duplicateContacts) {
 
-                if (masterContact.FirstName == duplicateContact.FirstName && masterContact.LastName == duplicateContact.LastName 
-                    && (masterContact.Birthdate == duplicateContact.Birthdate || masterContact.Email == duplicateContact.Email)) {
+        // Merge contacts into master
+        System.debug('***** C501_MassMerge_SharedCode::ContactsMerge masterContact: ' + String.valueOf(masterContact) + ' duplicateContacts: ' + String.valueOf(duplicateContacts));
 
-                    contactsProcessed.add(masterContact.Id);
-                    contactsProcessed.add(duplicateContact.Id);
+        Database.MergeResult[] contactResults = Database.merge(masterContact, duplicateContacts, false);
 
-                    // Merge contact into master
-                    System.debug('***** C501_MassMerge_SharedCode::AccountsMerge masterContact: ' + String.valueOf(masterContact) + ' duplicateContact: ' + String.valueOf(duplicateContact));
-
-                    Database.MergeResult[] contactResults = Database.merge(masterContact, new List<Contact> { duplicateContact }, false);
-
-                    for(Database.MergeResult res : contactResults) {
-                        if (res.isSuccess()) {
-                            System.debug('***** C501_MassMerge_SharedCode::AccountsMerge Contact Merge Successful');
-                        }
-                        else {
-                            for(Database.Error err : res.getErrors()) {
-                                System.debug('***** C501_MassMerge_SharedCode::AccountsMerge Contact Merge Exception: ' + err.getMessage());
-                            }
-                        }
-                    }
-                }
+        for(Database.MergeResult res : contactResults) {
+            if (res.isSuccess()) {
+                System.debug('***** C501_MassMerge_SharedCode::ContactsMerge Contact Merge Successful');
             }
+            else {
+                for (Database.Error err : res.getErrors()) {
+                    System.debug('***** C501_MassMerge_SharedCode::ContactsMerge Contact Merge Exception: ' + err.getMessage());
+                }
+
+                throw new C501_MassMerge_SharedCodeException('Contact Merge Attempt - ' + String.valueOf(res.getErrors()));
+            }
+        }
+
+        Set<Id> accountIds = new Set<Id> { masterContact.AccountId };
+        for (Contact duplicateContact :duplicateContacts) {
+            accountIds.add(duplicateContact.AccountId);
         }
 
         List<C501_Account_Merge__c> deleteMerges = [
@@ -116,9 +117,9 @@ global with sharing class C501_MassMerge_SharedCode {
     }
 
     // the list of Accounts
-    global List<SelectOption> listSOAccountsWithConfidence(String mergeRule, Decimal fromMergeConfidence, Decimal toMergeConfidence) {
+    global List<SelectOption> listAccountsWithConfidence(String mergeRule, Decimal fromMergeConfidence, Decimal toMergeConfidence) {
 
-        System.debug('***** C501_MassMerge_SharedCode::listSOAccountsWithConfidence - mergeRule: ' + mergeRule 
+        System.debug('***** C501_MassMerge_SharedCode::listAccountsWithConfidence - mergeRule: ' + mergeRule 
             + ' fromMergeConfidence: ' + fromMergeConfidence.toPlainString()
             + ' toMergeConfidence: ' + toMergeConfidence.toPlainString());
 
@@ -150,6 +151,50 @@ global with sharing class C501_MassMerge_SharedCode {
                 GROUP BY Account__c, Account__r.Name
                 LIMIT 999]) {
                     listSO.add(new SelectOption(result.get('Account__c').toString(),
+                        result.get('Name').toString()));
+            }
+        }
+
+        List<SelectOption> listSOSorted = new List<SelectOption>();
+        listSOSorted = selectOptionSortByLabel(listSO);
+
+        return listSOSorted;
+    }
+
+    global List<SelectOption> listContactsWithConfidence(String mergeRule, Decimal fromMergeConfidence, Decimal toMergeConfidence) {
+
+        System.debug('***** C501_MassMerge_SharedCode::listContactsWithConfidence - mergeRule: ' + mergeRule 
+            + ' fromMergeConfidence: ' + fromMergeConfidence.toPlainString()
+            + ' toMergeConfidence: ' + toMergeConfidence.toPlainString());
+
+        Set<String> setSOUnique = new Set<String>();
+        List<SelectOption> listSO = new List<SelectOption>();
+        listSO.add(new SelectOption('', ''));
+
+        if (String.isBlank(mergeRule)) {
+            for (AggregateResult result : [
+                SELECT Contact__c, Contact__r.Name
+                FROM C501_Contact_Merge__c
+                WHERE Merge_Confidence__c >= :fromMergeConfidence
+                    and Merge_Confidence__c <= :toMergeConfidence
+                    and Merge_Action__c <> 'Ignore' 
+                GROUP BY Contact__c, Contact__r.Name
+                LIMIT 999]) {
+                    listSO.add(new SelectOption(result.get('Contact__c').toString(),
+                        result.get('Name').toString()));
+            }
+        }
+        else {
+            for (AggregateResult result : [
+                SELECT Contact__c, Contact__r.Name
+                FROM C501_Contact_Merge__c
+                WHERE Merge_Confidence__c >= :fromMergeConfidence
+                    and Merge_Confidence__c <= :toMergeConfidence
+                    and Merge_Action__c <> 'Ignore' 
+                    and Merge_Metric__r.Name = :mergeRule
+                GROUP BY Contact__c, Contact__r.Name
+                LIMIT 999]) {
+                    listSO.add(new SelectOption(result.get('Contact__c').toString(),
                         result.get('Name').toString()));
             }
         }
@@ -200,8 +245,10 @@ global with sharing class C501_MassMerge_SharedCode {
 		if (!mergeAccounts.isEmpty()) {
 			Database.SaveResult[] insertResults = Database.insert(mergeAccounts, false);
 
-            System.debug('***** C501_MassMerge_SharedCode::ProcessMergeCandidates Merge Results: ' + String.valueOf(insertResults));
-            // TBD - Look for anything other than Duplicate Id Error on Unique_Id__c which is expected
+            for (Database.SaveResult result : insertResults) {
+                System.debug('***** C501_MassMerge_SharedCode::ProcessMergeCandidates Merge Results: ' + String.valueOf(result));
+                // TBD - Look for anything other than Duplicate Id Error on Unique_Id__c which is expected
+            }
 		}
 
         // Delete Merge Candidates that do not have valid accounts
@@ -254,33 +301,162 @@ global with sharing class C501_MassMerge_SharedCode {
                 break;
             }
 
-            try {
-                AccountsMerge( 
-                    new Account(
-                        Id = mergeCandidate.Account__c,
-                        C501_Merge_Action__c = 'Merge',
-                        C501_Merge_Confidence__c = mergeCandidate.Merge_Confidence__c,
-                        C501_Merge_Target__c = mergeCandidate.Merge_Target_Account__c,
-                        C501_Merge_Metric_Name__c = mergeMetric.Name,
-                        C501_Merge_Account__c = mergeCandidate.Id
-                    ),
-                    new List<Account> { new Account(
-                        Id = mergeCandidate.Merge_Target_Account__c,
-                        C501_Merge_Action__c = 'Merge',
-                        C501_Merge_Confidence__c = mergeCandidate.Merge_Confidence__c,
-                        C501_Merge_Target__c = mergeCandidate.Merge_Target_Account__c,
-                        C501_Merge_Metric_Name__c = mergeMetric.Name,
-                        C501_Merge_Account__c = mergeCandidate.Id
-                    )
-                } );
-            } catch (Exception e) {
+            // Performance - Should be putting this on a Batch call but there is an exception thrown in NPSP code when this call is batched - look at C501_CTRL_MassMergeAccounts::SaveAccounts for details
+            //
+            AccountsMerge( 
+                new Account(
+                    Id = mergeCandidate.Account__c,
+                    C501_Merge_Action__c = 'Merge',
+                    C501_Merge_Confidence__c = mergeCandidate.Merge_Confidence__c,
+                    C501_Merge_Target__c = mergeCandidate.Merge_Target_Account__c,
+                    C501_Merge_Metric_Name__c = mergeMetric.Name,
+                    C501_Merge_Account__c = mergeCandidate.Id
+                ),
+                new List<Account> { new Account(
+                    Id = mergeCandidate.Merge_Target_Account__c,
+                    C501_Merge_Action__c = 'Merge',
+                    C501_Merge_Confidence__c = mergeCandidate.Merge_Confidence__c,
+                    C501_Merge_Target__c = mergeCandidate.Merge_Target_Account__c,
+                    C501_Merge_Metric_Name__c = mergeMetric.Name,
+                    C501_Merge_Account__c = mergeCandidate.Id
+                )
+            } );
 
-                // NoOp for now since Sandbox has partial data
-                System.debug('***** C501_MassMerge_SharedCode::ProcessMergeCandidates ' + mergeMetric.Name + ' Account__c: ' + mergeCandidate.Account__c + ' Merge_Target_Account__c: ' + mergeCandidate.Merge_Target_Account__c);
-                System.debug('***** C501_MassMerge_SharedCode::ProcessMergeCandidates ' + mergeMetric.Name + ' General Exception: ' + String.valueOf(e) + '\n\n' + e.getStackTraceString());
+            // Limit to 1 account merge because an account merge with 5 contact merges is at SOQL limit of 100 - DML Merge must trigger a bunch of other SOQL calls (e.g., triggers).
+            //      If more than 5 contacts then will probably throw exception and won't finish other contact merges.  Need a new rule Contact only merges that looks at contcats within a single account to catch these unmerged contacts
+            break;
+        }
+    }
 
+    global void ScheduleJobs() {
+
+        List<CronJobDetail> cronJobDetails = [SELECT Id, JobType, Name FROM CronJobDetail];
+        List<String> mergeMetricNames = new List<String> { 'Account_Address', 'Account_Website', 'Contact_NameDOB', 'Contact_NameEmail' };
+        for (String mergeMetricName :mergeMetricNames) {
+
+            Boolean foundMergeMetricName = false;
+            for (CronJobDetail jobDetail :cronJobDetails) {
+                if (jobDetail.Name.contains(mergeMetricName)) {
+                    foundMergeMetricName = true;
+                    break;
+                }
+            }
+
+            if (!foundMergeMetricName) {
+
+                // Run every 5 minutes if there are more than 100 pending merges based on the automerge percentage otherwise set to hourly (abort all other hourly scheduled jobs except 0 one)
+                // Check scheduled jobs limits - online thread mentioned 100
+                // Salesforce only supports hourly not minute interval format 0 0/5 00 for s m h not supported which is every 5 minutes
+                String cronExpression, mergeMetricNameSchedule;
+                for (integer i = 0; i <= 55; i += 5) {
+                    cronExpression = '0 ' + String.valueOf(i) + ' * * * ?';
+                    mergeMetricNameSchedule = mergeMetricName + '_' + String.valueOf(i);
+
+                    if (mergeMetricName == 'Account_Address') {
+                        System.schedule(mergeMetricNameSchedule, cronExpression, new C501_MM_Rule_Account_Address());
+                    }
+                    else if (mergeMetricName == 'Account_Website') {
+                        System.schedule(mergeMetricNameSchedule, cronExpression, new C501_MM_Rule_Account_Website());
+                    }
+                    else if (mergeMetricName == 'Contact_NameDOB') {
+                        System.schedule(mergeMetricNameSchedule, cronExpression, new C501_MM_Rule_Contact_NameDOB());
+                    }
+                    else if (mergeMetricName == 'Contact_NameEmail') {
+                        System.schedule(mergeMetricNameSchedule, cronExpression, new C501_MM_Rule_Contact_NameEmail());
+                    }
+                }
+            }
+        }
+    }
+
+    global void ProcessContactMergeCandidates(C501_Merge_Metric__c mergeMetric, List<C501_Contact_Merge__c> mergeContacts) {
+
+        //
+		// Perform all DML (Data Manipulation Language) calls (insert, update, merge, delete, restore) outside of loop to avoid Salesforce Governor Limits: https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/apex_gov_limits.htm
+        //
+		if (!mergeContacts.isEmpty()) {
+			Database.SaveResult[] insertResults = Database.insert(mergeContacts, false);
+
+            for (Database.SaveResult result : insertResults) {
+                System.debug('***** C501_MassMerge_SharedCode::ProcessContactMergeCandidates Merge Results: ' + String.valueOf(result));
+                // TBD - Look for anything other than Duplicate Id Error on Unique_Id__c which is expected
+            }
+		}
+
+        // Delete Merge Candidates that do not have valid Contacts
+        List<C501_Contact_Merge__c> invalidMerges = new List<C501_Contact_Merge__c>();
+        for (C501_Contact_Merge__c contactMerge :[
+            SELECT Id, Contact__c, Merge_Target_Contact__c
+            FROM C501_Contact_Merge__c
+            WHERE Merge_Metric__r.Name = :mergeMetric.Name
+                AND (Contact__c = null OR Merge_Target_Contact__c = null)]) {
+                
+                invalidMerges.add(contactMerge);
+            }
+
+        if (!invalidMerges.IsEmpty()) {
+            delete invalidMerges;
+        }
+
+        // Check if AutoMerge Enabled
+        System.debug('***** C501_MassMerge_SharedCode::ProcessContactMergeCandidates Check AutoMerge AutoMerge_Percentage__c: ' + mergeMetric.AutoMerge_Percentage__c);
+        if (mergeMetric.AutoMerge_Percentage__c == null || mergeMetric.AutoMerge_Percentage__c <= 0.0) {
+            return;
+        }
+
+        // 100 is the max merge job that can be sent to Flex Queue
+        Integer mergeAttemptsRemaining = 99;
+
+        Set<Id> contactsProcessed = new Set<Id>();
+        for (C501_Contact_Merge__c mergeCandidate : [
+            SELECT Id, Contact__c, Merge_Target_Contact__c, Merge_Confidence__c
+            FROM C501_Contact_Merge__c
+            WHERE Merge_Metric__r.Name = :mergeMetric.Name 
+                AND Merge_Confidence__c <= :mergeMetric.AutoMerge_Percentage__c]) {
+
+            // Check whether Contact or Target Contact Id merge already attempted
+            if (contactsProcessed.contains(mergeCandidate.Contact__c) || contactsProcessed.contains(mergeCandidate.Merge_Target_Contact__c)) {
                 continue;
             }
+
+            // Check Contact and Target Contact same Id
+            if (mergeCandidate.Contact__c == mergeCandidate.Merge_Target_Contact__c) {
+                continue;
+            }
+
+            contactsProcessed.add(mergeCandidate.Contact__c);
+            contactsProcessed.add(mergeCandidate.Merge_Target_Contact__c);
+
+            System.debug('***** C501_MassMerge_SharedCode::ProcessContactMergeCandidates AutoMerge ' + mergeMetric.Name + ' - Contact__c: ' + mergeCandidate.Contact__c + ' Merge_Target_Contact__c: ' + mergeCandidate.Merge_Target_Contact__c);
+
+            if (mergeAttemptsRemaining-- <= 0) {
+                break;
+            }
+
+            // Performance - Should be putting this on a Batch call but there is an exception thrown in NPSP code when this call is batched - look at C501_CTRL_MassMergeContacts::SaveContacts for details
+            //
+            ContactsMerge( 
+                new Contact(
+                    Id = mergeCandidate.Contact__c,
+                    C501_Merge_Action__c = 'Merge',
+                    C501_Merge_Confidence__c = mergeCandidate.Merge_Confidence__c,
+                    C501_Merge_Target__c = mergeCandidate.Merge_Target_Contact__c,
+                    C501_Merge_Metric_Name__c = mergeMetric.Name,
+                    C501_Merge_Contact__c = mergeCandidate.Id
+                ),
+                new List<Contact> { new Contact(
+                    Id = mergeCandidate.Merge_Target_Contact__c,
+                    C501_Merge_Action__c = 'Merge',
+                    C501_Merge_Confidence__c = mergeCandidate.Merge_Confidence__c,
+                    C501_Merge_Target__c = mergeCandidate.Merge_Target_Contact__c,
+                    C501_Merge_Metric_Name__c = mergeMetric.Name,
+                    C501_Merge_Contact__c = mergeCandidate.Id
+                )
+            } );
+
+            // Limit to 1 Contact merge because an Contact merge with 5 contact merges is at SOQL limit of 100 - DML Merge must trigger a bunch of other SOQL calls (e.g., triggers).
+            //      If more than 5 contacts then will probably throw exception and won't finish other contact merges.  Need a new rule Contact only merges that looks at contcats within a single Contact to catch these unmerged contacts
+            break;
         }
     }
 
@@ -317,7 +493,17 @@ global with sharing class C501_MassMerge_SharedCode {
                 FirstName = 'Test1',
                 AccountId = account.Id,
                 Birthdate = date.today().addYears(-21),
-                Email = 'fred@bedrock.org'
+                Email = 'fred@bedrock.org',
+                Gender__c = 'Male'
+            ));
+            
+            listContacts.add( new Contact(
+                LastName = 'Test1',
+                FirstName = 'Test1',
+                AccountId = account.Id,
+                Birthdate = date.today().addYears(-21),
+                Email = 'fred@bedrock.org',
+                Gender__c = 'Male'
             ));
         }
 

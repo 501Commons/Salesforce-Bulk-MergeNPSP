@@ -42,12 +42,8 @@ global class C501_MM_Rule_Account_Website implements Schedulable {
             return;
         }
 
-        List<CronJobDetail> cronJobs = [
-            SELECT Id,JobType,Name FROM CronJobDetail WHERE Name = :mergeMetricName];
-        if (cronJobs.isEmpty()) {
-            // Schedule to run daily at 1:30am
-            System.schedule(mergeMetricName, '0 30 1 * * ?', new C501_MM_Rule_Account_Website());
-        }
+        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
+        c501MassMerge_SharedCode.ScheduleJobs();
 
         //
         // Testing in Workbench tips
@@ -87,7 +83,6 @@ global class C501_MM_Rule_Account_Website implements Schedulable {
             ));
         }
 
-        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
         c501MassMerge_SharedCode.ProcessMergeCandidates(mergeMetrics[0], mergeAccounts.values());
    }
 }
