@@ -447,7 +447,20 @@ global with sharing class C501_MassMerge_SharedCode {
 
     global void ScheduleJobs(C501_Merge_Metric__c mergeMetric) {
 
+        // Hourly Offset to try to avoid rules running at the same time
         Integer hourlyOffset = 0;
+        if (mergeMetric.Name == 'Account_Address') {
+            hourlyOffset = 1;
+        }
+        else if (mergeMetric.Name == 'Account_Website') {
+            hourlyOffset = 2;
+        }
+        else if (mergeMetric.Name == 'Contact_NameDOB') {
+            hourlyOffset = 0;
+        }
+        else if (mergeMetric.Name == 'Contact_NameEmail') {
+            hourlyOffset = 3;
+        }
         Boolean hourlySyncOnly = false;
 
         if (mergeMetric.AutoMerge_Percentage__c == null || mergeMetric.AutoMerge_Percentage__c <= 0.0 || ((mergeMetric.Total_Unassigned_Accounts__c + mergeMetric.Total_Unassigned_Contacts__c) < 100)) {
@@ -460,10 +473,10 @@ global with sharing class C501_MassMerge_SharedCode {
         for (CronJobDetail jobDetail :cronJobDetails) {
 
             // Check for hourly trigger
-            if (jobDetail.Name.equals(mergeMetric.Name + '_' + String.valueOf(hourlyOffset))) {
+            if (jobDetail.Name.equals(mergeMetric.Name + '_0')) {
                 foundHourlySyncTrigger = true;
             }
-            else if (jobDetail.Name.startsWith(mergeMetric.Name)) {
+            else if (jobDetail.Name.startsWith(mergeMetric.Name + '_')) {
 
                 foundAdditionalSyncTriggers = true;
                 if (hourlySyncOnly) {
@@ -484,9 +497,11 @@ global with sharing class C501_MassMerge_SharedCode {
             // Check scheduled jobs limits - online thread mentioned 100
             // Salesforce only supports hourly not minute interval format 0 0/5 00 for s m h not supported which is every 5 minutes
             String cronExpression, mergeMetricNameSchedule;
-            for (integer i = hourlyOffset; i <= 55; i += 5) {
+
+            Integer triggerNumber = 0;
+            for (integer i = hourlyOffset; i <= 59; i += 5) {
                 cronExpression = '0 ' + String.valueOf(i) + ' * * * ?';
-                mergeMetricNameSchedule = mergeMetric.Name + '_' + String.valueOf(i);
+                mergeMetricNameSchedule = mergeMetric.Name + '_' + String.valueOf(triggerNumber++);
 
                 // Check if Hourly Sync Trigger already created
                 if (foundHourlySyncTrigger && i == hourlyOffset) {
