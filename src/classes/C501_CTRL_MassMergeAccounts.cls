@@ -347,8 +347,8 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
         strSaveResults = null;
         
         try {
-            Map<String, List<Account>> listAccountsMerge = new Map<String, List<Account>>();
             Map<String, C501_Account_Merge__c> listAccountsMergeUpdate = new Map<String, C501_Account_Merge__c>();
+            Map<String, C501_Account_Merge__c> listAccountsMerges = new Map<String, C501_Account_Merge__c>();
 
             System.debug('***** C501_CTRL_MassMergeAccounts::SaveAccounts listAccounts: ' + String.valueOf(listAccounts));
 
@@ -361,22 +361,25 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
                     // we couldn't reliably mark dirty records in all scenarios,
                     // so we've decided it is better to always update all records.
                     //if (setAccountsIdDirty.contains(account.Id)) 
-                    if (listAccountsMerge.containsKey(account.C501_Merge_Metric_Name__c)) {
-                        List<Account> accounts = listAccountsMerge.remove(account.C501_Merge_Metric_Name__c);
-                        accounts.add(account);
-                        listAccountsMerge.put(account.C501_Merge_Metric_Name__c, accounts);
-                    }
-                    else {
-                        listAccountsMerge.put(account.C501_Merge_Metric_Name__c, new List<Account> { account });
-                    }
-
-                    System.debug('***** C501_CTRL_MassMergeAccounts::SaveAccounts Update Merge Action - account: ' + String.valueOf(account)
-                        + ' listAccountsMerge Keys: ' + String.valueOf(listAccountsMerge.keySet()));
 
                     listAccountsMergeUpdate.put(account.C501_Merge_Id__c, new C501_Account_Merge__c(
                         Id = account.C501_Merge_Id__c,
                         Merge_Action__c = account.C501_Merge_Action__c
                     ));
+
+                    if (!listAccountsMerges.containsKey(account.C501_Merge_Id__c)) {
+                        listAccountsMerges.put(account.C501_Merge_Id__c, new C501_Account_Merge__c(
+                            Id = account.C501_Merge_Id__c,
+                            Account__c = account.Id,
+                            Merge_Action__c = account.C501_Merge_Action__c,
+                            Merge_Confidence__c = account.C501_Merge_Confidence__c
+                        ));
+                    }
+                    else {
+                        C501_Account_Merge__c mergeAccount = listAccountsMerges.remove(account.C501_Merge_Id__c);
+                        mergeAccount.Merge_Target_Account__c = account.Id;
+                        listAccountsMerges.put(account.C501_Merge_Id__c, mergeAccount);
+                    }
                 }
 
                 if (account.Id != null && account.C501_Merge_Action__c == 'Ignore') {
@@ -393,35 +396,13 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
 
             Integer recordsUpdated = listAccountsMergeUpdate.values().size() * 2;
             
-            if (!listAccountsMergeUpdate.values().isEmpty()) {
+            if (!listAccountsMergeUpdate.values().IsEmpty()) {
                 update listAccountsMergeUpdate.values();
             }
 
+            c501MassMerge_SharedCode.ProcessAccountMerges(listAccountsMerges.values(), true);
 
-            for (List<Account> accounts :listAccountsMerge.values()) {
-                if (accounts.size() >= 2) {
-
-                    // Investigation Needed: Scheduling in batch the merge throws an exception in NPSP code
-                    List<String> accountsMergeIds = new List<String>();
-                    for (Account account :accounts) {
-                        accountsMergeIds.add(String.valueOf(account.Id));
-                    }
-
-                    // Schedule Batch Job in Flex Queue (can schedule up to 100 jobs)
-                    C501_MassMerge_Batch batchMerge = new C501_MassMerge_Batch();
-                    batchMerge.query = 'SELECT Id FROM Account WHERE Id in (\'' + String.join(accountsMergeIds, '\',\'') + '\') ORDER BY CreatedDate DESC';
-                    Database.executeBatch(batchMerge);
-                    batchMerge.accountMerge = true;
-
-//                    c501MassMerge_SharedCode.AccountsMerge(new Account(Id = accounts[0].Id), new List<Account> { new Account( Id = accounts[1].Id) });
-
-                    // Limit to 1 account merge because an account merge with 5 contact merges is at SOQL limit of 100 - DML Merge must trigger a bunch of other SOQL calls (e.g., triggers).
-                    //      If more than 5 contacts then will probably throw exception and won't finish other contact merges.  Need a new rule Contact only merges that looks at contcats within a single account to catch these unmerged contacts
-//                    break;
-                }
-            }
-
-            strSaveResults = recordsUpdated + ' ' + Label.labelMassMergeSaveSuccess;
+            strSaveResults = (listAccountsMerges.values().size() * 2) + ' ' + Label.labelMassMergeSaveSuccess;
             ApexPages.addMessage(new ApexPages.message(ApexPages.Severity.CONFIRM, strSaveResults));
 
             // successful save, so clear out dirty list

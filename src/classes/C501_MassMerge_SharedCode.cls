@@ -73,7 +73,7 @@ global with sharing class C501_MassMerge_SharedCode {
                 OR Account__c in :accountIds
                 OR Merge_Target_Account__c in :accountIds];
 
-        if (!deleteMerges.isEmpty()) {
+        if (!deleteMerges.IsEmpty()) {
             delete deleteMerges;
         }
     }
@@ -111,7 +111,7 @@ global with sharing class C501_MassMerge_SharedCode {
                 OR Contact__c in :contactIds
                 OR Merge_Target_Contact__c in :contactIds];
 
-        if (!deleteMerges.isEmpty()) {
+        if (!deleteMerges.IsEmpty()) {
             delete deleteMerges;
         }
     }
@@ -246,32 +246,50 @@ global with sharing class C501_MassMerge_SharedCode {
         //
 		// Perform all DML (Data Manipulation Language) calls (insert, update, merge, delete, restore) outside of loop to avoid Salesforce Governor Limits: https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/apex_gov_limits.htm
         //
-		if (!mergeAccounts.isEmpty()) {
+		if (!mergeAccounts.IsEmpty()) {
 			Database.SaveResult[] insertResults = Database.insert(mergeAccounts, false);
 
             for (Database.SaveResult result : insertResults) {
-                System.debug('***** C501_MassMerge_SharedCode::ProcessMergeCandidates Merge Results: ' + String.valueOf(result));
-                // TBD - Look for anything other than Duplicate Id Error on Unique_Id__c which is expected
+                if (!result.isSuccess()) {
+                    /*
+                    if (result.getMessage() == 'duplicate value found') {
+                        continue;
+                    }
+                    */
+
+                    System.debug('***** C501_MassMerge_SharedCode::ProcessMergeCandidates Merge Results: ' + String.valueOf(result));
+                }
             }
 		}
 
         // Delete Merge Candidates that do not have valid accounts
         List<C501_Account_Merge__c> invalidMerges = new List<C501_Account_Merge__c>();
+        List<C501_Account_Merge__c> pendingMerges = new List<C501_Account_Merge__c>();
         for (C501_Account_Merge__c accountMerge :[
-            SELECT Id, Account__c, Merge_Target_Account__c
+            SELECT  Id, Account__c, Merge_Target_Account__c, Merge_Confidence__c, Merge_Action__c
             FROM C501_Account_Merge__c
             WHERE Merge_Metric__r.Name = :mergeMetric.Name
-                AND (Account__c = null OR Merge_Target_Account__c = null)]) {
+                AND (Account__c = null OR Merge_Target_Account__c = null or Merge_Action__c = 'Merge')]) {
                 
-                invalidMerges.add(accountMerge);
+                if (accountMerge.Account__c == null || accountMerge.Merge_Target_Account__c == null) {
+                    invalidMerges.add(accountMerge);
+                }
+                else if (accountMerge.Merge_Action__c == 'Merge') {
+                    pendingMerges.add(accountMerge);
+                }
             }
 
         if (!invalidMerges.IsEmpty()) {
             delete invalidMerges;
         }
 
+        // Check for batch queued merges
+        if (!pendingMerges.IsEmpty()) {
+            System.debug('***** C501_MassMerge_SharedCode::ProcessMergeCandidates Process pending merge candidates pendingMerges: ' + String.valueOf(pendingMerges));
+            ProcessAccountMerges(pendingMerges, false);
+        }
+
         // Check if AutoMerge Enabled
-        System.debug('***** C501_MassMerge_SharedCode::ProcessMergeCandidates Check AutoMerge AutoMerge_Percentage__c: ' + mergeMetric.AutoMerge_Percentage__c);
         if (mergeMetric.AutoMerge_Percentage__c == null || mergeMetric.AutoMerge_Percentage__c <= 0.0) {
             return;
         }
@@ -279,70 +297,76 @@ global with sharing class C501_MassMerge_SharedCode {
         List<String> automergeObjects = mergeMetric.AutoMerge_Objects__c.split(';');
         if (automergeObjects.contains('Account')) {
 
-            System.debug('***** C501_MassMerge_SharedCode::ProcessMergeCandidates Process Merge Object: Account on Rule: ' + mergeMetric.Name);
-
-            // 100 is the max merge job that can be sent to Flex Queue
-            Integer mergeAttemptsRemaining = 99, mergeSuccesses = 0;
-
-            Set<Id> accountsProcessed = new Set<Id>();
-            for (C501_Account_Merge__c mergeCandidate : [
+            List<C501_Account_Merge__c> pendingAutoMerges = [
                 SELECT Id, Account__c, Merge_Target_Account__c, Merge_Confidence__c
                 FROM C501_Account_Merge__c
                 WHERE Merge_Metric__r.Name = :mergeMetric.Name 
                     AND Merge_Confidence__c <= :mergeMetric.AutoMerge_Percentage__c
                     AND Merge_Action__c <> 'Ignore'
-                LIMIT 100]) {
+                LIMIT 100];
 
-                // Check whether Account or Target Account Id merge already attempted
-                if (accountsProcessed.contains(mergeCandidate.Account__c) || accountsProcessed.contains(mergeCandidate.Merge_Target_Account__c)) {
-                    continue;
-                }
+            if (!pendingAutoMerges.IsEmpty()) {
+                System.debug('***** C501_MassMerge_SharedCode::ProcessMergeCandidates Process auto merge candidates pendingAutoMerges: ' + String.valueOf(pendingAutoMerges));
+                ProcessAccountMerges(pendingAutoMerges, false);
+            }
+        }
+    }
 
-                // Check Account and Target Account same Id
-                if (mergeCandidate.Account__c == mergeCandidate.Merge_Target_Account__c) {
-                    continue;
-                }
+    global void ProcessAccountMerges(List<C501_Account_Merge__c> accountMerges, Boolean batchMerge)
+    {
+        // 100 is the max merge job that can be sent to Flex Queue
+        Integer mergeAttemptsRemaining = 99;
 
-                accountsProcessed.add(mergeCandidate.Account__c);
-                accountsProcessed.add(mergeCandidate.Merge_Target_Account__c);
+        Set<Id> accountsProcessed = new Set<Id>();
+        for (C501_Account_Merge__c mergeCandidate : accountMerges) {
 
-                System.debug('***** C501_MassMerge_SharedCode::ProcessMergeCandidates AutoMerge ' + mergeMetric.Name + ' - Account__c: ' + mergeCandidate.Account__c + ' Merge_Target_Account__c: ' + mergeCandidate.Merge_Target_Account__c);
+            // Check whether Account or Target Account Id merge already attempted
+            if (accountsProcessed.contains(mergeCandidate.Account__c) || accountsProcessed.contains(mergeCandidate.Merge_Target_Account__c)) {
+                continue;
+            }
 
-                if (mergeAttemptsRemaining-- <= 0) {
-                    break;
-                }
+            // Check Account and Target Account same Id
+            if (mergeCandidate.Account__c == mergeCandidate.Merge_Target_Account__c) {
+                continue;
+            }
 
-                // Performance - Should be putting this on a Batch call but there is an exception thrown in NPSP code when this call is batched - look at C501_CTRL_MassMergeAccounts::SaveAccounts for details
-                //
+            // Check Account and Target Account valid
+            if (mergeCandidate.Account__c == null || mergeCandidate.Merge_Target_Account__c == null) {
+                continue;
+            }
+
+            accountsProcessed.add(mergeCandidate.Account__c);
+            accountsProcessed.add(mergeCandidate.Merge_Target_Account__c);
+
+            if (mergeAttemptsRemaining-- <= 0) {
+                break;
+            }
+
+            if (batchMerge) {
+                System.debug('***** C501_MassMerge_SharedCode::ProcessAccountMerges Batch Schedule Merge mergeCandidate: ' + String.valueOf(mergeCandidate));
+
+                // Schedule Batch Job in Flex Queue (can schedule up to 100 jobs)
+                List<String> accountsMergeIds = new List<String> { mergeCandidate.Account__c, mergeCandidate.Merge_Target_Account__c };
+                C501_MassMerge_Batch batchMergeRequest = new C501_MassMerge_Batch();
+                batchMergeRequest.query = 'SELECT Id FROM Account WHERE Id in (\'' + String.join(accountsMergeIds, '\',\'') + '\') ORDER BY CreatedDate DESC';
+                batchMergeRequest.accountMerge = true;
+                Database.executeBatch(batchMergeRequest);
+            }
+            else {
+                System.debug('***** C501_MassMerge_SharedCode::ProcessAccountMerges Schedule Merge mergeCandidate: ' + String.valueOf(mergeCandidate));
+
                 AccountsMerge( 
                     new Account(
-                        Id = mergeCandidate.Account__c,
-                        C501_Merge_Action__c = 'Merge',
-                        C501_Merge_Confidence__c = mergeCandidate.Merge_Confidence__c,
-                        C501_Merge_Target__c = mergeCandidate.Merge_Target_Account__c,
-                        C501_Merge_Metric_Name__c = mergeMetric.Name,
-                        C501_Merge_Account__c = mergeCandidate.Id
+                        Id = mergeCandidate.Account__c
                     ),
                     new List<Account> { new Account(
-                        Id = mergeCandidate.Merge_Target_Account__c,
-                        C501_Merge_Action__c = 'Merge',
-                        C501_Merge_Confidence__c = mergeCandidate.Merge_Confidence__c,
-                        C501_Merge_Target__c = mergeCandidate.Merge_Target_Account__c,
-                        C501_Merge_Metric_Name__c = mergeMetric.Name,
-                        C501_Merge_Account__c = mergeCandidate.Id
+                        Id = mergeCandidate.Merge_Target_Account__c
                     )
                 } );
-
-                mergeSuccesses++;
 
                 // Limit to 1 account merge because an account merge with 5 contact merges is at SOQL limit of 100 - DML Merge must trigger a bunch of other SOQL calls (e.g., triggers).
                 //      If more than 5 contacts then will probably throw exception and won't finish other contact merges.  Need a new rule Contact only merges that looks at contcats within a single account to catch these unmerged contacts
                 break;
-            }
-
-            if (mergeSuccesses > 0) {
-                mergeMetric.Total_Merge_Accounts__c = (mergeMetric.Total_Merge_Accounts__c == null) ? mergeSuccesses : (mergeMetric.Total_Merge_Accounts__c + mergeSuccesses);
-                update mergeMetric;
             }
         }
     }
@@ -352,7 +376,7 @@ global with sharing class C501_MassMerge_SharedCode {
         //
 		// Perform all DML (Data Manipulation Language) calls (insert, update, merge, delete, restore) outside of loop to avoid Salesforce Governor Limits: https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/apex_gov_limits.htm
         //
-		if (!mergeContacts.isEmpty()) {
+		if (!mergeContacts.IsEmpty()) {
 			Database.SaveResult[] insertResults = Database.insert(mergeContacts, false);
 
             for (Database.SaveResult result : insertResults) {

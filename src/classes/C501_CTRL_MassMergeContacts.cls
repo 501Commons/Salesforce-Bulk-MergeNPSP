@@ -394,7 +394,7 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
 
             Integer recordsUpdated = listContactsMergeUpdate.values().size() * 2;
             
-            if (!listContactsMergeUpdate.values().isEmpty()) {
+            if (!listContactsMergeUpdate.values().IsEmpty()) {
                 System.debug('***** C501_CTRL_MassMergeContacts::SaveContacts Update Merge Action listContactsMergeUpdate: ' + String.valueOf(listContactsMergeUpdate.values()));
                 update listContactsMergeUpdate.values();
             }

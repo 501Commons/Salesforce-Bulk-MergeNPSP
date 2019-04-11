@@ -30,7 +30,7 @@ global class C501_MM_Rule_Contact_NameEmail implements Schedulable {
                 AutoMerge_Percentage__c, AutoMerge_Objects__c
             FROM C501_Merge_Metric__c
             WHERE Name = :mergeMetricName];
-        if (mergeMetrics.isEmpty()) {
+        if (mergeMetrics.IsEmpty()) {
             mergeMetrics.add( new C501_Merge_Metric__c (
                 Name = mergeMetricName,
                 Confidence__c = 90.0,
@@ -77,7 +77,7 @@ global class C501_MM_Rule_Contact_NameEmail implements Schedulable {
             maxId = result.get('MaxAccountId').toString();
             minId = result.get('MinAccountId').toString();
 
-            if (String.isEmpty(maxId) || String.isEmpty(minId) || maxId == minId) {
+            if (String.IsEmpty(maxId) || String.IsEmpty(minId) || maxId == minId) {
                 continue;
             }
 
@@ -118,7 +118,7 @@ global class C501_MM_Rule_Contact_NameEmail implements Schedulable {
             maxId = result.get('MaxContactId').toString();
             minId = result.get('MinContactId').toString();
 
-            if (String.isEmpty(maxId) || String.isEmpty(minId) || maxId == minId) {
+            if (String.IsEmpty(maxId) || String.IsEmpty(minId) || maxId == minId) {
                 continue;
             }
 
