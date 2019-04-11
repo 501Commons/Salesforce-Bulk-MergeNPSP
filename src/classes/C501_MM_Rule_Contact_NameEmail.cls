@@ -63,7 +63,6 @@ global class C501_MM_Rule_Contact_NameEmail implements Schedulable {
             WHERE
                 FirstName <> null
                 and Email <> null
-                and Gender__c <> null
             GROUP BY
                 FirstName,
                 LastName,
@@ -101,12 +100,10 @@ global class C501_MM_Rule_Contact_NameEmail implements Schedulable {
                 Count(Id),
                 MAX(Id)MaxContactId,
                 MIN(Id)MinContactId
-            FROM
-                Contact
+            FROM Contact
             WHERE
                 FirstName <> null
                 and Email <> null
-                and Gender__c <> null
             GROUP BY
                 AccountId,
                 FirstName,

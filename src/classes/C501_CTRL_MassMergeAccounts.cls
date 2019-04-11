@@ -62,7 +62,10 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
 
         // Required fields
         listStrFields.add('Id');
+        listStrFields.add('C501_Merge_Id__c');
         listStrFields.add('C501_Merge_Action__c');
+        listStrFields.add('C501_Merge_Account__c');
+        listStrFields.add('C501_Merge_Target__c');
     }   
     
     global list<SelectOption> listSOAccounts {
@@ -188,6 +191,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
                     accountsMerge.put(
                         accountMerge.Account__c,
                         new C501_Account_Merge__c(
+                            Id = accountMerge.Id,
                             Merge_Action__c = accountMerge.Merge_Action__c,
                             Merge_Confidence__c = null,
                             Account__c = accountMerge.Account__c,
@@ -199,6 +203,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
                     accountsMerge.put(
                         accountMerge.Merge_Target_Account__c,
                         new C501_Account_Merge__c(
+                            Id = accountMerge.Id,
                             Merge_Action__c = accountMerge.Merge_Action__c,
                             Merge_Confidence__c = accountMerge.Merge_Confidence__c,
                             Account__c = accountMerge.Account__c,
@@ -245,6 +250,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
                     accountsMerge.put(
                         accountMerge.Account__c,
                         new C501_Account_Merge__c(
+                            Id = accountMerge.Id,
                             Merge_Action__c = accountMerge.Merge_Action__c,
                             Merge_Confidence__c = null,
                             Account__c = accountMerge.Account__c,
@@ -256,6 +262,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
                     accountsMerge.put(
                         accountMerge.Merge_Target_Account__c,
                         new C501_Account_Merge__c(
+                            Id = accountMerge.Id,
                             Merge_Action__c = accountMerge.Merge_Action__c,
                             Merge_Confidence__c = accountMerge.Merge_Confidence__c,
                             Account__c = accountMerge.Account__c,
@@ -282,6 +289,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
         for ( Account account :listAccounts ) {
             if (accountsMerge.containsKey(account.Id)) {
                 C501_Account_Merge__c mergeAccount = accountsMerge.get(account.Id);
+                account.C501_Merge_Id__c = mergeAccount.Id;
                 account.C501_Merge_Action__c = mergeAccount.Merge_Action__c;
                 account.C501_Merge_Confidence__c = mergeAccount.Merge_Confidence__c;
                 account.C501_Merge_Account__c = mergeAccount.Account__c;
@@ -340,7 +348,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
         
         try {
             Map<String, List<Account>> listAccountsMerge = new Map<String, List<Account>>();
-            List<C501_Account_Merge__c> listAccountsMergeIgnore = new List<C501_Account_Merge__c>();
+            Map<String, C501_Account_Merge__c> listAccountsMergeUpdate = new Map<String, C501_Account_Merge__c>();
 
             System.debug('***** C501_CTRL_MassMergeAccounts::SaveAccounts listAccounts: ' + String.valueOf(listAccounts));
 
@@ -364,6 +372,11 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
 
                     System.debug('***** C501_CTRL_MassMergeAccounts::SaveAccounts Update Merge Action - account: ' + String.valueOf(account)
                         + ' listAccountsMerge Keys: ' + String.valueOf(listAccountsMerge.keySet()));
+
+                    listAccountsMergeUpdate.put(account.C501_Merge_Id__c, new C501_Account_Merge__c(
+                        Id = account.C501_Merge_Id__c,
+                        Merge_Action__c = account.C501_Merge_Action__c
+                    ));
                 }
 
                 if (account.Id != null && account.C501_Merge_Action__c == 'Ignore') {
@@ -371,19 +384,17 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
                     // we couldn't reliably mark dirty records in all scenarios,
                     // so we've decided it is better to always update all records.
                     //if (setAccountsIdDirty.contains(account.Id)) 
-                    listAccountsMergeIgnore.add(new C501_Account_Merge__c(
-                        Id = account.C501_Merge_Account__c,
-                        Account__c = account.Id,
-                        Merge_Target_Account__c = account.C501_Merge_Target__c,
+                    listAccountsMergeUpdate.put(account.C501_Merge_Id__c, new C501_Account_Merge__c(
+                        Id = account.C501_Merge_Id__c,
                         Merge_Action__c = account.C501_Merge_Action__c
                     ));
                 }
             }
 
-            Integer recordsUpdated = listAccountsMergeIgnore.size() + listAccountsMerge.size();
+            Integer recordsUpdated = listAccountsMergeUpdate.values().size() * 2;
             
-            if (!listAccountsMergeIgnore.isEmpty()) {
-                update listAccountsMergeIgnore;
+            if (!listAccountsMergeUpdate.values().isEmpty()) {
+                update listAccountsMergeUpdate.values();
             }
 
 
@@ -391,7 +402,6 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
                 if (accounts.size() >= 2) {
 
                     // Investigation Needed: Scheduling in batch the merge throws an exception in NPSP code
-/*
                     List<String> accountsMergeIds = new List<String>();
                     for (Account account :accounts) {
                         accountsMergeIds.add(String.valueOf(account.Id));
@@ -401,12 +411,13 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
                     C501_MassMerge_Batch batchMerge = new C501_MassMerge_Batch();
                     batchMerge.query = 'SELECT Id FROM Account WHERE Id in (\'' + String.join(accountsMergeIds, '\',\'') + '\') ORDER BY CreatedDate DESC';
                     Database.executeBatch(batchMerge);
-*/
-                    c501MassMerge_SharedCode.AccountsMerge(new Account(Id = accounts[0].Id), new List<Account> { new Account( Id = accounts[1].Id) });
+                    batchMerge.accountMerge = true;
+
+//                    c501MassMerge_SharedCode.AccountsMerge(new Account(Id = accounts[0].Id), new List<Account> { new Account( Id = accounts[1].Id) });
 
                     // Limit to 1 account merge because an account merge with 5 contact merges is at SOQL limit of 100 - DML Merge must trigger a bunch of other SOQL calls (e.g., triggers).
                     //      If more than 5 contacts then will probably throw exception and won't finish other contact merges.  Need a new rule Contact only merges that looks at contcats within a single account to catch these unmerged contacts
-                    break;
+//                    break;
                 }
             }
 

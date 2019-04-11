@@ -98,18 +98,18 @@ global with sharing class C501_MassMerge_SharedCode {
             }
         }
 
-        Set<Id> accountIds = new Set<Id> { masterContact.AccountId };
+        Set<Id> contactIds = new Set<Id> { masterContact.Id };
         for (Contact duplicateContact :duplicateContacts) {
-            accountIds.add(duplicateContact.AccountId);
+            contactIds.add(duplicateContact.Id);
         }
 
-        List<C501_Account_Merge__c> deleteMerges = [
+        List<C501_Contact_Merge__c> deleteMerges = [
             SELECT Id
-            FROM C501_Account_Merge__c
-            WHERE Account__c = null
-                OR Merge_Target_Account__c = null
-                OR Account__c in :accountIds
-                OR Merge_Target_Account__c in :accountIds];
+            FROM C501_Contact_Merge__c
+            WHERE Contact__c = null
+                OR Merge_Target_Contact__c = null
+                OR Contact__c in :contactIds
+                OR Merge_Target_Contact__c in :contactIds];
 
         if (!deleteMerges.isEmpty()) {
             delete deleteMerges;
@@ -134,6 +134,7 @@ global with sharing class C501_MassMerge_SharedCode {
                 WHERE Merge_Confidence__c >= :fromMergeConfidence
                     and Merge_Confidence__c <= :toMergeConfidence
                     and Merge_Action__c <> 'Ignore' 
+                    and Merge_Action__c <> 'Merge' 
                 GROUP BY Account__c, Account__r.Name
                 LIMIT 999]) {
                     listSO.add(new SelectOption(result.get('Account__c').toString(),
@@ -147,6 +148,7 @@ global with sharing class C501_MassMerge_SharedCode {
                 WHERE Merge_Confidence__c >= :fromMergeConfidence
                     and Merge_Confidence__c <= :toMergeConfidence
                     and Merge_Action__c <> 'Ignore' 
+                    and Merge_Action__c <> 'Merge' 
                     and Merge_Metric__r.Name = :mergeRule
                 GROUP BY Account__c, Account__r.Name
                 LIMIT 999]) {
@@ -178,6 +180,7 @@ global with sharing class C501_MassMerge_SharedCode {
                 WHERE Merge_Confidence__c >= :fromMergeConfidence
                     and Merge_Confidence__c <= :toMergeConfidence
                     and Merge_Action__c <> 'Ignore' 
+                    and Merge_Action__c <> 'Merge' 
                 GROUP BY Contact__c, Contact__r.Name
                 LIMIT 999]) {
                     listSO.add(new SelectOption(result.get('Contact__c').toString(),
@@ -191,6 +194,7 @@ global with sharing class C501_MassMerge_SharedCode {
                 WHERE Merge_Confidence__c >= :fromMergeConfidence
                     and Merge_Confidence__c <= :toMergeConfidence
                     and Merge_Action__c <> 'Ignore' 
+                    and Merge_Action__c <> 'Merge' 
                     and Merge_Metric__r.Name = :mergeRule
                 GROUP BY Contact__c, Contact__r.Name
                 LIMIT 999]) {

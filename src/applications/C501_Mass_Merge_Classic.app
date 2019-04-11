@@ -8,6 +8,6 @@
     <tabs>C501_Merge_Metric__c</tabs>
     <tabs>C501_Account_Merge__c</tabs>
     <tabs>C501_Contact_Merge__c</tabs>
-    <tabs>standard-Contact</tabs>
     <tabs>standard-Account</tabs>
+    <tabs>standard-Contact</tabs>
 </CustomApplication>

@@ -31,6 +31,8 @@
 global class C501_MassMerge_Batch implements Database.Batchable<sObject> { 
 
   global String query;
+  global Boolean accountMerge = false;
+  global Boolean contactMerge = false;
 
   global Database.querylocator start(Database.BatchableContext BC) {
     System.debug('***** C501_MassMerge_Batch::start - query: ' + query);
@@ -39,21 +41,40 @@ global class C501_MassMerge_Batch implements Database.Batchable<sObject> {
 
   global void execute(Database.BatchableContext info, List<sObject> scope) {
     
-    List<Account> accountDuplicates = new List<Account>();
-    Account masterAccount = null;
-    for (sObject accountObject :scope) {
-      if (masterAccount == null) {
-        masterAccount = (Account)accountObject;
+    if (accountMerge) {
+      List<Account> accountDuplicates = new List<Account>();
+      Account masterAccount = null;
+      for (sObject accountObject :scope) {
+        if (masterAccount == null) {
+          masterAccount = (Account)accountObject;
+        }
+        else {
+          accountDuplicates.add((Account)accountObject);
+        }
       }
-      else {
-        accountDuplicates.add((Account)accountObject);
-      }
-    }
 
-    C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
-    System.debug('***** C501_MassMerge_Batch::execute - masterAccount: ' + String.valueOf(masterAccount));
-    System.debug('***** C501_MassMerge_Batch::execute - accountDuplicates: ' + String.valueOf(accountDuplicates));
-    c501MassMerge_SharedCode.AccountsMerge(masterAccount, accountDuplicates);
+      C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
+      System.debug('***** C501_MassMerge_Batch::execute - masterAccount: ' + String.valueOf(masterAccount));
+      System.debug('***** C501_MassMerge_Batch::execute - accountDuplicates: ' + String.valueOf(accountDuplicates));
+      c501MassMerge_SharedCode.AccountsMerge(masterAccount, accountDuplicates);
+    }
+    else if (contactMerge) {
+      List<Contact> contactDuplicates = new List<Contact>();
+      Contact masterContact = null;
+      for (sObject contactObject :scope) {
+        if (masterContact == null) {
+          masterContact = (Contact)contactObject;
+        }
+        else {
+          contactDuplicates.add((Contact)contactObject);
+        }
+      }
+
+      C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
+      System.debug('***** C501_MassMerge_Batch::execute - masterContact: ' + String.valueOf(masterContact));
+      System.debug('***** C501_MassMerge_Batch::execute - contactDuplicates: ' + String.valueOf(contactDuplicates));
+      c501MassMerge_SharedCode.ContactsMerge(masterContact, contactDuplicates);
+    }
   }
 
   global void finish(Database.BatchableContext info) {

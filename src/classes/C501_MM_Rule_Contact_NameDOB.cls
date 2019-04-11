@@ -62,7 +62,6 @@ global class C501_MM_Rule_Contact_NameDOB implements Schedulable {
             WHERE
                 FirstName <> null
                 and Birthdate <> null
-                and Gender__c <> null
             GROUP BY FirstName,
                 LastName,
                 Birthdate,
@@ -102,7 +101,6 @@ global class C501_MM_Rule_Contact_NameDOB implements Schedulable {
             FROM Contact
             WHERE FirstName <> null
                 and Birthdate <> null
-                and Gender__c <> null
             GROUP BY 
                 AccountId,
                 FirstName,
