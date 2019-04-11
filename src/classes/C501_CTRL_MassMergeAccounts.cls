@@ -394,13 +394,11 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
                 }
             }
 
-            Integer recordsUpdated = listAccountsMergeUpdate.values().size() * 2;
-            
             if (!listAccountsMergeUpdate.values().IsEmpty()) {
                 update listAccountsMergeUpdate.values();
             }
 
-            c501MassMerge_SharedCode.ProcessAccountMerges(listAccountsMerges.values(), true);
+            c501MassMerge_SharedCode.ProcessAccountMerges(listAccountsMerges.values(), false);
 
             strSaveResults = (listAccountsMerges.values().size() * 2) + ' ' + Label.labelMassMergeSaveSuccess;
             ApexPages.addMessage(new ApexPages.message(ApexPages.Severity.CONFIRM, strSaveResults));

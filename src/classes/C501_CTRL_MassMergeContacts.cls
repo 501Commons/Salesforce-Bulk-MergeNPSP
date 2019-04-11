@@ -348,8 +348,8 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
         strSaveResults = null;
         
         try {
-            Map<String, List<Contact>> listContactsMerge = new Map<String, List<Contact>>();
             Map<String, C501_Contact_Merge__c> listContactsMergeUpdate = new Map<String, C501_Contact_Merge__c>();
+            Map<String, C501_Contact_Merge__c> listContactsMerges = new Map<String, C501_Contact_Merge__c>();
 
             System.debug('***** C501_CTRL_MassMergeContacts::SaveContacts listContacts: ' + String.valueOf(listContacts));
 
@@ -362,22 +362,25 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
                     // we couldn't reliably mark dirty records in all scenarios,
                     // so we've decided it is better to always update all records.
                     //if (setContactsIdDirty.contains(contact.Id)) 
-                    if (listContactsMerge.containsKey(contact.C501_Merge_Metric_Name__c)) {
-                        List<Contact> contacts = listContactsMerge.remove(contact.C501_Merge_Metric_Name__c);
-                        contacts.add(contact);
-                        listContactsMerge.put(contact.C501_Merge_Metric_Name__c, Contacts);
-                    }
-                    else {
-                        listContactsMerge.put(contact.C501_Merge_Metric_Name__c, new List<Contact> { contact });
-                    }
-
-                    System.debug('***** C501_CTRL_MassMergeContacts::SaveContacts Update Merge Action - Contact: ' + String.valueOf(contact)
-                        + ' listContactsMerge Keys: ' + String.valueOf(listContactsMerge.keySet()));
 
                     listContactsMergeUpdate.put(contact.C501_Merge_Id__c, new C501_Contact_Merge__c(
                         Id = contact.C501_Merge_Id__c,
                         Merge_Action__c = contact.C501_Merge_Action__c
                     ));
+
+                    if (!listContactsMerges.containsKey(contact.C501_Merge_Id__c)) {
+                        listContactsMerges.put(contact.C501_Merge_Id__c, new C501_Contact_Merge__c(
+                            Id = contact.C501_Merge_Id__c,
+                            Contact__c = contact.Id,
+                            Merge_Action__c = contact.C501_Merge_Action__c,
+                            Merge_Confidence__c = contact.C501_Merge_Confidence__c
+                        ));
+                    }
+                    else {
+                        C501_Contact_Merge__c mergeContact = listContactsMerges.remove(contact.C501_Merge_Id__c);
+                        mergeContact.Merge_Target_Contact__c = contact.Id;
+                        listContactsMerges.put(contact.C501_Merge_Id__c, mergeContact);
+                    }
                 }
 
                 if (contact.Id != null && contact.C501_Merge_Action__c == 'Ignore') {
@@ -392,39 +395,13 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
                 }
             }
 
-            Integer recordsUpdated = listContactsMergeUpdate.values().size() * 2;
-            
             if (!listContactsMergeUpdate.values().IsEmpty()) {
-                System.debug('***** C501_CTRL_MassMergeContacts::SaveContacts Update Merge Action listContactsMergeUpdate: ' + String.valueOf(listContactsMergeUpdate.values()));
                 update listContactsMergeUpdate.values();
             }
 
+            c501MassMerge_SharedCode.ProcessContactMerges(listContactsMerges.values(), true);
 
-            for (List<Contact> Contacts :listContactsMerge.values()) {
-                if (contacts.size() >= 2) {
-
-                    // Investigation Needed: Scheduling in batch the merge throws an exception in NPSP code
-
-                    List<String> contactsMergeIds = new List<String>();
-                    for (Contact Contact :Contacts) {
-                        contactsMergeIds.add(String.valueOf(contact.Id));
-                    }
-
-                    // Schedule Batch Job in Flex Queue (can schedule up to 100 jobs)
-                    C501_MassMerge_Batch batchMerge = new C501_MassMerge_Batch();
-                    batchMerge.query = 'SELECT Id FROM Contact WHERE Id in (\'' + String.join(contactsMergeIds, '\',\'') + '\') ORDER BY CreatedDate DESC';
-                    batchMerge.contactMerge = true;
-                    Database.executeBatch(batchMerge);
-
-//                    c501MassMerge_SharedCode.contactsMerge(new Contact(Id = Contacts[0].Id), new List<Contact> { new Contact( Id = Contacts[1].Id) });
-
-                    // Limit to 1 Contact merge because an Contact merge with 5 contact merges is at SOQL limit of 100 - DML Merge must trigger a bunch of other SOQL calls (e.g., triggers).
-                    //      If more than 5 contacts then will probably throw exception and won't finish other contact merges.  Need a new rule Contact only merges that looks at contcats within a single Contact to catch these unmerged contacts
-//                    break;
-                }
-            }
-
-            strSaveResults = recordsUpdated + ' ' + Label.labelMassMergeSaveSuccess;
+            strSaveResults = (listContactsMerges.values().size() * 2) + ' ' + Label.labelMassMergeSaveSuccess;
             ApexPages.addMessage(new ApexPages.message(ApexPages.Severity.CONFIRM, strSaveResults));
 
             // successful save, so clear out dirty list
