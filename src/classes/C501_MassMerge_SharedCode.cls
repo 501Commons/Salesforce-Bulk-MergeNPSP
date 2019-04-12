@@ -335,10 +335,10 @@ global with sharing class C501_MassMerge_SharedCode {
             accountIds.add(mergeCandidate.Account__c);
             accountIds.add(mergeCandidate.Merge_Target_Account__c);
         }
-        Set<Id> accountIdsDeleted = new Set<Id>();
+        Set<Id> accountIdsValid = new Set<Id>();
         for (Account account : [
-            SELECT Id FROM Account Where IsDeleted = true and Id in :accountIds]) {
-                accountIdsDeleted.add(account.Id);
+            SELECT Id FROM Account Where IsDeleted = false and Id in :accountIds]) {
+                accountIdsValid.add(account.Id);
         }
 
         Set<Id> accountsProcessed = new Set<Id>();
@@ -360,7 +360,7 @@ global with sharing class C501_MassMerge_SharedCode {
             }
 
             // Check if referencing a deleted Account
-            if (accountIdsDeleted.contains(mergeCandidate.Account__c) || accountIdsDeleted.contains(mergeCandidate.Merge_Target_Account__c)) {
+            if (!accountIdsValid.contains(mergeCandidate.Account__c) || !accountIdsValid.contains(mergeCandidate.Merge_Target_Account__c)) {
 
                 deleteMergeCandidates.add(mergeCandidate);
                 continue;
@@ -509,10 +509,10 @@ global with sharing class C501_MassMerge_SharedCode {
             contactIds.add(mergeCandidate.Contact__c);
             contactIds.add(mergeCandidate.Merge_Target_Contact__c);
         }
-        Set<Id> contactIdsDeleted = new Set<Id>();
+        Set<Id> contactIdsValid = new Set<Id>();
         for (Contact contact : [
-            SELECT Id FROM Contact Where IsDeleted = true and Id in :contactIds]) {
-                contactIdsDeleted.add(contact.Id);
+            SELECT Id FROM Contact Where IsDeleted = false and Id in :contactIds]) {
+                contactIdsValid.add(contact.Id);
         }
 
         Set<Id> contactsProcessed = new Set<Id>();
@@ -534,7 +534,7 @@ global with sharing class C501_MassMerge_SharedCode {
             }
 
             // Check if referencing a deleted Contact
-            if (contactIdsDeleted.contains(mergeCandidate.Contact__c) || contactIdsDeleted.contains(mergeCandidate.Merge_Target_Contact__c)) {
+            if (!contactIdsValid.contains(mergeCandidate.Contact__c) || !contactIdsValid.contains(mergeCandidate.Merge_Target_Contact__c)) {
 
                 deleteMergeCandidates.add(mergeCandidate);
                 continue;
