@@ -164,6 +164,11 @@
     </fields>
     <label>Merge Metric</label>
     <listViews>
+        <fullName>All1</fullName>
+        <filterScope>Everything</filterScope>
+        <label>All</label>
+    </listViews>
+    <listViews>
         <fullName>All_NPSP</fullName>
         <columns>NAME</columns>
         <columns>Total_Unassigned_Accounts__c</columns>
@@ -174,11 +179,6 @@
         <columns>AutoMerge_Objects__c</columns>
         <filterScope>Everything</filterScope>
         <label>All NPSP</label>
-    </listViews>
-    <listViews>
-        <fullName>All1</fullName>
-        <filterScope>Everything</filterScope>
-        <label>All</label>
     </listViews>
     <nameField>
         <label>Merge Metric Name</label>
