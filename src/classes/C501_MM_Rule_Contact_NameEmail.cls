@@ -132,6 +132,43 @@ global class C501_MM_Rule_Contact_NameEmail implements Schedulable {
             ));
         }
 
+        // Find Contact matches within an Account
+        //
+		AggregateResult[] allAggregatedByContactsBetweenAccounts = [
+            SELECT
+                Count(Id),
+                MAX(Id)MaxContactId,
+                MIN(Id)MinContactId
+            FROM Contact
+            WHERE
+                FirstName <> null
+                and Email <> null
+            GROUP BY
+                FirstName,
+                LastName,
+                Email,
+                Gender__c
+            HAVING Count(Id) > 1
+            ORDER BY Count(Id) DESC];
+
+        for (AggregateResult result : allAggregatedByContactsBetweenAccounts)  {
+            maxId = result.get('MaxContactId').toString();
+            minId = result.get('MinContactId').toString();
+
+            if (String.isEmpty(maxId) || String.isEmpty(minId) || maxId == minId) {
+                continue;
+            }
+
+            uniqueId = mergeMetricName + maxId + minId;
+            mergeContacts.put(uniqueId, new C501_Contact_Merge__c(
+                Unique_Id__c = uniqueId,
+                Merge_Confidence__c = mergeMetrics[0].Confidence__c,
+                Contact__c = minId,
+                Merge_Target_Contact__c = maxId,
+                Merge_Metric__c = mergeMetrics[0].Id
+            ));
+        }
+
         c501MassMerge_SharedCode.ProcessContactMergeCandidates(mergeMetrics[0], mergeContacts.values());
    }
 }

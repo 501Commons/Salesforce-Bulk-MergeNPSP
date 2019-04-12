@@ -83,6 +83,19 @@ global with sharing class C501_MassMerge_SharedCode {
         // Merge contacts into master
         System.debug('***** C501_MassMerge_SharedCode::ContactsMerge masterContact: ' + String.valueOf(masterContact) + ' duplicateContacts: ' + String.valueOf(duplicateContacts));
 
+        Set<Id> contactIds = new Set<Id> { masterContact.Id };
+        for (Contact contact :duplicateContacts) {
+            contactIds.add(contact.Id);
+        }
+        Map<Id, Account> contactAccounts = new Map<Id, Account>();
+        for (Contact contact : [
+            SELECT Id, AccountId, Account.npsp__Number_of_Household_Members__c FROM Contact WHERE Id in :contactIds]) {
+
+            contactAccounts.put(contact.Id, new Account(
+                Id = contact.AccountId,
+                npsp__Number_of_Household_Members__c = contact.Account.npsp__Number_of_Household_Members__c));
+        }
+
         Database.MergeResult[] contactResults = Database.merge(masterContact, duplicateContacts, false);
 
         for(Database.MergeResult res : contactResults) {
@@ -98,11 +111,6 @@ global with sharing class C501_MassMerge_SharedCode {
             }
         }
 
-        Set<Id> contactIds = new Set<Id> { masterContact.Id };
-        for (Contact duplicateContact :duplicateContacts) {
-            contactIds.add(duplicateContact.Id);
-        }
-
         List<C501_Contact_Merge__c> deleteMerges = [
             SELECT Id
             FROM C501_Contact_Merge__c
@@ -113,6 +121,41 @@ global with sharing class C501_MassMerge_SharedCode {
 
         if (!deleteMerges.isEmpty()) {
             delete deleteMerges;
+        }
+
+        String mergeMetricName = 'Account_NoContacts';
+        List<C501_Merge_Metric__c> mergeMetrics = [
+            SELECT
+                Id, Name, Confidence__c,
+                Total_Unassigned_Accounts__c, Total_Unassigned_Contacts__c,
+                Enable__c,
+                AutoMerge_Percentage__c, AutoMerge_Objects__c
+            FROM C501_Merge_Metric__c
+            WHERE Name = :mergeMetricName];
+
+        // Check to add an account merge request - can not Account merge here because might be in a batch call which is not supported for Account merging
+        Account masterAccount = contactAccounts.get(masterContact.Id);
+        Map<String, C501_Account_Merge__c> accountMergeInserts = new Map<String, C501_Account_Merge__c>();
+        for (Contact contact :duplicateContacts) {
+            Account account = contactAccounts.get(contact.Id);
+            if (account.Id <> masterAccount.Id && account.npsp__Number_of_Household_Members__c <= 1) {
+
+                // Create an account merge because the duplicate account now has no children
+                String maxId = (masterAccount.Id > account.Id) ? masterAccount.Id : account.Id;
+                String minId = (masterAccount.Id <= account.Id) ? masterAccount.Id : account.Id;
+                String uniqueId = mergeMetricName + maxId + minId;
+                accountMergeInserts.put(uniqueId, new C501_Account_Merge__c(
+                    Unique_Id__c = uniqueId,
+                    Merge_Confidence__c = mergeMetrics[0].Confidence__c,
+                    Account__c = minId,
+                    Merge_Target_Account__c = maxId,
+                    Merge_Metric__c = mergeMetrics[0].Id
+                ));
+            }
+        }
+
+        if (!accountMergeInserts.values().isEmpty()) {
+            insert accountMergeInserts.values();
         }
     }
 
@@ -525,19 +568,43 @@ global with sharing class C501_MassMerge_SharedCode {
         }
 
         List<String> automergeObjects = mergeMetric.AutoMerge_Objects__c.split(';');
-        if (automergeObjects.contains('Contact')) {
+        if (automergeObjects.contains('Contacts Within Account') || automergeObjects.contains('Contacts Across Accounts')) {
 
-            List<C501_Contact_Merge__c> pendingAutoMerges = [
+            List<C501_Contact_Merge__c> pendingAutoMerges = new List<C501_Contact_Merge__c>();
+            for (C501_Contact_Merge__c pendingAutoMerge : [
                 SELECT Id, Contact__c, Merge_Target_Contact__c, Merge_Confidence__c
                 FROM C501_Contact_Merge__c
                 WHERE Merge_Metric__r.Name = :mergeMetricName 
                     AND Merge_Confidence__c <= :mergeMetricAutoPercentage
-                    AND Merge_Action__c <> 'Ignore'
-                LIMIT 100];
+                    AND Merge_Action__c <> 'Ignore']) {
 
-            if (!pendingAutoMerges.isEmpty()) {
-                System.debug('***** C501_MassMerge_SharedCode::ProcessMergeCandidates Process auto merge candidates pendingAutoMerges: ' + String.valueOf(pendingAutoMerges));
-                ProcessContactMerges(pendingAutoMerges, false);
+                    contactIds.add(pendingAutoMerge.Contact__c);
+                    contactIds.add(pendingAutoMerge.Merge_Target_Contact__c);
+                    pendingAutoMerges.add(pendingAutoMerge);
+            }
+
+            Map<Id, Id> contactAccounts = new Map<Id, Id>();
+            for (Contact contact : [
+                SELECT Id, AccountId FROM Contact WHERE Id in :contactIds]) {
+                
+                contactAccounts.put(contact.Id, contact.AccountId);
+            }
+
+            List<C501_Contact_Merge__c> pendingAutoMergeCandidates = new List<C501_Contact_Merge__c>();
+            for (C501_Contact_Merge__c pendingAutoMerge :pendingAutoMerges) {
+
+                if (automergeObjects.contains('Contacts Within Account') && contactAccounts.get(pendingAutoMerge.Contact__c) == contactAccounts.get(pendingAutoMerge.Merge_Target_Contact__c)) {
+                    pendingAutoMergeCandidates.add(pendingAutoMerge);
+                }
+                
+                if (automergeObjects.contains('Contacts Across Accounts') && contactAccounts.get(pendingAutoMerge.Contact__c) == contactAccounts.get(pendingAutoMerge.Merge_Target_Contact__c)) {
+                    pendingAutoMergeCandidates.add(pendingAutoMerge);
+                }
+            }
+
+            if (!pendingAutoMergeCandidates.isEmpty()) {
+                System.debug('***** C501_MassMerge_SharedCode::ProcessMergeCandidates Process auto merge candidates pendingAutoMerges: ' + String.valueOf(pendingAutoMergeCandidates));
+                ProcessContactMerges(pendingAutoMergeCandidates, false);
             }
         }
     }
@@ -638,6 +705,9 @@ global with sharing class C501_MassMerge_SharedCode {
         if (mergeMetric.Name == 'Account_Address') {
             hourlyOffset = 1;
         }
+        else if (mergeMetric.Name == 'Account_NoContacts') {
+            hourlyOffset = 4;
+        }
         else if (mergeMetric.Name == 'Account_Website') {
             hourlyOffset = 2;
         }
@@ -711,6 +781,9 @@ global with sharing class C501_MassMerge_SharedCode {
                 // Optimization for future since this is a only unique code - call out here to a Virtual function that can be overloaded from a child (e.g., SM Rules - C501_SM_Rule_Contact_NameDOB)
                 if (mergeMetric.Name == 'Account_Address') {
                     System.schedule(mergeMetricNameSchedule, cronExpression, new C501_MM_Rule_Account_Address());
+                }
+                else if (mergeMetric.Name == 'Account_NoContacts') {
+                    System.schedule(mergeMetricNameSchedule, cronExpression, new C501_MM_Rule_Account_NoContacts());
                 }
                 else if (mergeMetric.Name == 'Account_Website') {
                     System.schedule(mergeMetricNameSchedule, cronExpression, new C501_MM_Rule_Account_Website());

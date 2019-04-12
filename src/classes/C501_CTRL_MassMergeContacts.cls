@@ -350,6 +350,7 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
         try {
             Map<String, C501_Contact_Merge__c> listContactsMergeUpdate = new Map<String, C501_Contact_Merge__c>();
             Map<String, C501_Contact_Merge__c> listContactsMerges = new Map<String, C501_Contact_Merge__c>();
+            List<C501_Contact_Merge__c> listContactsMergeCandidates = new List<C501_Contact_Merge__c>();
 
             System.debug('***** C501_CTRL_MassMergeContacts::SaveContacts listContacts: ' + String.valueOf(listContacts));
 
@@ -377,6 +378,7 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
                         listContactsMerges.put(contact.C501_Merge_Id__c, mergeContact);
 
                         if (mergeContact.Contact__c <> null && mergeContact.Merge_Target_Contact__c <> null) {
+                            listContactsMergeCandidates.add(mergeContact);
                             listContactsMergeUpdate.put(contact.C501_Merge_Id__c, new C501_Contact_Merge__c(
                                 Id = contact.C501_Merge_Id__c,
                                 Merge_Action__c = 'Merge'
@@ -407,6 +409,7 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
                         listContactsMerges.put(contact.C501_Merge_Id__c, mergeContact);
 
                         if (mergeContact.Contact__c <> null && mergeContact.Merge_Target_Contact__c <> null) {
+                            listContactsMergeCandidates.add(mergeContact);
                             listContactsMergeUpdate.put(contact.C501_Merge_Id__c, new C501_Contact_Merge__c(
                                 Id = contact.C501_Merge_Id__c,
                                 Merge_Action__c = 'Merge'
@@ -433,9 +436,11 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
                 update listContactsMergeUpdate.values();
             }
 
-            c501MassMerge_SharedCode.ProcessContactMerges(listContactsMerges.values(), true);
+            if (!listContactsMergeCandidates.isEmpty()) {
+                c501MassMerge_SharedCode.ProcessContactMerges(listContactsMergeCandidates, true);
+            }
 
-            strSaveResults = (listContactsMerges.values().size() * 2) + ' ' + Label.labelMassMergeSaveSuccess;
+            strSaveResults = (listContactsMergeCandidates.size() * 2) + ' ' + Label.labelMassMergeSaveSuccess;
             ApexPages.addMessage(new ApexPages.message(ApexPages.Severity.CONFIRM, strSaveResults));
 
             // successful save, so clear out dirty list

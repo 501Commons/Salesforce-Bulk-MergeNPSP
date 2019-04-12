@@ -349,6 +349,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
         try {
             Map<String, C501_Account_Merge__c> listAccountsMergeUpdate = new Map<String, C501_Account_Merge__c>();
             Map<String, C501_Account_Merge__c> listAccountsMerges = new Map<String, C501_Account_Merge__c>();
+            List<C501_Account_Merge__c> listAccountsMergeCandidates = new List<C501_Account_Merge__c>();
 
             System.debug('***** C501_CTRL_MassMergeAccounts::SaveAccounts listAccounts: ' + String.valueOf(listAccounts));
 
@@ -376,6 +377,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
                         listAccountsMerges.put(account.C501_Merge_Id__c, mergeAccount);
 
                         if (mergeAccount.Account__c <> null && mergeAccount.Merge_Target_Account__c <> null) {
+                            listAccountsMergeCandidates.add(mergeAccount);
                             listAccountsMergeUpdate.put(account.C501_Merge_Id__c, new C501_Account_Merge__c(
                                 Id = account.C501_Merge_Id__c,
                                 Merge_Action__c = 'Merge'
@@ -406,6 +408,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
                         listAccountsMerges.put(account.C501_Merge_Id__c, mergeAccount);
 
                         if (mergeAccount.Account__c <> null && mergeAccount.Merge_Target_Account__c <> null) {
+                            listAccountsMergeCandidates.add(mergeAccount);
                             listAccountsMergeUpdate.put(account.C501_Merge_Id__c, new C501_Account_Merge__c(
                                 Id = account.C501_Merge_Id__c,
                                 Merge_Action__c = 'Merge'
@@ -432,9 +435,11 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
                 update listAccountsMergeUpdate.values();
             }
 
-            c501MassMerge_SharedCode.ProcessAccountMerges(listAccountsMerges.values(), false);
+            if (!listAccountsMergeCandidates.isEmpty()) {
+                c501MassMerge_SharedCode.ProcessAccountMerges(listAccountsMergeCandidates, false);
+            }
 
-            strSaveResults = (listAccountsMerges.values().size() * 2) + ' ' + Label.labelMassMergeSaveSuccess;
+            strSaveResults = (listAccountsMergeCandidates.size() * 2) + ' ' + Label.labelMassMergeSaveSuccess;
             ApexPages.addMessage(new ApexPages.message(ApexPages.Severity.CONFIRM, strSaveResults));
 
             // successful save, so clear out dirty list

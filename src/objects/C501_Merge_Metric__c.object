@@ -73,6 +73,16 @@
                     <default>false</default>
                     <label>Contact</label>
                 </value>
+                <value>
+                    <fullName>Contacts Within Account</fullName>
+                    <default>false</default>
+                    <label>Contacts Within Account</label>
+                </value>
+                <value>
+                    <fullName>Contacts Across Accounts</fullName>
+                    <default>false</default>
+                    <label>Contacts Across Accounts</label>
+                </value>
             </valueSetDefinition>
         </valueSet>
         <visibleLines>4</visibleLines>
