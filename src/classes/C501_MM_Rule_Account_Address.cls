@@ -34,7 +34,7 @@ global class C501_MM_Rule_Account_Address implements Schedulable {
         List<C501_Merge_Metric__c> mergeMetrics = [
             SELECT
                 Id, Name, Confidence__c,
-                Total_Merge_Accounts__c, Total_Merge_Contacts__c, Total_Unassigned_Accounts__c, Total_Unassigned_Contacts__c,
+                Total_Unassigned_Accounts__c, Total_Unassigned_Contacts__c,
                 Enable__c,
                 AutoMerge_Percentage__c, AutoMerge_Objects__c
             FROM C501_Merge_Metric__c
