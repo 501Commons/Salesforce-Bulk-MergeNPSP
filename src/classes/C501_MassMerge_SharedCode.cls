@@ -362,8 +362,6 @@ global with sharing class C501_MassMerge_SharedCode {
             // Check if referencing a deleted Account
             if (accountIdsDeleted.contains(mergeCandidate.Account__c) || accountIdsDeleted.contains(mergeCandidate.Merge_Target_Account__c)) {
 
-                System.debug('***** C501_MassMerge_SharedCode::ProcessAccountMerges IsDeleted');
-
                 deleteMergeCandidates.add(mergeCandidate);
                 continue;
             }
@@ -524,8 +522,6 @@ global with sharing class C501_MassMerge_SharedCode {
             // Check Contact and Target Contact same Id
             if (mergeCandidate.Contact__c == mergeCandidate.Merge_Target_Contact__c) {
 
-                System.debug('***** C501_MassMerge_SharedCode::ProcessContactMerges equal so delete');
-
                 deleteMergeCandidates.add(mergeCandidate);
                 continue;
             }
@@ -533,16 +529,12 @@ global with sharing class C501_MassMerge_SharedCode {
             // Check Contact and Target Contact valid
             if (mergeCandidate.Contact__c == null || mergeCandidate.Merge_Target_Contact__c == null) {
 
-                System.debug('***** C501_MassMerge_SharedCode::ProcessContactMerges null so delete');
-
                 deleteMergeCandidates.add(mergeCandidate);
                 continue;
             }
 
             // Check if referencing a deleted Contact
             if (contactIdsDeleted.contains(mergeCandidate.Contact__c) || contactIdsDeleted.contains(mergeCandidate.Merge_Target_Contact__c)) {
-
-                System.debug('***** C501_MassMerge_SharedCode::ProcessContactMerges IsDeleted');
 
                 deleteMergeCandidates.add(mergeCandidate);
                 continue;
@@ -590,8 +582,6 @@ global with sharing class C501_MassMerge_SharedCode {
         }
 
         if (!deleteMergeCandidates.isEmpty()) {
-            System.debug('***** C501_MassMerge_SharedCode::ProcessContactMerges deleting');
-
             delete deleteMergeCandidates;
         }
     }
