@@ -602,10 +602,19 @@ global with sharing class C501_MassMerge_SharedCode {
         else if (mergeMetric.Name == 'Contact_NameEmail') {
             hourlyOffset = 3;
         }
-        Boolean hourlySyncOnly = false;
 
-        if (mergeMetric.AutoMerge_Percentage__c == null || mergeMetric.AutoMerge_Percentage__c <= 0.0 || ((mergeMetric.Total_Unassigned_Accounts__c + mergeMetric.Total_Unassigned_Contacts__c) < 100)) {
-            hourlySyncOnly = true;
+        Boolean hourlySyncOnly = true;
+
+        if (mergeMetric.AutoMerge_Percentage__c <> null && mergeMetric.AutoMerge_Percentage__c > 0.0) {
+            List<String> automergeObjects = mergeMetric.AutoMerge_Objects__c.split(';');
+
+            if (automergeObjects.contains('Contact') && mergeMetric.Total_Unassigned_Contacts__c > 0) {
+                hourlySyncOnly = false;
+            }
+
+            if (automergeObjects.contains('Account') && mergeMetric.Total_Unassigned_Accounts__c > 0) {
+                hourlySyncOnly = false;
+            }
         }
 
         List<CronJobDetail> cronJobDetails = [SELECT Id, JobType, Name FROM CronJobDetail];
