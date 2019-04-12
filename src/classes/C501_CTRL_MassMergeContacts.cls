@@ -363,16 +363,11 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
                     // so we've decided it is better to always update all records.
                     //if (setContactsIdDirty.contains(contact.Id)) 
 
-                    listContactsMergeUpdate.put(contact.C501_Merge_Id__c, new C501_Contact_Merge__c(
-                        Id = contact.C501_Merge_Id__c,
-                        Merge_Action__c = contact.C501_Merge_Action__c
-                    ));
-
                     if (!listContactsMerges.containsKey(contact.C501_Merge_Id__c)) {
                         listContactsMerges.put(contact.C501_Merge_Id__c, new C501_Contact_Merge__c(
                             Id = contact.C501_Merge_Id__c,
-                            Contact__c = contact.Id,
-                            Merge_Action__c = contact.C501_Merge_Action__c,
+                            Merge_Target_Contact__c = contact.Id,
+                            Merge_Action__c = 'Merge',
                             Merge_Confidence__c = contact.C501_Merge_Confidence__c
                         ));
                     }
@@ -380,22 +375,61 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
                         C501_Contact_Merge__c mergeContact = listContactsMerges.remove(contact.C501_Merge_Id__c);
                         mergeContact.Merge_Target_Contact__c = contact.Id;
                         listContactsMerges.put(contact.C501_Merge_Id__c, mergeContact);
+
+                        if (mergeContact.Contact__c <> null && mergeContact.Merge_Target_Contact__c <> null) {
+                            listContactsMergeUpdate.put(contact.C501_Merge_Id__c, new C501_Contact_Merge__c(
+                                Id = contact.C501_Merge_Id__c,
+                                Merge_Action__c = 'Merge'
+                            ));
+                        }
                     }
                 }
 
-                if (contact.Id != null && contact.C501_Merge_Action__c == 'Ignore') {
+                else if (contact.Id != null && contact.C501_Merge_Action__c == 'Master') {
+
+                    System.debug('***** C501_CTRL_MassMergeContacts::SaveContacts Check Master Action - Merge Rule: ' + contact.C501_Merge_Metric_Name__c);
+
+                    // we couldn't reliably mark dirty records in all scenarios,
+                    // so we've decided it is better to always update all records.
+                    //if (setContactsIdDirty.contains(contact.Id)) 
+
+                    if (!listContactsMerges.containsKey(contact.C501_Merge_Id__c)) {
+                        listContactsMerges.put(contact.C501_Merge_Id__c, new C501_Contact_Merge__c(
+                            Id = contact.C501_Merge_Id__c,
+                            Contact__c = contact.Id,
+                            Merge_Action__c = 'Merge',
+                            Merge_Confidence__c = contact.C501_Merge_Confidence__c
+                        ));
+                    }
+                    else {
+                        C501_Contact_Merge__c mergeContact = listContactsMerges.remove(contact.C501_Merge_Id__c);
+                        mergeContact.Contact__c = contact.Id;
+                        listContactsMerges.put(contact.C501_Merge_Id__c, mergeContact);
+
+                        if (mergeContact.Contact__c <> null && mergeContact.Merge_Target_Contact__c <> null) {
+                            listContactsMergeUpdate.put(contact.C501_Merge_Id__c, new C501_Contact_Merge__c(
+                                Id = contact.C501_Merge_Id__c,
+                                Merge_Action__c = 'Merge'
+                            ));
+                        }
+                    }
+                }
+
+                else if (contact.Id != null && contact.C501_Merge_Action__c == 'Ignore') {
+
+                    System.debug('***** C501_CTRL_MassMergeContacts::SaveContacts Check Ignore Action - Merge Rule: ' + contact.C501_Merge_Metric_Name__c);
 
                     // we couldn't reliably mark dirty records in all scenarios,
                     // so we've decided it is better to always update all records.
                     //if (setContactsIdDirty.contains(contact.Id)) 
                     listContactsMergeUpdate.put(contact.C501_Merge_Id__c, new C501_Contact_Merge__c(
                         Id = contact.C501_Merge_Id__c,
-                        Merge_Action__c = contact.C501_Merge_Action__c
+                        Merge_Action__c = 'Ignore'
                     ));
                 }
             }
 
-            if (!listContactsMergeUpdate.values().IsEmpty()) {
+            if (!listContactsMergeUpdate.values().isEmpty()) {
                 update listContactsMergeUpdate.values();
             }
 

@@ -73,7 +73,7 @@ global with sharing class C501_MassMerge_SharedCode {
                 OR Account__c in :accountIds
                 OR Merge_Target_Account__c in :accountIds];
 
-        if (!deleteMerges.IsEmpty()) {
+        if (!deleteMerges.isEmpty()) {
             delete deleteMerges;
         }
     }
@@ -111,7 +111,7 @@ global with sharing class C501_MassMerge_SharedCode {
                 OR Contact__c in :contactIds
                 OR Merge_Target_Contact__c in :contactIds];
 
-        if (!deleteMerges.IsEmpty()) {
+        if (!deleteMerges.isEmpty()) {
             delete deleteMerges;
         }
     }
@@ -246,18 +246,32 @@ global with sharing class C501_MassMerge_SharedCode {
         //
 		// Perform all DML (Data Manipulation Language) calls (insert, update, merge, delete, restore) outside of loop to avoid Salesforce Governor Limits: https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/apex_gov_limits.htm
         //
-		if (!mergeAccounts.IsEmpty()) {
-			Database.SaveResult[] insertResults = Database.insert(mergeAccounts, false);
 
-            for (Database.SaveResult result : insertResults) {
-                if (!result.isSuccess()) {
-                    /*
-                    if (result.getMessage() == 'duplicate value found') {
-                        continue;
+        String mergeMetricName = mergeMetric.Name;
+        Decimal mergeMetricAutoPercentage = mergeMetric.AutoMerge_Percentage__c;
+
+		if (!mergeAccounts.isEmpty()) {
+
+            List<C501_Account_Merge__c> mergeAccountsInsert = new List<C501_Account_Merge__c>();
+            Set<String> mergeAccountsExisting = new Set<String>();
+            for (C501_Account_Merge__c mergeAccount :[
+                SELECT Unique_Id__c FROM C501_Account_Merge__c WHERE Merge_Metric__r.Name = :mergeMetricName]) {
+                mergeAccountsExisting.add(mergeAccount.Unique_Id__c);
+            }
+
+            for (C501_Account_Merge__c mergeAccount :mergeAccounts) {
+                if (!mergeAccountsExisting.contains(mergeAccount.Unique_Id__c)) {
+                    mergeAccountsInsert.add(mergeAccount);
+                }
+            }
+
+            if (!mergeAccountsInsert.isEmpty()) {
+                Database.SaveResult[] insertResults = Database.insert(mergeAccountsInsert, false);
+
+                for (Database.SaveResult result : insertResults) {
+                    if (!result.isSuccess()) {
+                        System.debug('***** C501_MassMerge_SharedCode::ProcesAccountMergeCandidates Merge Results: ' + String.valueOf(result));
                     }
-                    */
-
-                    System.debug('***** C501_MassMerge_SharedCode::ProcessMergeCandidates Merge Results: ' + String.valueOf(result));
                 }
             }
 		}
@@ -267,7 +281,7 @@ global with sharing class C501_MassMerge_SharedCode {
         for (C501_Account_Merge__c accountMerge :[
             SELECT  Id, Account__c, Merge_Target_Account__c, Merge_Confidence__c, Merge_Action__c
             FROM C501_Account_Merge__c
-            WHERE Merge_Metric__r.Name = :mergeMetric.Name
+            WHERE Merge_Metric__r.Name = :mergeMetricName
                 AND (Account__c = null or Merge_Target_Account__c = null or Merge_Action__c = 'Merge')]) {
                 
                 if (accountMerge.Account__c == null || accountMerge.Merge_Target_Account__c == null) {
@@ -278,12 +292,12 @@ global with sharing class C501_MassMerge_SharedCode {
                 }
             }
 
-        if (!invalidMerges.IsEmpty()) {
+        if (!invalidMerges.isEmpty()) {
             delete invalidMerges;
         }
 
         // Check for batch queued merges
-        if (!pendingMerges.IsEmpty()) {
+        if (!pendingMerges.isEmpty()) {
             System.debug('***** C501_MassMerge_SharedCode::ProcessMergeCandidates Process pending merge candidates pendingMerges: ' + String.valueOf(pendingMerges));
             ProcessAccountMerges(pendingMerges, false);
         }
@@ -299,12 +313,12 @@ global with sharing class C501_MassMerge_SharedCode {
             List<C501_Account_Merge__c> pendingAutoMerges = [
                 SELECT Id, Account__c, Merge_Target_Account__c, Merge_Confidence__c
                 FROM C501_Account_Merge__c
-                WHERE Merge_Metric__r.Name = :mergeMetric.Name 
-                    AND Merge_Confidence__c <= :mergeMetric.AutoMerge_Percentage__c
+                WHERE Merge_Metric__r.Name = :mergeMetricName 
+                    AND Merge_Confidence__c <= :mergeMetricAutoPercentage
                     AND Merge_Action__c <> 'Ignore'
                 LIMIT 100];
 
-            if (!pendingAutoMerges.IsEmpty()) {
+            if (!pendingAutoMerges.isEmpty()) {
                 System.debug('***** C501_MassMerge_SharedCode::ProcessMergeCandidates Process auto merge candidates pendingAutoMerges: ' + String.valueOf(pendingAutoMerges));
                 ProcessAccountMerges(pendingAutoMerges, false);
             }
@@ -316,21 +330,46 @@ global with sharing class C501_MassMerge_SharedCode {
         // 100 is the max merge job that can be sent to Flex Queue
         Integer mergeAttemptsRemaining = 99;
 
-        Set<Id> accountsProcessed = new Set<Id>();
+        Set<Id> accountIds = new Set<Id>();
         for (C501_Account_Merge__c mergeCandidate : accountMerges) {
+            accountIds.add(mergeCandidate.Account__c);
+            accountIds.add(mergeCandidate.Merge_Target_Account__c);
+        }
+        Set<Id> accountIdsDeleted = new Set<Id>();
+        for (Account account : [
+            SELECT Id FROM Account Where IsDeleted = true and Id in :accountIds]) {
+                accountIdsDeleted.add(account.Id);
+        }
 
-            // Check whether Account or Target Account Id merge already attempted
-            if (accountsProcessed.contains(mergeCandidate.Account__c) || accountsProcessed.contains(mergeCandidate.Merge_Target_Account__c)) {
-                continue;
-            }
+        Set<Id> accountsProcessed = new Set<Id>();
+        List<C501_Account_Merge__c> deleteMergeCandidates = new List<C501_Account_Merge__c>();
+        for (C501_Account_Merge__c mergeCandidate : accountMerges) {
 
             // Check Account and Target Account same Id
             if (mergeCandidate.Account__c == mergeCandidate.Merge_Target_Account__c) {
+
+                deleteMergeCandidates.add(mergeCandidate);
                 continue;
             }
 
             // Check Account and Target Account valid
             if (mergeCandidate.Account__c == null || mergeCandidate.Merge_Target_Account__c == null) {
+
+                deleteMergeCandidates.add(mergeCandidate);
+                continue;
+            }
+
+            // Check if referencing a deleted Account
+            if (accountIdsDeleted.contains(mergeCandidate.Account__c) || accountIdsDeleted.contains(mergeCandidate.Merge_Target_Account__c)) {
+
+                System.debug('***** C501_MassMerge_SharedCode::ProcessAccountMerges IsDeleted');
+
+                deleteMergeCandidates.add(mergeCandidate);
+                continue;
+            }
+
+            // Check whether Account or Target Account Id merge already attempted
+            if (accountsProcessed.contains(mergeCandidate.Account__c) || accountsProcessed.contains(mergeCandidate.Merge_Target_Account__c)) {
                 continue;
             }
 
@@ -342,6 +381,7 @@ global with sharing class C501_MassMerge_SharedCode {
             }
 
             if (batchMerge) {
+
                 System.debug('***** C501_MassMerge_SharedCode::ProcessAccountMerges Batch Schedule Merge mergeCandidate: ' + String.valueOf(mergeCandidate));
 
                 // Schedule Batch Job in Flex Queue (can schedule up to 100 jobs)
@@ -352,6 +392,7 @@ global with sharing class C501_MassMerge_SharedCode {
                 Database.executeBatch(batchMergeRequest);
             }
             else {
+
                 System.debug('***** C501_MassMerge_SharedCode::ProcessAccountMerges Schedule Merge mergeCandidate: ' + String.valueOf(mergeCandidate));
 
                 AccountsMerge( 
@@ -367,6 +408,10 @@ global with sharing class C501_MassMerge_SharedCode {
                 break;
             }
         }
+
+        if (!deleteMergeCandidates.isEmpty()) {
+            delete deleteMergeCandidates;
+        }
     }
 
     global void ProcessContactMergeCandidates(C501_Merge_Metric__c mergeMetric, List<C501_Contact_Merge__c> mergeContacts) {
@@ -374,12 +419,33 @@ global with sharing class C501_MassMerge_SharedCode {
         //
 		// Perform all DML (Data Manipulation Language) calls (insert, update, merge, delete, restore) outside of loop to avoid Salesforce Governor Limits: https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/apex_gov_limits.htm
         //
-		if (!mergeContacts.IsEmpty()) {
-			Database.SaveResult[] insertResults = Database.insert(mergeContacts, false);
 
-            for (Database.SaveResult result : insertResults) {
-                System.debug('***** C501_MassMerge_SharedCode::ProcessContactMergeCandidates Merge Results: ' + String.valueOf(result));
-                // TBD - Look for anything other than Duplicate Id Error on Unique_Id__c which is expected
+        String mergeMetricName = mergeMetric.Name;
+        Decimal mergeMetricAutoPercentage = mergeMetric.AutoMerge_Percentage__c;
+
+		if (!mergeContacts.isEmpty()) {
+
+            List<C501_Contact_Merge__c> mergeContactsInsert = new List<C501_Contact_Merge__c>();
+            Set<String> mergeContactsExisting = new Set<String>();
+            for (C501_Contact_Merge__c mergeContact :[
+                SELECT Unique_Id__c FROM C501_Contact_Merge__c WHERE Merge_Metric__r.Name = :mergeMetricName]) {
+                mergeContactsExisting.add(mergeContact.Unique_Id__c);
+            }
+
+            for (C501_Contact_Merge__c mergeContact :mergeContacts) {
+                if (!mergeContactsExisting.contains(mergeContact.Unique_Id__c)) {
+                    mergeContactsInsert.add(mergeContact);
+                }
+            }
+
+            if (!mergeContactsInsert.isEmpty()) {
+                Database.SaveResult[] insertResults = Database.insert(mergeContactsInsert, false);
+
+                for (Database.SaveResult result : insertResults) {
+                    if (!result.isSuccess()) {
+                        System.debug('***** C501_MassMerge_SharedCode::ProcessContactMergeCandidates Merge Results: ' + String.valueOf(result));
+                    }
+                }
             }
 		}
 
@@ -388,7 +454,7 @@ global with sharing class C501_MassMerge_SharedCode {
         for (C501_Contact_Merge__c contactMerge :[
             SELECT Id, Contact__c, Merge_Target_Contact__c, Merge_Confidence__c, Merge_Action__c
             FROM C501_Contact_Merge__c
-            WHERE Merge_Metric__r.Name = :mergeMetric.Name
+            WHERE Merge_Metric__r.Name = :mergeMetricName
                 AND (Contact__c = null or Merge_Target_Contact__c = null or Merge_Action__c = 'Merge')]) {
                 
                 if (contactMerge.Contact__c == null || contactMerge.Merge_Target_Contact__c == null) {
@@ -399,14 +465,14 @@ global with sharing class C501_MassMerge_SharedCode {
                 }
             }
 
-        if (!invalidMerges.IsEmpty()) {
+        if (!invalidMerges.isEmpty()) {
             delete invalidMerges;
         }
 
         // Check for batch queued merges
-        if (!pendingMerges.IsEmpty()) {
+        if (!pendingMerges.isEmpty()) {
             System.debug('***** C501_MassMerge_SharedCode::ProcessContactMergeCandidates Process pending merge candidates pendingMerges: ' + String.valueOf(pendingMerges));
-            ProcessContactMerges(pendingMerges, false);
+            ProcessContactMerges(pendingMerges, true);
         }
 
         // Check if AutoMerge Enabled
@@ -421,38 +487,69 @@ global with sharing class C501_MassMerge_SharedCode {
             List<C501_Contact_Merge__c> pendingAutoMerges = [
                 SELECT Id, Contact__c, Merge_Target_Contact__c, Merge_Confidence__c
                 FROM C501_Contact_Merge__c
-                WHERE Merge_Metric__r.Name = :mergeMetric.Name 
-                    AND Merge_Confidence__c <= :mergeMetric.AutoMerge_Percentage__c
+                WHERE Merge_Metric__r.Name = :mergeMetricName 
+                    AND Merge_Confidence__c <= :mergeMetricAutoPercentage
                     AND Merge_Action__c <> 'Ignore'
                 LIMIT 100];
 
-            if (!pendingAutoMerges.IsEmpty()) {
+            if (!pendingAutoMerges.isEmpty()) {
                 System.debug('***** C501_MassMerge_SharedCode::ProcessContactMergeCandidates Process auto merge candidates pendingAutoMerges: ' + String.valueOf(pendingAutoMerges));
-                ProcessContactMerges(pendingAutoMerges, false);
+                ProcessContactMerges(pendingAutoMerges, true);
             }
         }
     }
 
     global void ProcessContactMerges(List<C501_Contact_Merge__c> contactMerges, Boolean batchMerge)
     {
+        System.debug('***** C501_MassMerge_SharedCode::ProcessContactMerges Enter');
+
         // 100 is the max merge job that can be sent to Flex Queue
         Integer mergeAttemptsRemaining = 99;
 
-        Set<Id> contactsProcessed = new Set<Id>();
+        Set<Id> contactIds = new Set<Id>();
         for (C501_Contact_Merge__c mergeCandidate : contactMerges) {
+            contactIds.add(mergeCandidate.Contact__c);
+            contactIds.add(mergeCandidate.Merge_Target_Contact__c);
+        }
+        Set<Id> contactIdsDeleted = new Set<Id>();
+        for (Contact contact : [
+            SELECT Id FROM Contact Where IsDeleted = true and Id in :contactIds]) {
+                contactIdsDeleted.add(contact.Id);
+        }
 
-            // Check whether Contact or Target Contact Id merge already attempted
-            if (contactsProcessed.contains(mergeCandidate.Contact__c) || contactsProcessed.contains(mergeCandidate.Merge_Target_Contact__c)) {
-                continue;
-            }
+        Set<Id> contactsProcessed = new Set<Id>();
+        List<C501_Contact_Merge__c> deleteMergeCandidates = new List<C501_Contact_Merge__c>();
+        for (C501_Contact_Merge__c mergeCandidate : contactMerges) {
 
             // Check Contact and Target Contact same Id
             if (mergeCandidate.Contact__c == mergeCandidate.Merge_Target_Contact__c) {
+
+                System.debug('***** C501_MassMerge_SharedCode::ProcessContactMerges equal so delete');
+
+                deleteMergeCandidates.add(mergeCandidate);
                 continue;
             }
 
             // Check Contact and Target Contact valid
             if (mergeCandidate.Contact__c == null || mergeCandidate.Merge_Target_Contact__c == null) {
+
+                System.debug('***** C501_MassMerge_SharedCode::ProcessContactMerges null so delete');
+
+                deleteMergeCandidates.add(mergeCandidate);
+                continue;
+            }
+
+            // Check if referencing a deleted Contact
+            if (contactIdsDeleted.contains(mergeCandidate.Contact__c) || contactIdsDeleted.contains(mergeCandidate.Merge_Target_Contact__c)) {
+
+                System.debug('***** C501_MassMerge_SharedCode::ProcessContactMerges IsDeleted');
+
+                deleteMergeCandidates.add(mergeCandidate);
+                continue;
+            }
+
+            // Check whether Contact or Target Contact Id merge already attempted
+            if (contactsProcessed.contains(mergeCandidate.Contact__c) || contactsProcessed.contains(mergeCandidate.Merge_Target_Contact__c)) {
                 continue;
             }
 
@@ -464,6 +561,7 @@ global with sharing class C501_MassMerge_SharedCode {
             }
 
             if (batchMerge) {
+
                 System.debug('***** C501_MassMerge_SharedCode::ProcessContactMerges Batch Schedule Merge mergeCandidate: ' + String.valueOf(mergeCandidate));
 
                 // Schedule Batch Job in Flex Queue (can schedule up to 100 jobs)
@@ -474,6 +572,7 @@ global with sharing class C501_MassMerge_SharedCode {
                 Database.executeBatch(batchMergeRequest);
             }
             else {
+
                 System.debug('***** C501_MassMerge_SharedCode::ProcessContactMerges Schedule Merge mergeCandidate: ' + String.valueOf(mergeCandidate));
 
                 ContactsMerge( 
@@ -488,6 +587,12 @@ global with sharing class C501_MassMerge_SharedCode {
                 // Limit 1 non-batch merge at a time to avoid any governor limit issues
                 break;
             }
+        }
+
+        if (!deleteMergeCandidates.isEmpty()) {
+            System.debug('***** C501_MassMerge_SharedCode::ProcessContactMerges deleting');
+
+            delete deleteMergeCandidates;
         }
     }
 

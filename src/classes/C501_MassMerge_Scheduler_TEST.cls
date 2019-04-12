@@ -120,8 +120,9 @@ class C501_MassMerge_Scheduler_TEST {
         System.assertEquals('2022-09-03 00:00:00', 
             String.valueOf(ct.NextFireTime));
 
+        String uniqueId = accountMerge.Unique_Id__c;
         System.assert(
-            100.0 == [SELECT Id, Merge_Confidence__c FROM C501_Account_Merge__c WHERE Unique_Id__c = :accountMerge.Unique_Id__c LIMIT 1].Merge_Confidence__c);
+            100.0 == [SELECT Id, Merge_Confidence__c FROM C501_Account_Merge__c WHERE Unique_Id__c = :uniqueId LIMIT 1].Merge_Confidence__c);
 
         Test.stopTest();
 
