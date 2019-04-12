@@ -250,15 +250,58 @@ global with sharing class C501_MassMerge_SharedCode {
         String mergeMetricName = mergeMetric.Name;
         Decimal mergeMetricAutoPercentage = mergeMetric.AutoMerge_Percentage__c;
 
+        Set<Id> accountIds = new Set<Id>();
+        Set<String> mergeAccountsExisting = new Set<String>();
+        Map<Id, C501_Account_Merge__c> accountMergeMap = new Map<Id, C501_Account_Merge__c>();
+        List<C501_Account_Merge__c> invalidMerges = new List<C501_Account_Merge__c>();
+        List<C501_Account_Merge__c> pendingMerges = new List<C501_Account_Merge__c>();
+        for (C501_Account_Merge__c mergeAccount :[
+            SELECT Id, Unique_Id__c, Account__c, Merge_Target_Account__c, Merge_Confidence__c, Merge_Action__c
+            FROM C501_Account_Merge__c
+            WHERE Merge_Metric__r.Name = :mergeMetricName]) {
+
+            if (mergeAccount.Account__c == null || mergeAccount.Merge_Target_Account__c == null) {
+                invalidMerges.add(mergeAccount);
+
+                continue;
+            }
+
+            if (mergeAccount.Merge_Action__c == 'Merge') {
+                pendingMerges.add(mergeAccount);
+            }
+
+            mergeAccountsExisting.add(mergeAccount.Unique_Id__c);
+            accountIds.add(mergeAccount.Account__c);
+            accountIds.add(mergeAccount.Merge_Target_Account__c);
+            accountMergeMap.put(mergeAccount.Account__c, mergeAccount);
+            accountMergeMap.put(mergeAccount.Merge_Target_Account__c, mergeAccount);
+        }
+
+        if (!invalidMerges.isEmpty()) {
+            delete invalidMerges;
+        }
+
+        // Check to Delete any merge candidates with deleted accounts
+        Set<Id> accountIdsValid = new Set<Id>();
+        for (Account account : [
+            SELECT Id FROM Account Where IsDeleted = false and Id in :accountIds]) {
+                accountIdsValid.add(account.Id);
+        }
+
+        Map<Id, C501_Account_Merge__c> deleteMerges = new Map<Id, C501_Account_Merge__c>();
+        for (Id accountId :accountMergeMap.keyset()) {
+            if (!accountIdsValid.contains(accountId)) {
+                deleteMerges.put(accountMergeMap.get(accountId).Id, accountMergeMap.get(accountId));
+            }
+        }
+
+        if (!deleteMerges.values().isEmpty()) {
+            delete deleteMerges.values();
+        }
+
 		if (!mergeAccounts.isEmpty()) {
 
             List<C501_Account_Merge__c> mergeAccountsInsert = new List<C501_Account_Merge__c>();
-            Set<String> mergeAccountsExisting = new Set<String>();
-            for (C501_Account_Merge__c mergeAccount :[
-                SELECT Unique_Id__c FROM C501_Account_Merge__c WHERE Merge_Metric__r.Name = :mergeMetricName]) {
-                mergeAccountsExisting.add(mergeAccount.Unique_Id__c);
-            }
-
             for (C501_Account_Merge__c mergeAccount :mergeAccounts) {
                 if (!mergeAccountsExisting.contains(mergeAccount.Unique_Id__c)) {
                     mergeAccountsInsert.add(mergeAccount);
@@ -275,26 +318,6 @@ global with sharing class C501_MassMerge_SharedCode {
                 }
             }
 		}
-
-        List<C501_Account_Merge__c> invalidMerges = new List<C501_Account_Merge__c>();
-        List<C501_Account_Merge__c> pendingMerges = new List<C501_Account_Merge__c>();
-        for (C501_Account_Merge__c accountMerge :[
-            SELECT  Id, Account__c, Merge_Target_Account__c, Merge_Confidence__c, Merge_Action__c
-            FROM C501_Account_Merge__c
-            WHERE Merge_Metric__r.Name = :mergeMetricName
-                AND (Account__c = null or Merge_Target_Account__c = null or Merge_Action__c = 'Merge')]) {
-                
-                if (accountMerge.Account__c == null || accountMerge.Merge_Target_Account__c == null) {
-                    invalidMerges.add(accountMerge);
-                }
-                else if (accountMerge.Merge_Action__c == 'Merge') {
-                    pendingMerges.add(accountMerge);
-                }
-            }
-
-        if (!invalidMerges.isEmpty()) {
-            delete invalidMerges;
-        }
 
         // Check for batch queued merges
         if (!pendingMerges.isEmpty()) {
@@ -421,15 +444,58 @@ global with sharing class C501_MassMerge_SharedCode {
         String mergeMetricName = mergeMetric.Name;
         Decimal mergeMetricAutoPercentage = mergeMetric.AutoMerge_Percentage__c;
 
-		if (!mergeContacts.isEmpty()) {
+        Set<Id> contactIds = new Set<Id>();
+        Set<String> mergeContactsExisting = new Set<String>();
+        Map<Id, C501_Contact_Merge__c> contactMergeMap = new Map<Id, C501_Contact_Merge__c>();
+        List<C501_Contact_Merge__c> invalidMerges = new List<C501_Contact_Merge__c>();
+        List<C501_Contact_Merge__c> pendingMerges = new List<C501_Contact_Merge__c>();
+        for (C501_Contact_Merge__c mergeContact :[
+            SELECT Id, Unique_Id__c, Contact__c, Merge_Target_Contact__c, Merge_Confidence__c, Merge_Action__c
+            FROM C501_Contact_Merge__c
+            WHERE Merge_Metric__r.Name = :mergeMetricName]) {
 
-            List<C501_Contact_Merge__c> mergeContactsInsert = new List<C501_Contact_Merge__c>();
-            Set<String> mergeContactsExisting = new Set<String>();
-            for (C501_Contact_Merge__c mergeContact :[
-                SELECT Unique_Id__c FROM C501_Contact_Merge__c WHERE Merge_Metric__r.Name = :mergeMetricName]) {
-                mergeContactsExisting.add(mergeContact.Unique_Id__c);
+            if (mergeContact.Contact__c == null || mergeContact.Merge_Target_Contact__c == null) {
+                invalidMerges.add(mergeContact);
+
+                continue;
             }
 
+            if (mergeContact.Merge_Action__c == 'Merge') {
+                pendingMerges.add(mergeContact);
+            }
+
+            mergeContactsExisting.add(mergeContact.Unique_Id__c);
+            contactIds.add(mergeContact.Contact__c);
+            contactIds.add(mergeContact.Merge_Target_Contact__c);
+            contactMergeMap.put(mergeContact.Contact__c, mergeContact);
+            contactMergeMap.put(mergeContact.Merge_Target_Contact__c, mergeContact);
+        }
+
+        if (!invalidMerges.isEmpty()) {
+            delete invalidMerges;
+        }
+
+        // Check to Delete any merge candidates with deleted contacts
+        Set<Id> contactIdsValid = new Set<Id>();
+        for (Contact contact : [
+            SELECT Id FROM Contact Where IsDeleted = false and Id in :contactIds]) {
+                contactIdsValid.add(contact.Id);
+        }
+
+        Map<Id, C501_Contact_Merge__c> deleteMerges = new Map<Id, C501_Contact_Merge__c>();
+        for (Id contactId :contactMergeMap.keyset()) {
+            if (!contactIdsValid.contains(contactId)) {
+                deleteMerges.put(contactMergeMap.get(contactId).Id, contactMergeMap.get(contactId));
+            }
+        }
+
+        if (!deleteMerges.values().isEmpty()) {
+            delete deleteMerges.values();
+        }
+
+        if (!mergeContacts.isEmpty()) {
+
+            List<C501_Contact_Merge__c> mergeContactsInsert = new List<C501_Contact_Merge__c>();
             for (C501_Contact_Merge__c mergeContact :mergeContacts) {
                 if (!mergeContactsExisting.contains(mergeContact.Unique_Id__c)) {
                     mergeContactsInsert.add(mergeContact);
@@ -441,40 +507,19 @@ global with sharing class C501_MassMerge_SharedCode {
 
                 for (Database.SaveResult result : insertResults) {
                     if (!result.isSuccess()) {
-                        System.debug('***** C501_MassMerge_SharedCode::ProcessContactMergeCandidates Merge Results: ' + String.valueOf(result));
+                        System.debug('***** C501_MassMerge_SharedCode::ProcesContactMergeCandidates Merge Results: ' + String.valueOf(result));
                     }
                 }
             }
-		}
-
-        List<C501_Contact_Merge__c> invalidMerges = new List<C501_Contact_Merge__c>();
-        List<C501_Contact_Merge__c> pendingMerges = new List<C501_Contact_Merge__c>();
-        for (C501_Contact_Merge__c contactMerge :[
-            SELECT Id, Contact__c, Merge_Target_Contact__c, Merge_Confidence__c, Merge_Action__c
-            FROM C501_Contact_Merge__c
-            WHERE Merge_Metric__r.Name = :mergeMetricName
-                AND (Contact__c = null or Merge_Target_Contact__c = null or Merge_Action__c = 'Merge')]) {
-                
-                if (contactMerge.Contact__c == null || contactMerge.Merge_Target_Contact__c == null) {
-                    invalidMerges.add(contactMerge);
-                }
-                else if (contactMerge.Merge_Action__c == 'Merge') {
-                    pendingMerges.add(contactMerge);
-                }
-            }
-
-        if (!invalidMerges.isEmpty()) {
-            delete invalidMerges;
         }
 
         // Check for batch queued merges
         if (!pendingMerges.isEmpty()) {
-            System.debug('***** C501_MassMerge_SharedCode::ProcessContactMergeCandidates Process pending merge candidates pendingMerges: ' + String.valueOf(pendingMerges));
-            ProcessContactMerges(pendingMerges, true);
+            System.debug('***** C501_MassMerge_SharedCode::ProcessMergeCandidates Process pending merge candidates pendingMerges: ' + String.valueOf(pendingMerges));
+            ProcessContactMerges(pendingMerges, false);
         }
 
         // Check if AutoMerge Enabled
-        System.debug('***** C501_MassMerge_SharedCode::ProcessContactMergeCandidates Check AutoMerge AutoMerge_Percentage__c: ' + mergeMetric.AutoMerge_Percentage__c);
         if (mergeMetric.AutoMerge_Percentage__c == null || mergeMetric.AutoMerge_Percentage__c <= 0.0) {
             return;
         }
@@ -491,8 +536,8 @@ global with sharing class C501_MassMerge_SharedCode {
                 LIMIT 100];
 
             if (!pendingAutoMerges.isEmpty()) {
-                System.debug('***** C501_MassMerge_SharedCode::ProcessContactMergeCandidates Process auto merge candidates pendingAutoMerges: ' + String.valueOf(pendingAutoMerges));
-                ProcessContactMerges(pendingAutoMerges, true);
+                System.debug('***** C501_MassMerge_SharedCode::ProcessMergeCandidates Process auto merge candidates pendingAutoMerges: ' + String.valueOf(pendingAutoMerges));
+                ProcessContactMerges(pendingAutoMerges, false);
             }
         }
     }
