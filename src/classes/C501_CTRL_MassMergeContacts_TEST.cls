@@ -41,27 +41,149 @@ private with sharing class C501_CTRL_MassMergeContacts_TEST {
         C501_MM_Rule_Contact_NameEmail scheduleNameEmail = new C501_MM_Rule_Contact_NameEmail();
         scheduleNameEmail.execute(null);
 
+        C501_MM_Rule_Account_NoContacts scheduleAccountNoContacts = new C501_MM_Rule_Account_NoContacts();
+        scheduleAccountNoContacts.execute(null);
+
         List<C501_Merge_Metric__c> listMergeMetrics = new List<C501_Merge_Metric__c>();
         for (C501_Merge_Metric__c mergeMetric :[SELECT Id FROM C501_Merge_Metric__c]) {
             mergeMetric.Enable__c = true;
             mergeMetric.AutoMerge_Percentage__c = 0.0;
-            mergeMetric.AutoMerge_Objects__c = 'Account;Contact';
+            mergeMetric.AutoMerge_Objects__c = 'Account;Contacts Within Account;Contacts Across Accounts';
 
             listMergeMetrics.add(mergeMetric);
         }
 
         update listMergeMetrics;
 
-        // Create Contact Merges
-        scheduleNameDOB.execute(null);
-        scheduleNameEmail.execute(null);
-
-        // Attempt to create Contact Merges again
+        // Create Account and Contact Merges
         scheduleNameDOB.execute(null);
         scheduleNameEmail.execute(null);
     }
 
     //==================== TEST METHOD(s) ======================================
+
+    private static testMethod void ProcessContactMerges_BatchTest() {
+
+        List<C501_Merge_Metric__c> listMergeMetrics = [SELECT Id FROM C501_Merge_Metric__c];
+        List<Contact> listContacts = [SELECT Id FROM Contact];
+
+        C501_Contact_Merge__c contactMerge1 = new C501_Contact_Merge__c(
+                Unique_Id__c = 'Name ' + listContacts[0].Id,
+                Merge_Metric__c = listMergeMetrics[0].Id,
+                Contact__c = listContacts[0].Id,
+                Merge_Target_Contact__c = listContacts[1].Id,
+                Merge_Confidence__c = 100.0);
+
+        insert contactMerge1;
+
+        C501_Contact_Merge__c contactMerge2 = new C501_Contact_Merge__c(
+                Unique_Id__c = 'Name ' + listContacts[2].Id,
+                Merge_Metric__c = listMergeMetrics[0].Id,
+                Contact__c = listContacts[2].Id,
+                Merge_Target_Contact__c = listContacts[3].Id,
+                Merge_Confidence__c = 100.0,
+                Merge_Action__c = 'Merge');
+
+        insert contactMerge2;
+
+        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
+        c501MassMerge_SharedCode.ProcessContactMerges(new List<C501_Contact_Merge__c> { contactMerge1 }, true);
+    }
+
+    private static testMethod void ProcessContactMerges_SyncTest() {
+
+        List<C501_Merge_Metric__c> listMergeMetrics = [SELECT Id FROM C501_Merge_Metric__c];
+        List<Contact> listContacts = [SELECT Id FROM Contact];
+
+        C501_Contact_Merge__c contactMerge1 = new C501_Contact_Merge__c(
+                Unique_Id__c = 'Name ' + listContacts[0].Id,
+                Merge_Metric__c = listMergeMetrics[0].Id,
+                Contact__c = listContacts[0].Id,
+                Merge_Target_Contact__c = listContacts[1].Id,
+                Merge_Confidence__c = 100.0);
+
+        insert contactMerge1;
+
+        C501_Contact_Merge__c contactMerge2 = new C501_Contact_Merge__c(
+                Unique_Id__c = 'Name ' + listContacts[2].Id,
+                Merge_Metric__c = listMergeMetrics[0].Id,
+                Contact__c = listContacts[2].Id,
+                Merge_Target_Contact__c = listContacts[3].Id,
+                Merge_Confidence__c = 100.0,
+                Merge_Action__c = 'Merge');
+
+        insert contactMerge2;
+
+        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
+        c501MassMerge_SharedCode.ProcessContactMerges(new List<C501_Contact_Merge__c> { contactMerge1 }, false);
+    }
+
+    private static testMethod void ProcessContactMerges_AcrossAccountsTest() {
+
+        Account account1 = new Account(
+            Name = 'Account1',
+            BillingStreet = '123 Street',
+            Phone = '(123) 456-7890'
+        );
+        insert account1;
+
+        Contact contact11 = new Contact(
+            LastName = 'LastName',
+            FirstName = 'FirstName',
+            Birthdate = System.today(),
+            AccountId = account1.Id
+        );
+        insert contact11;
+
+        Account account2 = new Account(
+            Name = 'Account2',
+            BillingStreet = '123 Street',
+            Phone = '(123) 456-7890'
+        );
+        insert account2;
+
+        Contact contact21 = new Contact(
+            LastName = 'LastName',
+            FirstName = 'FirstName',
+            Email = 'email@email.com',
+            Gender__c = 'Male',
+            AccountId = account2.Id
+        );
+        insert contact21;
+
+        List<C501_Merge_Metric__c> listMergeMetrics = [SELECT Id FROM C501_Merge_Metric__c];
+
+        C501_Contact_Merge__c contactMerge1 = new C501_Contact_Merge__c(
+                Unique_Id__c = 'Name ' + contact11.Id,
+                Merge_Metric__c = listMergeMetrics[0].Id,
+                Contact__c = contact11.Id,
+                Merge_Target_Contact__c = contact21.Id,
+                Merge_Confidence__c = 100.0);
+
+        insert contactMerge1;
+
+        // Add some invalids merges
+        //
+        C501_Contact_Merge__c contactMerge2 = new C501_Contact_Merge__c(
+                Unique_Id__c = 'Name2 ' + contact11.Id,
+                Merge_Metric__c = listMergeMetrics[0].Id,
+                Contact__c = contact11.Id,
+                Merge_Confidence__c = 100.0);
+
+        insert contactMerge2;
+
+        C501_Contact_Merge__c contactMerge3 = new C501_Contact_Merge__c(
+                Unique_Id__c = 'Name3 ' + contact11.Id,
+                Merge_Metric__c = listMergeMetrics[0].Id,
+                Contact__c = contact11.Id,
+                Merge_Target_Contact__c = contact11.Id,
+                Merge_Confidence__c = 100.0);
+
+        insert contactMerge3;
+
+        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
+        c501MassMerge_SharedCode.ProcessContactMerges(new List<C501_Contact_Merge__c> { contactMerge1 }, false);
+    }
 
     private static testmethod void CodeCoverageTests() {
 
@@ -118,7 +240,11 @@ private with sharing class C501_CTRL_MassMergeContacts_TEST {
         for (Contact ContactMerge :ctrl.listContacts) {
             ContactMerge.C501_Merge_Action__c = 'Merge';
         }
+        ctrl.listContacts[0].C501_Merge_Action__c = 'Master';
+
         ctrl.listContacts[ctrl.listContacts.size() - 1].C501_Merge_Action__c = 'Ignore';
+        ctrl.listContacts[ctrl.listContacts.size() - 2].C501_Merge_Action__c = 'Ignore';
+
         ctrl.SaveContacts();
 
         System.debug('***** C501_CTRL_MassMergeContacts_TEST::CodeCoverageTests' + ctrl.strSaveResults);

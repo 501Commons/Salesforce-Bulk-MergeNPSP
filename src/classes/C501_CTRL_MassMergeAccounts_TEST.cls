@@ -32,26 +32,39 @@
 private with sharing class C501_CTRL_MassMergeAccounts_TEST {
     
     @testSetup static void setup() {
+
         C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
         c501MassMerge_SharedCode.TestSetupMerge();
 
         C501_MM_Rule_Contact_NameDOB scheduleNameDOB = new C501_MM_Rule_Contact_NameDOB();
         scheduleNameDOB.execute(null);
 
-        C501_MM_Rule_Contact_NameEmail scheduleNameEmail = new C501_MM_Rule_Contact_NameEmail();
-        scheduleNameEmail.execute(null);
-
-        C501_MM_Rule_Account_Address scheduleAccountAddress = new C501_MM_Rule_Account_Address();
-        scheduleAccountAddress.execute(null);
-
-        C501_MM_Rule_Account_Website scheduleAccountWebsite = new C501_MM_Rule_Account_Website();
-        scheduleAccountWebsite.execute(null);
-
         List<C501_Merge_Metric__c> listMergeMetrics = new List<C501_Merge_Metric__c>();
         for (C501_Merge_Metric__c mergeMetric :[SELECT Id FROM C501_Merge_Metric__c]) {
             mergeMetric.Enable__c = true;
             mergeMetric.AutoMerge_Percentage__c = 0.0;
-            mergeMetric.AutoMerge_Objects__c = 'Account;Contact';
+            mergeMetric.AutoMerge_Objects__c = 'Account;Contacts Within Account;Contacts Across Accounts';
+
+            listMergeMetrics.add(mergeMetric);
+        }
+
+        update listMergeMetrics;
+
+        scheduleNameDOB.execute(null);
+    }
+
+    //==================== TEST METHOD(s) ======================================
+
+    private static testmethod void Contact_NameDOB_Test() {
+
+        C501_MM_Rule_Contact_NameDOB scheduleNameDOB = new C501_MM_Rule_Contact_NameDOB();
+        scheduleNameDOB.execute(null);
+
+        List<C501_Merge_Metric__c> listMergeMetrics = new List<C501_Merge_Metric__c>();
+        for (C501_Merge_Metric__c mergeMetric :[SELECT Id FROM C501_Merge_Metric__c]) {
+            mergeMetric.Enable__c = true;
+            mergeMetric.AutoMerge_Percentage__c = 90.0;
+            mergeMetric.AutoMerge_Objects__c = 'Account;Contacts Within Account;Contacts Across Accounts';
 
             listMergeMetrics.add(mergeMetric);
         }
@@ -60,18 +73,140 @@ private with sharing class C501_CTRL_MassMergeAccounts_TEST {
 
         // Create Account Merges
         scheduleNameDOB.execute(null);
-        scheduleNameEmail.execute(null);
-        scheduleAccountAddress.execute(null);
-        scheduleAccountWebsite.execute(null);
 
         // Attempt to create Account Merges again
         scheduleNameDOB.execute(null);
+    }
+
+    private static testmethod void Contact_NameEmail_Test() {
+
+        C501_MM_Rule_Contact_NameEmail scheduleNameEmail = new C501_MM_Rule_Contact_NameEmail();
         scheduleNameEmail.execute(null);
+
+        List<C501_Merge_Metric__c> listMergeMetrics = new List<C501_Merge_Metric__c>();
+        for (C501_Merge_Metric__c mergeMetric :[SELECT Id FROM C501_Merge_Metric__c]) {
+            mergeMetric.Enable__c = true;
+            mergeMetric.AutoMerge_Percentage__c = 90.0;
+            mergeMetric.AutoMerge_Objects__c = 'Account;Contacts Within Account;Contacts Across Accounts';
+
+            listMergeMetrics.add(mergeMetric);
+        }
+
+        update listMergeMetrics;
+
+        // Create Account Merges
+        scheduleNameEmail.execute(null);
+
+        // Attempt to create Account Merges again
+        scheduleNameEmail.execute(null);
+    }
+
+    private static testmethod void Account_Address_Test() {
+
+        C501_MM_Rule_Account_Address scheduleAccountAddress = new C501_MM_Rule_Account_Address();
         scheduleAccountAddress.execute(null);
+
+        List<C501_Merge_Metric__c> listMergeMetrics = new List<C501_Merge_Metric__c>();
+        for (C501_Merge_Metric__c mergeMetric :[SELECT Id FROM C501_Merge_Metric__c]) {
+            mergeMetric.Enable__c = true;
+            mergeMetric.AutoMerge_Percentage__c = 90.0;
+            mergeMetric.AutoMerge_Objects__c = 'Account;Contacts Within Account;Contacts Across Accounts';
+
+            listMergeMetrics.add(mergeMetric);
+        }
+
+        update listMergeMetrics;
+
+        // Create Account Merges
+        scheduleAccountAddress.execute(null);
+
+        // Attempt to create Account Merges again
+        scheduleAccountAddress.execute(null);
+    }
+
+    private static testmethod void Account_NoContacts_Test() {
+
+        C501_MM_Rule_Account_NoContacts scheduleAccountNoContacts = new C501_MM_Rule_Account_NoContacts();
+        scheduleAccountNoContacts.execute(null);
+
+        List<C501_Merge_Metric__c> listMergeMetrics = new List<C501_Merge_Metric__c>();
+        for (C501_Merge_Metric__c mergeMetric :[SELECT Id FROM C501_Merge_Metric__c]) {
+            mergeMetric.Enable__c = true;
+            mergeMetric.AutoMerge_Percentage__c = 90.0;
+            mergeMetric.AutoMerge_Objects__c = 'Account;Contacts Within Account;Contacts Across Accounts';
+
+            listMergeMetrics.add(mergeMetric);
+        }
+
+        update listMergeMetrics;
+
+        // Create Account Merges
+        scheduleAccountNoContacts.execute(null);
+
+        // Attempt to create Account Merges again
+        scheduleAccountNoContacts.execute(null);
+    }
+
+    private static testmethod void Account_Website_Test() {
+
+        C501_MM_Rule_Account_Website scheduleAccountWebsite = new C501_MM_Rule_Account_Website();
+        scheduleAccountWebsite.execute(null);
+
+        List<C501_Merge_Metric__c> listMergeMetrics = new List<C501_Merge_Metric__c>();
+        for (C501_Merge_Metric__c mergeMetric :[SELECT Id FROM C501_Merge_Metric__c]) {
+            mergeMetric.Enable__c = true;
+            mergeMetric.AutoMerge_Percentage__c = 90.0;
+            mergeMetric.AutoMerge_Objects__c = 'Account;Contacts Within Account;Contacts Across Accounts';
+
+            listMergeMetrics.add(mergeMetric);
+        }
+
+        update listMergeMetrics;
+
+        // Create Account Merges
+        scheduleAccountWebsite.execute(null);
+
+        // Attempt to create Account Merges again
         scheduleAccountWebsite.execute(null);
     }
 
-    //==================== TEST METHOD(s) ======================================
+    private static testMethod void ProcessAccountMerges_BatchTest() {
+
+        List<C501_Merge_Metric__c> listMergeMetrics = [SELECT Id FROM C501_Merge_Metric__c];
+        List<Account> listAccounts = [SELECT Id FROM Account];
+
+        C501_Account_Merge__c accountMerge = new C501_Account_Merge__c(
+                Unique_Id__c = 'Name ' + listAccounts[0].Id,
+                Merge_Metric__c = listMergeMetrics[0].Id,
+                Account__c = listAccounts[0].Id,
+                Merge_Target_Account__c = listAccounts[1].Id,
+                Merge_Confidence__c = 100.0,
+                Merge_Action__c = 'Merge');
+
+        insert accountMerge;
+
+        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
+        c501MassMerge_SharedCode.ProcessAccountMerges(new List<C501_Account_Merge__c> { accountMerge }, true);
+    }
+
+    private static testMethod void ProcessAccountMerges_SyncTest() {
+
+        List<C501_Merge_Metric__c> listMergeMetrics = [SELECT Id FROM C501_Merge_Metric__c];
+        List<Account> listAccounts = [SELECT Id FROM Account];
+
+        C501_Account_Merge__c accountMerge = new C501_Account_Merge__c(
+                Unique_Id__c = 'Name ' + listAccounts[0].Id,
+                Merge_Metric__c = listMergeMetrics[0].Id,
+                Account__c = listAccounts[0].Id,
+                Merge_Target_Account__c = listAccounts[1].Id,
+                Merge_Confidence__c = 100.0,
+                Merge_Action__c = 'Merge');
+
+        insert accountMerge;
+
+        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
+        c501MassMerge_SharedCode.ProcessAccountMerges(new List<C501_Account_Merge__c> { accountMerge }, false);
+    }
 
     private static testmethod void CodeCoverageTests() {
 
@@ -85,6 +220,7 @@ private with sharing class C501_CTRL_MassMergeAccounts_TEST {
         //instantiate the controller for this opp
         C501_CTRL_MassMergeAccounts ctrl = new C501_CTRL_MassMergeAccounts();
         System.AssertEquals(masterAccountId, ctrl.accountFilter.Id);
+
         System.Assert(ctrl.listSOAccounts.size() > 1);
         System.Assert(ctrl.listAccounts.size() > 0);
 
@@ -128,7 +264,11 @@ private with sharing class C501_CTRL_MassMergeAccounts_TEST {
         for (Account accountMerge :ctrl.listAccounts) {
             accountMerge.C501_Merge_Action__c = 'Merge';
         }
+        ctrl.listAccounts[0].C501_Merge_Action__c = 'Master';
+
         ctrl.listAccounts[ctrl.listAccounts.size() - 1].C501_Merge_Action__c = 'Ignore';
+        ctrl.listAccounts[ctrl.listAccounts.size() - 2].C501_Merge_Action__c = 'Ignore';
+
         ctrl.SaveAccounts();
 
         System.debug('***** C501_CTRL_MassMergeAccounts_TEST::CodeCoverageTests' + ctrl.strSaveResults);
