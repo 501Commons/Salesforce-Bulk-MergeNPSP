@@ -69,11 +69,6 @@
                     <label>Account</label>
                 </value>
                 <value>
-                    <fullName>Contact</fullName>
-                    <default>false</default>
-                    <label>Contact</label>
-                </value>
-                <value>
                     <fullName>Contacts Within Account</fullName>
                     <default>false</default>
                     <label>Contacts Within Account</label>

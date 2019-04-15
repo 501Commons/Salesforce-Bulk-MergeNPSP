@@ -9,6 +9,7 @@
         <members>C501_MM_Rule_Account_NoContacts</members>
         <members>C501_MM_Rule_Account_Website</members>
         <members>C501_MM_Rule_Contact_NameDOB</members>
+        <members>C501_MM_Rule_Contact_NameDOB_Process</members>
         <members>C501_MM_Rule_Contact_NameEmail</members>
         <members>C501_MassMerge_Batch</members>
         <members>C501_MassMerge_Scheduler_TEST</members>

@@ -28,7 +28,7 @@
     POSSIBILITY OF SUCH DAMAGE.
 -->  
  
-<apex:page controller="C501_CTRL_MassMergeContacts" title="{!$Label.labelMassMergeTitle}" tabStyle="Contact" standardStylesheets="true" sidebar="false">
+<apex:page controller="C501_CTRL_MassMergeContacts" title="{!$Label.labelMassMergeContactTitle}" tabStyle="Contact" standardStylesheets="true" sidebar="false">
     <apex:stylesheet value="{!URLFOR($Resource.sfdo213, '/assets/styles/salesforce-lightning-design-system-vf.min.css')}" />
     <apex:stylesheet value="{!URLFOR($Resource.v4sStaticResources, '/v4s_slds/v4s-common.css')}" />
 
@@ -71,7 +71,7 @@
             <div class="slds-page-header" role="banner">
                 <div class="slds-grid">
                     <div class="slds-col--padded">
-                        <h1 class="slds-page-header__title slds-m-right--small slds-truncate slds-align-middle">{!$Label.labelMassMergeTitle}</h1>
+                        <h1 class="slds-page-header__title slds-m-right--small slds-truncate slds-align-middle">{!$Label.labelMassMergeContactTitle}</h1>
                     </div>        
     
                     <div class="slds-col--padded slds-no-flex slds-align-middle">
@@ -85,7 +85,7 @@
             </div>
             <!-- /PAGE HEADER -->
             <c:C501_UTIL_PageMessages />
-            <p class="slds-p-around--medium"><apex:outputText value="{!$Label.labelMassMergeHelp}" style="font-style:italic" /></p>
+            <p class="slds-p-around--medium"><apex:outputText value="{!$Label.labelMassMergeContactHelp}" style="font-style:italic" /></p>
             <fieldset class="slds-form">
                 <div class="slds-grid">
                     <div class="slds-col--padded slds-form-element slds-size--1-of-3">

@@ -117,7 +117,7 @@
         <categories>MassMergeAccounts</categories>
         <language>en_US</language>
         <protected>false</protected>
-        <shortDescription>label for Add More Rows link in Mass Edit page.</shortDescription>
+        <shortDescription>label for Add More Rows link in Mass Merge page.</shortDescription>
         <value>Add new row</value>
     </labels>
     <labels>
@@ -193,6 +193,14 @@
         <value>Choose the Household then the page will display any existing account merge records.  Update all rows as appropriate, and then click Save.</value>
     </labels>
     <labels>
+        <fullName>labelMassMergeContactHelp</fullName>
+        <categories>MassMergeContacts</categories>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>help text for the Mass Merge Contacts page</shortDescription>
+        <value>Choose the Contact then the page will display any existing contact merge records.  Update all rows as appropriate, and then click Save.</value>
+    </labels>
+    <labels>
         <fullName>labelMassMergeOptional</fullName>
         <categories>MassMergeAccounts</categories>
         <language>en_US</language>
@@ -213,8 +221,16 @@
         <categories>MassMergeAccounts</categories>
         <language>en_US</language>
         <protected>false</protected>
-        <shortDescription>title for the Mass Edit page</shortDescription>
+        <shortDescription>title for the Mass Merge page</shortDescription>
         <value>Mass Merge Accounts</value>
+    </labels>
+    <labels>
+        <fullName>labelMassMergeContactTitle</fullName>
+        <categories>MassMergeContacts</categories>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>title for the Mass Merge page</shortDescription>
+        <value>Mass Merge Contacts</value>
     </labels>
     <labels>
         <fullName>labelMessageLoading</fullName>
