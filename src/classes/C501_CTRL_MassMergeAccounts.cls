@@ -36,7 +36,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
         }
     }
     
-    private C501_MassMerge_SharedCode c501MassMerge_SharedCode;
+    private C501_MassMerge_SharedCode_Account c501MassMerge_SharedCode_Account;
     private List<String> listStrFields;
     
     global boolean redirect { get; private set; }
@@ -48,7 +48,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
         System.debug('***** C501_CTRL_MassMergeAccounts::C501_CTRL_MassMergeAccounts Constructor');
 
         redirect = false;
-        c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
+        c501MassMerge_SharedCode_Account = new C501_MassMerge_SharedCode_Account();
         
         // handle optional parameters (must use string, not ID, to handle null)
         string id = ApexPages.currentPage().getParameters().get('id');
@@ -68,10 +68,10 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
         listStrFields.add('C501_Merge_Target__c');
     }   
     
-    global list<SelectOption> listSOAccounts {
+    global List<SelectOption> listSOAccounts {
         get {
             if (listSOAccounts == null )
-                listSOAccounts = c501MassMerge_SharedCode.listAccountsWithConfidence(accountFilter.C501_Merge_Rule__c, accountFilter.C501_Merge_Confidence_From__c, accountFilter.C501_Merge_Confidence_To__c);
+                listSOAccounts = c501MassMerge_SharedCode_Account.ListObjectsWithConfidence(accountFilter.C501_Merge_Rule__c, accountFilter.C501_Merge_Confidence_From__c, accountFilter.C501_Merge_Confidence_To__c);
 
             return listSOAccounts;
         }
@@ -79,7 +79,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
         set;
         }
 
-    global list<SelectOption> listSORules {
+    global List<SelectOption> listSORules {
         get {
             if (listSORules == null ) {
                 listSORules = new List<System.SelectOption>();
@@ -162,7 +162,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
     global String strSaveResults { get; set; }
       
     // The list of Accounts.
-    global list<Account> listAccounts {
+    global List<Account> listAccounts {
         get {
             if (listAccounts == null) {
                 FillListAccounts();
@@ -186,8 +186,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
             for(C501_Account_Merge__c accountMerge : [
                 SELECT Id, Account__c, Merge_Target_Account__c, Merge_Confidence__c, Merge_Action__c, Merge_Metric__c, Merge_Metric__r.Name
                 FROM C501_Account_Merge__c
-                WHERE (Account__c = :accountFilter.Id OR Merge_Target_Account__c = :accountFilter.Id) AND isDeleted = false
-                LIMIT 1]) {
+                WHERE (Account__c = :accountFilter.Id OR Merge_Target_Account__c = :accountFilter.Id) AND isDeleted = false]) {
 
                     accountsMerge.put(
                         accountMerge.Account__c,
@@ -201,6 +200,11 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
                             Merge_Metric_Name__c = 'Merge ' + accountMerge.Merge_Metric__r.Name
                     ));
 
+                    // Limit when using filter to 3 because merge limit is 1 master and up to 2 duplicates
+                    if (accountsMerge.keySet().size() >= 3) {
+                        break;
+                    }
+
                     accountsMerge.put(
                         accountMerge.Merge_Target_Account__c,
                         new C501_Account_Merge__c(
@@ -212,6 +216,11 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
                             Merge_Metric__c = accountMerge.Merge_Metric__c,
                             Merge_Metric_Name__c = 'Merge ' + accountMerge.Merge_Metric__r.Name
                     ));
+
+                    // Limit when using filter to 3 because merge limit is 1 master and up to 2 duplicates
+                    if (accountsMerge.keySet().size() >= 3) {
+                        break;
+                    }
             }
         }
         else {
@@ -432,15 +441,62 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
                 }
             }
 
-            if (!listAccountsMergeUpdate.values().isEmpty()) {
-                update listAccountsMergeUpdate.values();
+            if (accountFilter.Id <> null) {
+
+                Account masterAccount = new Account();
+                for (C501_Account_Merge__c mergeAccount :listAccountsMerges.values()) {
+
+                    if (mergeAccount.Account__c <> null) {
+                        masterAccount.Id = mergeAccount.Account__c;
+                        break;
+                    }
+                }
+
+                Map<Id, Account> duplicateAccounts = new Map<Id, Account>();
+                for (C501_Account_Merge__c mergeAccount :listAccountsMerges.values()) {
+
+                    if (mergeAccount.Account__c <> null && mergeAccount.Account__c <> masterAccount.Id) {
+                        duplicateAccounts.put(mergeAccount.Account__c, new Account( Id = mergeAccount.Account__c ));
+                    }
+
+                    // Database Merge supports merging up to 2 records into a master record
+                    if (duplicateAccounts.values().size() >= 2) {
+                        break;
+                    }
+
+                    if (mergeAccount.Merge_Target_Account__c <> null && mergeAccount.Merge_Target_Account__c <> masterAccount.Id) {
+                        duplicateAccounts.put(mergeAccount.Merge_Target_Account__c, new Account( Id = mergeAccount.Merge_Target_Account__c ));
+                    }
+
+                    // Database Merge supports merging up to 2 records into a master record
+                    if (duplicateAccounts.values().size() >= 2) {
+                        break;
+                    }
+                }
+
+                // Merge based on accounts
+                if (masterAccount.Id <> null && duplicateAccounts.values().size() > 0) {
+                    c501MassMerge_SharedCode_Account.ObjectsMerge(masterAccount, duplicateAccounts.values());
+                    strSaveResults = (duplicateAccounts.values().size() + 1) + ' ' + Label.labelMassMergeSaveSuccess;
+                }
+                else {
+                    strSaveResults = '0 ' + Label.labelMassMergeSaveSuccess;
+                }
+            }
+            else {
+
+                // Merge based on merge accounts
+                if (!listAccountsMergeUpdate.values().isEmpty()) {
+                    update listAccountsMergeUpdate.values();
+                }
+
+                if (!listAccountsMergeCandidates.isEmpty()) {
+                    c501MassMerge_SharedCode_Account.ProcessObjectMerges(listAccountsMergeCandidates, false);
+                }
+
+                strSaveResults = (listAccountsMergeCandidates.size() * 2) + ' ' + Label.labelMassMergeSaveSuccess;
             }
 
-            if (!listAccountsMergeCandidates.isEmpty()) {
-                c501MassMerge_SharedCode.ProcessAccountMerges(listAccountsMergeCandidates, false);
-            }
-
-            strSaveResults = (listAccountsMergeCandidates.size() * 2) + ' ' + Label.labelMassMergeSaveSuccess;
             ApexPages.addMessage(new ApexPages.message(ApexPages.Severity.CONFIRM, strSaveResults));
 
             // successful save, so clear out dirty list

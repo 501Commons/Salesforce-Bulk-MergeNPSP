@@ -170,7 +170,7 @@ private with sharing class C501_CTRL_MassMergeAccounts_TEST {
         scheduleAccountWebsite.execute(null);
     }
 
-    private static testMethod void ProcessAccountMerges_BatchTest() {
+    private static testMethod void ProcessObjectMerges_BatchTest() {
 
         List<C501_Merge_Metric__c> listMergeMetrics = [SELECT Id FROM C501_Merge_Metric__c];
         List<Account> listAccounts = [SELECT Id FROM Account];
@@ -185,11 +185,11 @@ private with sharing class C501_CTRL_MassMergeAccounts_TEST {
 
         insert accountMerge;
 
-        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
-        c501MassMerge_SharedCode.ProcessAccountMerges(new List<C501_Account_Merge__c> { accountMerge }, true);
+        C501_MassMerge_SharedCode_Account c501MassMerge_SharedCode_Account = new C501_MassMerge_SharedCode_Account();
+        c501MassMerge_SharedCode_Account.ProcessObjectMerges(new List<C501_Account_Merge__c> { accountMerge }, true);
     }
 
-    private static testMethod void ProcessAccountMerges_SyncTest() {
+    private static testMethod void ProcessObjectMerges_SyncTest() {
 
         List<C501_Merge_Metric__c> listMergeMetrics = [SELECT Id FROM C501_Merge_Metric__c];
         List<Account> listAccounts = [SELECT Id FROM Account];
@@ -204,8 +204,8 @@ private with sharing class C501_CTRL_MassMergeAccounts_TEST {
 
         insert accountMerge;
 
-        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
-        c501MassMerge_SharedCode.ProcessAccountMerges(new List<C501_Account_Merge__c> { accountMerge }, false);
+        C501_MassMerge_SharedCode_Account c501MassMerge_SharedCode_Account = new C501_MassMerge_SharedCode_Account();
+        c501MassMerge_SharedCode_Account.ProcessObjectMerges(new List<C501_Account_Merge__c> { accountMerge }, false);
     }
 
     private static testmethod void CodeCoverageTests() {

@@ -48,8 +48,10 @@ global class C501_MM_Rule_Contact_NameDOB_Process implements Schedulable {
         C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
         c501MassMerge_SharedCode.ScheduleJobs(mergeMetrics[0]);
 
-        c501MassMerge_SharedCode.ProcessAccountMergeCandidates(mergeMetrics[0]);
+        C501_MassMerge_SharedCode_Account c501MassMerge_SharedCode_Account = new C501_MassMerge_SharedCode_Account();
+        c501MassMerge_SharedCode_Account.ProcessObjectMergeCandidates(mergeMetrics[0]);
 
-        c501MassMerge_SharedCode.ProcessContactMergeCandidates(mergeMetrics[0]);
+        C501_MassMerge_SharedCode_Contact c501MassMerge_SharedCode_Contact = new C501_MassMerge_SharedCode_Contact();
+        c501MassMerge_SharedCode_Contact.ProcessObjectMergeCandidates(mergeMetrics[0]);
    }
 }

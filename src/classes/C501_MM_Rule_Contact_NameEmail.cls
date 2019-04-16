@@ -169,7 +169,8 @@ global class C501_MM_Rule_Contact_NameEmail implements Schedulable {
             ));
         }
 
-        c501MassMerge_SharedCode.InsertContactMergeCandidates(mergeMetrics[0], mergeContacts.values());
-        c501MassMerge_SharedCode.ProcessContactMergeCandidates(mergeMetrics[0]);
+        C501_MassMerge_SharedCode_Contact c501MassMerge_SharedCode_Contact = new C501_MassMerge_SharedCode_Contact();
+        c501MassMerge_SharedCode_Contact.InsertObjectMergeCandidates(mergeMetrics[0], mergeContacts.values());
+        c501MassMerge_SharedCode_Contact.ProcessObjectMergeCandidates(mergeMetrics[0]);
    }
 }

@@ -31,8 +31,8 @@
 global class C501_MassMerge_Batch implements Database.Batchable<sObject> { 
 
   global String query;
-  global Boolean accountMerge = false;
-  global Boolean contactMerge = false;
+  global Boolean AccountMerge = false;
+  global Boolean ContactMerge = false;
 
   global Database.querylocator start(Database.BatchableContext BC) {
     System.debug('***** C501_MassMerge_Batch::start - query: ' + query);
@@ -41,7 +41,7 @@ global class C501_MassMerge_Batch implements Database.Batchable<sObject> {
 
   global void execute(Database.BatchableContext info, List<sObject> scope) {
     
-    if (accountMerge) {
+    if (AccountMerge) {
       List<Account> accountDuplicates = new List<Account>();
       Account masterAccount = null;
       for (sObject accountObject :scope) {
@@ -53,12 +53,12 @@ global class C501_MassMerge_Batch implements Database.Batchable<sObject> {
         }
       }
 
-      C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
       System.debug('***** C501_MassMerge_Batch::execute - masterAccount: ' + String.valueOf(masterAccount));
       System.debug('***** C501_MassMerge_Batch::execute - accountDuplicates: ' + String.valueOf(accountDuplicates));
-      c501MassMerge_SharedCode.AccountsMerge(masterAccount, accountDuplicates);
+      C501_MassMerge_SharedCode_Account c501MassMerge_SharedCode_Account = new C501_MassMerge_SharedCode_Account();
+      c501MassMerge_SharedCode_Account.ObjectsMerge(masterAccount, accountDuplicates);
     }
-    else if (contactMerge) {
+    else if (ContactMerge) {
       List<Contact> contactDuplicates = new List<Contact>();
       Contact masterContact = null;
       for (sObject contactObject :scope) {
@@ -70,10 +70,10 @@ global class C501_MassMerge_Batch implements Database.Batchable<sObject> {
         }
       }
 
-      C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
       System.debug('***** C501_MassMerge_Batch::execute - masterContact: ' + String.valueOf(masterContact));
       System.debug('***** C501_MassMerge_Batch::execute - contactDuplicates: ' + String.valueOf(contactDuplicates));
-      c501MassMerge_SharedCode.ContactsMerge(masterContact, contactDuplicates);
+      C501_MassMerge_SharedCode_Contact c501MassMerge_SharedCode_Contact = new C501_MassMerge_SharedCode_Contact();
+      c501MassMerge_SharedCode_Contact.ObjectsMerge(masterContact, contactDuplicates);
     }
   }
 

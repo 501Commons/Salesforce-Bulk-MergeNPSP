@@ -14,6 +14,8 @@
         <members>C501_MassMerge_Batch</members>
         <members>C501_MassMerge_Scheduler_TEST</members>
         <members>C501_MassMerge_SharedCode</members>
+        <members>C501_MassMerge_SharedCode_Account</members>
+        <members>C501_MassMerge_SharedCode_Contact</members>
         <members>C501_MassMerge_SharedCode_TEST</members>
         <members>C501_UTIL_PageMessages_CTRL</members>
         <name>ApexClass</name>
@@ -35,6 +37,7 @@
     </types>
     <types>
         <members>Account.C501_Billing_Address__c</members>
+        <members>Account.C501_Household_Id__c</members>
         <members>Account.C501_Merge_Account__c</members>
         <members>Account.C501_Merge_Action__c</members>
         <members>Account.C501_Merge_Confidence_From__c</members>
@@ -66,6 +69,7 @@
         <members>C501_Merge_Metric__c.Total_Unassigned_Accounts__c</members>
         <members>C501_Merge_Metric__c.Total_Unassigned_Contacts__c</members>
         <members>Contact.C501_Mailing_Address__c</members>
+        <members>Contact.C501_Household_Id__c</members>
         <members>Contact.C501_Merge_Action__c</members>
         <members>Contact.C501_Merge_Confidence_From__c</members>
         <members>Contact.C501_Merge_Confidence_To__c</members>

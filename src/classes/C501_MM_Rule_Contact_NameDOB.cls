@@ -89,7 +89,8 @@ global class C501_MM_Rule_Contact_NameDOB implements Schedulable {
             ));
         }
 
-        c501MassMerge_SharedCode.InsertAccountMergeCandidates(mergeMetrics[0], mergeAccounts.values());
+        C501_MassMerge_SharedCode_Account c501MassMerge_SharedCode_Account = new C501_MassMerge_SharedCode_Account();
+        c501MassMerge_SharedCode_Account.InsertObjectMergeCandidates(mergeMetrics[0], mergeAccounts.values());
 
         // Find Contact matches within an Account
         //
@@ -165,6 +166,7 @@ global class C501_MM_Rule_Contact_NameDOB implements Schedulable {
             ));
         }
 
-        c501MassMerge_SharedCode.InsertContactMergeCandidates(mergeMetrics[0], mergeContacts.values());
+        C501_MassMerge_SharedCode_Contact c501MassMerge_SharedCode_Contact = new C501_MassMerge_SharedCode_Contact();
+        c501MassMerge_SharedCode_Contact.InsertObjectMergeCandidates(mergeMetrics[0], mergeContacts.values());
    }
 }

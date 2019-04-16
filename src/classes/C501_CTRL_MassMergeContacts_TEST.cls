@@ -86,8 +86,8 @@ private with sharing class C501_CTRL_MassMergeContacts_TEST {
 
         insert contactMerge2;
 
-        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
-        c501MassMerge_SharedCode.ProcessContactMerges(new List<C501_Contact_Merge__c> { contactMerge1 }, true);
+        C501_MassMerge_SharedCode_Contact c501MassMerge_SharedCode_Contact = new C501_MassMerge_SharedCode_Contact();
+        c501MassMerge_SharedCode_Contact.ProcessObjectMerges(new List<C501_Contact_Merge__c> { contactMerge1 }, true);
     }
 
     private static testMethod void ProcessContactMerges_SyncTest() {
@@ -114,8 +114,8 @@ private with sharing class C501_CTRL_MassMergeContacts_TEST {
 
         insert contactMerge2;
 
-        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
-        c501MassMerge_SharedCode.ProcessContactMerges(new List<C501_Contact_Merge__c> { contactMerge1 }, false);
+        C501_MassMerge_SharedCode_Contact c501MassMerge_SharedCode_Contact = new C501_MassMerge_SharedCode_Contact();
+        c501MassMerge_SharedCode_Contact.ProcessObjectMerges(new List<C501_Contact_Merge__c> { contactMerge1 }, false);
     }
 
     private static testMethod void ProcessContactMerges_AcrossAccountsTest() {
@@ -181,8 +181,8 @@ private with sharing class C501_CTRL_MassMergeContacts_TEST {
 
         insert contactMerge3;
 
-        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
-        c501MassMerge_SharedCode.ProcessContactMerges(new List<C501_Contact_Merge__c> { contactMerge1 }, false);
+        C501_MassMerge_SharedCode_Contact c501MassMerge_SharedCode_Contact = new C501_MassMerge_SharedCode_Contact();
+        c501MassMerge_SharedCode_Contact.ProcessObjectMerges(new List<C501_Contact_Merge__c> { contactMerge1 }, false);
     }
 
     private static testmethod void CodeCoverageTests() {
