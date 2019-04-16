@@ -1,3 +1,12 @@
+//
+// GENERIC CLASS - only modify the C501_MassMerge_SharedCode_Account.cls class which is used to generate the C501_MassMerge_SharedCode_Contact.cls file.
+//      1) Make changes to this class
+//      2) Copy/Paste entire class to C501_MassMerge_SharedCode_Contact.cls
+//      3) Search and replace all Account references with Contact
+//
+//  This is a work around for Generic classes since <T> - Templating not supported in Apex
+//
+
 global with sharing class C501_MassMerge_SharedCode_Account { 
 
     public class C501_MassMerge_SharedCode_AccountException extends Exception {}

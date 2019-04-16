@@ -1,3 +1,7 @@
+//
+// GENERIC CLASS - Do Not Modify Code in this Class.  The Class is generated from the C501_MassMerge_SharedCode_Account.cls file
+//
+
 global with sharing class C501_MassMerge_SharedCode_Contact { 
 
     public class C501_MassMerge_SharedCode_ContactException extends Exception {}
