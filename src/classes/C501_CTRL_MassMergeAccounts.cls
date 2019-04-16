@@ -186,7 +186,8 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
             for(C501_Account_Merge__c accountMerge : [
                 SELECT Id, Account__c, Merge_Target_Account__c, Merge_Confidence__c, Merge_Action__c, Merge_Metric__c, Merge_Metric__r.Name
                 FROM C501_Account_Merge__c
-                WHERE (Account__c = :accountFilter.Id OR Merge_Target_Account__c = :accountFilter.Id) AND isDeleted = false]) {
+                WHERE (Account__c = :accountFilter.Id OR Merge_Target_Account__c = :accountFilter.Id) AND isDeleted = false
+                LIMIT 1]) {
 
                     accountsMerge.put(
                         accountMerge.Account__c,

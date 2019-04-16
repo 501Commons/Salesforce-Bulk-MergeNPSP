@@ -187,7 +187,8 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
             for(C501_Contact_Merge__c contactMerge : [
                 SELECT Id, Contact__c, Merge_Target_Contact__c, Merge_Confidence__c, Merge_Action__c, Merge_Metric__c, Merge_Metric__r.Name
                 FROM C501_Contact_Merge__c
-                WHERE (Contact__c = :contactFilter.Id OR Merge_Target_Contact__c = :contactFilter.Id) AND isDeleted = false]) {
+                WHERE (Contact__c = :contactFilter.Id OR Merge_Target_Contact__c = :contactFilter.Id) AND isDeleted = false
+                LIMIT 1]) {
 
                     contactsMerge.put(
                         contactMerge.Contact__c,
