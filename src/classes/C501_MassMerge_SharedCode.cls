@@ -73,6 +73,8 @@ global with sharing class C501_MassMerge_SharedCode {
                 npsp__Number_of_Household_Members__c = contact.Account.npsp__Number_of_Household_Members__c));
         }
 
+        System.debug('***** C501_MassMerge_SharedCode::ContactsMerge contactIds: ' + String.valueOf(contactIds) + ' contactAccounts: ' + String.valueOf(contactAccounts));
+
         // Check to add an account merge request - can not Account merge here because might be in a batch call which is not supported for Account merging
         Account masterAccount = contactAccounts.get(masterContact.Id);
         Map<String, C501_Account_Merge__c> accountMergeInserts = new Map<String, C501_Account_Merge__c>();

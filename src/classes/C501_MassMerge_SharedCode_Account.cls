@@ -304,6 +304,9 @@ global with sharing class C501_MassMerge_SharedCode_Account {
             return;
         }
 
+        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
+        c501MassMerge_SharedCode.ObjectsMerge_Account(masterObject, duplicateObjects);
+ 
         // Merge Accounts into master
         System.debug('***** C501_MassMerge_SharedCode::ObjectsMerge Account masterObject: ' + String.valueOf(masterObject) + ' duplicateObjects: ' + String.valueOf(duplicateObjects));
 
@@ -338,8 +341,5 @@ global with sharing class C501_MassMerge_SharedCode_Account {
         if (!deleteMerges.isEmpty()) {
             delete deleteMerges;
         }
-
-        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
-        c501MassMerge_SharedCode.ObjectsMerge_Account(masterObject, duplicateObjects);
-    }
+   }
 }

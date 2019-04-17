@@ -185,8 +185,19 @@ private with sharing class C501_CTRL_MassMergeAccounts_TEST {
 
         insert accountMerge;
 
-        C501_MassMerge_SharedCode_Account c501MassMerge_SharedCode_Account = new C501_MassMerge_SharedCode_Account();
-        c501MassMerge_SharedCode_Account.ProcessObjectMerges(new List<C501_Account_Merge__c> { accountMerge }, true);
+        Boolean exceptionRaised = false;
+
+        try
+        {
+            C501_MassMerge_SharedCode_Account c501MassMerge_SharedCode_Account = new C501_MassMerge_SharedCode_Account();
+            c501MassMerge_SharedCode_Account.ProcessObjectMerges(new List<C501_Account_Merge__c> { accountMerge }, true);
+        }
+        catch (C501_MassMerge_SharedCode_Account.C501_MassMerge_SharedCode_AccountException customException)
+        {
+            exceptionRaised = true;
+        }
+
+        System.AssertEquals(true, exceptionRaised, 'Exception should be thrown for Account merges on Batchable context');
     }
 
     private static testMethod void ProcessObjectMerges_SyncTest() {
