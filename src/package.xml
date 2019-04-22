@@ -11,6 +11,7 @@
         <members>C501_MM_Rule_Contact_NameDOB</members>
         <members>C501_MM_Rule_Contact_NameDOB_Process</members>
         <members>C501_MM_Rule_Contact_NameEmail</members>
+        <members>C501_MM_Rule_Discover</members>
         <members>C501_MassMerge_Batch</members>
         <members>C501_MassMerge_Scheduler_TEST</members>
         <members>C501_MassMerge_SharedCode</members>
@@ -65,6 +66,7 @@
         <members>C501_Merge_Metric__c.AutoMerge_Objects__c</members>
         <members>C501_Merge_Metric__c.AutoMerge_Percentage__c</members>
         <members>C501_Merge_Metric__c.Description__c</members>
+        <members>C501_Merge_Metric__c.Source_Report__c</members>
         <members>C501_Merge_Metric__c.Total_Ignore__c</members>
         <members>C501_Merge_Metric__c.Total_Unassigned_Accounts__c</members>
         <members>C501_Merge_Metric__c.Total_Unassigned_Contacts__c</members>

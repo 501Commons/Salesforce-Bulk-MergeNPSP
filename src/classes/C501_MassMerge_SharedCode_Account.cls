@@ -307,6 +307,17 @@ global with sharing class C501_MassMerge_SharedCode_Account {
         C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
         c501MassMerge_SharedCode.ObjectsMerge_Account(masterObject, duplicateObjects);
  
+ /*
+        // Merge Account fields into master
+        for (Schema.FieldSetMember f : SObjectType.Account.FieldSets.MassMergeAccounts.getFields()) {
+            for (Account object :duplicateObjects) {
+                
+                // Check to merge field - If field on master null then merge
+                masterObject.set(f.getFieldPath(), duplicateObject.get(f.getFieldPath());
+            }
+        }
+*/
+
         // Merge Accounts into master
         System.debug('***** C501_MassMerge_SharedCode::ObjectsMerge Account masterObject: ' + String.valueOf(masterObject) + ' duplicateObjects: ' + String.valueOf(duplicateObjects));
 
