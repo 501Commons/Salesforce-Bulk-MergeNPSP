@@ -113,20 +113,38 @@
         <visibleLines>3</visibleLines>
     </fields>
     <fields>
-        <fullName>Source_Report__c</fullName>
-        <externalId>false</externalId>
-        <label>Source Report</label>
-        <length>40</length>
-        <trackTrending>false</trackTrending>
-        <type>Text</type>
-    </fields>
-    <fields>
         <fullName>Enable__c</fullName>
         <defaultValue>false</defaultValue>
         <externalId>false</externalId>
         <label>Enable</label>
         <trackTrending>false</trackTrending>
         <type>Checkbox</type>
+    </fields>
+    <fields>
+        <fullName>Last_Discover_Date__c</fullName>
+        <externalId>false</externalId>
+        <label>Last Discover Date</label>
+        <required>false</required>
+        <trackTrending>false</trackTrending>
+        <type>DateTime</type>
+    </fields>
+    <fields>
+        <fullName>Last_Merge_Date__c</fullName>
+        <externalId>false</externalId>
+        <label>Last Merge Date</label>
+        <required>false</required>
+        <trackTrending>false</trackTrending>
+        <type>DateTime</type>
+    </fields>
+    <fields>
+        <fullName>Source_Report__c</fullName>
+        <externalId>false</externalId>
+        <label>Source Report</label>
+        <length>40</length>
+        <required>false</required>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
     </fields>
     <fields>
         <fullName>Total_Ignore__c</fullName>
@@ -166,6 +184,15 @@
         <type>Summary</type>
     </fields>
     <label>Merge Metric</label>
+    <listViews>
+        <fullName>All</fullName>
+        <columns>NAME</columns>
+        <columns>Enable__c</columns>
+        <columns>Confidence__c</columns>
+        <columns>AutoMerge_Percentage__c</columns>
+        <filterScope>Everything</filterScope>
+        <label>All</label>
+    </listViews>
     <listViews>
         <fullName>All1</fullName>
         <filterScope>Everything</filterScope>

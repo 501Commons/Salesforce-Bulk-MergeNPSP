@@ -36,22 +36,22 @@
         <label>MassMergeAccounts</label>
     </fieldSets>
     <fields>
-        <fullName>C501_Household_Id__c</fullName>
+        <fullName>C501_Billing_Address__c</fullName>
         <externalId>false</externalId>
-        <formula>Id</formula>
+        <formula>BillingStreet + &apos;, &apos; + BillingCity + &apos; &apos; + BillingState + &apos; &apos; + BillingPostalCode</formula>
         <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
-        <label>Household Id</label>
+        <label>Billing Address</label>
         <required>false</required>
         <trackHistory>false</trackHistory>
         <type>Text</type>
         <unique>false</unique>
     </fields>
     <fields>
-        <fullName>C501_Billing_Address__c</fullName>
+        <fullName>C501_Household_Id__c</fullName>
         <externalId>false</externalId>
-        <formula>BillingStreet + &apos;, &apos; + BillingCity + &apos; &apos; + BillingState + &apos; &apos; + BillingPostalCode</formula>
+        <formula>Id</formula>
         <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
-        <label>Billing Address</label>
+        <label>Household Id</label>
         <required>false</required>
         <trackHistory>false</trackHistory>
         <type>Text</type>
