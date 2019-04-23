@@ -94,6 +94,7 @@
     </fields>
     <fields>
         <fullName>Confidence__c</fullName>
+        <defaultValue>90.0</defaultValue>
         <description>Confidence percentage for potential merge candidates found by this rule.</description>
         <externalId>false</externalId>
         <label>Confidence</label>

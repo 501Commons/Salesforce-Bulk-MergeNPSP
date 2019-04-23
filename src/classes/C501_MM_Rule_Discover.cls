@@ -71,14 +71,23 @@ global class C501_MM_Rule_Discover implements Schedulable {
                 continue;
             }
 
-            if (mergeMetric.Last_Discover_Date__c == null || mergeMetricDiscover.Last_Discover_Date__c == null || mergeMetric.Last_Discover_Date__c < mergeMetricDiscover.Last_Discover_Date__c) {
+            System.debug('***** C501_MM_Rule_Discover:execute - Merge Metric Name: ' + mergeMetricDiscover.Name + ' reportId: ' + reportId);
+
+            if (mergeMetric.Last_Discover_Date__c == null) {
 
                 reportIdDiscover = reportId;
 
                 // Shallow Copy
                 mergeMetricDiscover = mergeMetric;
 
-                System.debug('***** C501_MM_Rule_Discover:execute - Merge Metric Name: ' + mergeMetricDiscover.Name + ' reportId: ' + reportId);
+                break;
+            }
+            else if (mergeMetric.Last_Discover_Date__c < mergeMetricDiscover.Last_Discover_Date__c) {
+
+                reportIdDiscover = reportId;
+
+                // Shallow Copy
+                mergeMetricDiscover = mergeMetric;
             }
         }
 
