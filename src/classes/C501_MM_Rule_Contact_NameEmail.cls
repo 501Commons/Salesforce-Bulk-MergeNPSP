@@ -45,9 +45,6 @@ global class C501_MM_Rule_Contact_NameEmail implements Schedulable {
             return;
         }
 
-        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
-        c501MassMerge_SharedCode.ScheduleJobs(mergeMetrics[0]);
-
         //
         // Testing in Workbench tips
         //      add LIMIT 10 at the end
@@ -91,6 +88,7 @@ global class C501_MM_Rule_Contact_NameEmail implements Schedulable {
             ));
         }
 
+        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
         c501MassMerge_SharedCode.ProcessMergeCandidates(mergeMetrics[0], mergeAccounts.values());
 
         // Find Contact matches within an Account

@@ -12,6 +12,7 @@
         <members>C501_MM_Rule_Contact_NameDOB_Process</members>
         <members>C501_MM_Rule_Contact_NameEmail</members>
         <members>C501_MM_Rule_Discover</members>
+        <members>C501_MM_Rule_Merge</members>
         <members>C501_MassMerge_Batch</members>
         <members>C501_MassMerge_Scheduler_TEST</members>
         <members>C501_MassMerge_SharedCode</members>

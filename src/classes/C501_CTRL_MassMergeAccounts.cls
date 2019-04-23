@@ -45,9 +45,6 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
     // constructor
     global C501_CTRL_MassMergeAccounts() {
 
-        Reports.ReportDescribeResult results = Reports.ReportManager.describeReport('fred');
-
-
         System.debug('***** C501_CTRL_MassMergeAccounts::C501_CTRL_MassMergeAccounts Constructor');
 
         redirect = false;

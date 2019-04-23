@@ -3,8 +3,8 @@
 //  1) Debug -> Open Execute Anonymous Window
 //  2) paste code
 /*
-      C501_MM_Rule_Discover discover = new C501_MM_Rule_Discover();
-      discover.execute(null);
+      C501_MM_Rule_Discover discoverRule = new C501_MM_Rule_Discover();
+      discoverRule.execute(null);
 */
 //  3) click Execute
 //
@@ -17,12 +17,16 @@ global class C501_MM_Rule_Discover implements Schedulable {
 		// Perform all SOQL Queries outside of loop to avoid Salesforce Governor Limits: https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/apex_gov_limits.htm
 		//
 
+        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
+        c501MassMerge_SharedCode.ScheduleJobs(C501_MM_Rule_Discover.class.getName());
+
         List<C501_Merge_Metric__c> mergeMetrics = [
             SELECT
                 Id, Name, Confidence__c,
                 Total_Unassigned_Accounts__c, Total_Unassigned_Contacts__c,
                 Enable__c, Source_Report__c,
-                AutoMerge_Percentage__c, AutoMerge_Objects__c
+                AutoMerge_Percentage__c, AutoMerge_Objects__c,
+                Last_Discover_Date__c
             FROM C501_Merge_Metric__c];
 
         Set<String> sourceReportIds = new Set<String>();
@@ -38,13 +42,16 @@ global class C501_MM_Rule_Discover implements Schedulable {
             WHERE Id in :sourceReportIds OR DeveloperName in :sourceReportIds];
 
         // Walk through Merge Metrics
-        String reportId;
+        String reportIdDiscover;
+        C501_Merge_Metric__c mergeMetricDiscover = new C501_Merge_Metric__c();
+
         for (C501_Merge_Metric__c mergeMetric : [
             SELECT
                 Id, Name, Confidence__c,
                 Total_Unassigned_Accounts__c, Total_Unassigned_Contacts__c,
                 Enable__c, Source_Report__c,
-                AutoMerge_Percentage__c, AutoMerge_Objects__c
+                AutoMerge_Percentage__c, AutoMerge_Objects__c,
+                Last_Discover_Date__c
             FROM C501_Merge_Metric__c]) {
 
             if (!mergeMetric.Enable__c) {
@@ -52,9 +59,9 @@ global class C501_MM_Rule_Discover implements Schedulable {
             }
 
             //String reportId;
-            reportId = '';
+            String reportId = '';
             for (Report report :reports) {
-                if (report.Id == mergeMetric.Source_Report__c || report.DeveloperName == mergeMetric.Source_Report__c) {
+                if ((String)report.Id == mergeMetric.Source_Report__c || report.DeveloperName == mergeMetric.Source_Report__c) {
                     reportId = (String)report.Id;
                     break;
                 }
@@ -64,63 +71,208 @@ global class C501_MM_Rule_Discover implements Schedulable {
                 continue;
             }
 
-            System.debug('***** C501_MM_Rule_Discover:execute - Merge Metric Name: ' + mergeMetric.Name + ' reportId: ' + reportId);
+            if (mergeMetric.Last_Discover_Date__c == null || mergeMetricDiscover.Last_Discover_Date__c == null || mergeMetric.Last_Discover_Date__c < mergeMetricDiscover.Last_Discover_Date__c) {
 
-            // NOTE: Calling Reports.ReportManager within this loop context get compile error ReportManager variable does not exist.  Future task - investigate why
-            ProcessReport(reportId);
+                reportIdDiscover = reportId;
+
+                // Shallow Copy
+                mergeMetricDiscover = mergeMetric;
+
+                System.debug('***** C501_MM_Rule_Discover:execute - Merge Metric Name: ' + mergeMetricDiscover.Name + ' reportId: ' + reportId);
+            }
         }
+
+        if (mergeMetricDiscover.Id == null) {
+            return;
+        }
+
+        mergeMetricDiscover.Last_Discover_Date__c = System.now();
+        update mergeMetricDiscover;
+
+        // NOTE: Calling Reports.ReportManager within this loop context get compile error ReportManager variable does not exist.  Future task - investigate why
+        ProcessReport(reportIdDiscover, mergeMetricDiscover);
     }
 
-    global void ProcessReport(String reportId) {
+    global void ProcessReport(String reportId, C501_Merge_Metric__c mergeMetric) {
+
+        System.debug('***** C501_MM_Rule_Discover:ProcessReport reportId: ' + reportId + ' mergeMetric: ' + String.valueOf(mergeMetric));
 
         // Get the report metadata
         Reports.ReportMetadata reportMetadata = Reports.ReportManager.describeReport(reportId).getReportMetadata();
 
         System.debug('***** C501_MM_Rule_Discover:ProcessReport Name: ' + reportMetadata.getName());
         System.debug('***** C501_MM_Rule_Discover:ProcessReport ID: ' + reportMetadata.getId());
-        System.debug('***** C501_MM_Rule_Discover:ProcessReport Description: ' + reportMetadata.getDescription());
+        if (!String.isEmpty(reportMetadata.getDescription())) {
+            System.debug('***** C501_MM_Rule_Discover:ProcessReport Description: ' + reportMetadata.getDescription());
+        }
         System.debug('***** C501_MM_Rule_Discover:ProcessReport Developer name: ' + reportMetadata.getDeveloperName());
         System.debug('***** C501_MM_Rule_Discover:ProcessReport Report format: ' + reportMetadata.getReportFormat());
         System.debug('***** C501_MM_Rule_Discover:ProcessReport Report type: ' + reportMetadata.getReportType());
         System.debug('***** C501_MM_Rule_Discover:ProcessReport Scope: ' + reportMetadata.getScope());
+        if (!String.isEmpty(reportMetadata.getReportBooleanFilter())) {
+            System.debug('***** C501_MM_Rule_Discover:ProcessReport Boolean filter: ' + reportMetadata.getReportBooleanFilter());
+        }
+        Reports.StandardDateFilter standardDateFilter = reportMetadata.getStandardDateFilter();
+        if (standardDateFilter <> null) {
+            System.debug('***** C501_MM_Rule_Discover:ProcessReport Standard Filters: ' + String.valueOf(standardDateFilter));
+        }
 
-        // Build SELECT Statement
-        //
-        String strSOQL = 'SELECT ';
         List<String> detailColumns = reportMetadata.getDetailColumns();
-        List<String> detailColumnsChecked = new List<String>();
-        for (String detailColumn : detailColumns) {
-            detailColumnsChecked.add(CheckReportColumnName(detailColumn));
+        if (detailColumns.size() > 0) {
+            System.debug('***** C501_MM_Rule_Discover:ProcessReport getDetailColumns: ' + String.valueOf(detailColumns));
         }
-        System.debug('***** C501_MM_Rule_Discover:ProcessReport Detail columns - Report Format: ' + detailColumns);
-        String selectColumns = String.join(detailColumnsChecked, ',');
-        System.debug('***** C501_MM_Rule_Discover:ProcessReport Detail columns - Select Format: ' + selectColumns);
-
-        strSoql += selectColumns;
-
-        // Build FROM Statement
-        //
-        strSoql += ' FROM Contact ';
-
-        // Build WHERE Statement
-        //
         List<Reports.ReportFilter> reportFilters = reportMetadata.getReportFilters();
-        System.debug('Filters - Report Format: ' + reportFilters);
-        List<String> whereClauses = new List<String>();
-        for (Reports.ReportFilter reportFilter :reportFilters) {
-            System.debug('***** C501_MM_Rule_Discover:ProcessReport Filters - Report Format Expanded Column: ' + reportFilter.getColumn() + ' Operator: ' + reportFilter.getOperator() + ' Value: ' + reportFilter.getValue());
-            String whereClause = CheckReportOperator(reportFilter.getColumn(), reportFilter.getOperator(), reportFilter.getValue());
-            System.debug('***** C501_MM_Rule_Discover:ProcessReport Filters - Where Format Expanded Column: ' + whereClause);
-            whereClauses.add(whereClause);
+        if (reportFilters.size() > 0) {
+            System.debug('***** C501_MM_Rule_Discover:ProcessReport getReportFilters: ' + String.valueOf(reportFilters));
         }
-        
-        strSOQL += ' WHERE ' + String.join(whereClauses, ' AND ');
+        List<Reports.CrossFilter> crossFilters = reportMetadata.getCrossFilters();
+        if (crossFilters.size() > 0) {
+            System.debug('***** C501_MM_Rule_Discover:ProcessReport Cross filters: ' + String.valueOf(crossFilters));
+        }
+        List<Reports.StandardFilter> standardFilters = reportMetadata.getStandardFilters();
+        if (standardFilters.size() > 0) {
+            System.debug('***** C501_MM_Rule_Discover:ProcessReport Standard Filters: ' + String.valueOf(standardFilters));
+        }
 
-        System.debug('***** C501_MM_Rule_Discover:ProcessReport SOQL Statement: ' + strSoql);
+        // Translate Report columns to Soql fields
+        List<String> detailColumnsChecked = new List<String>();
+        for (String column :detailColumns) {
+            detailColumnsChecked.add(CheckReportColumnName(column));
+        }
 
-        System.debug('***** C501_MM_Rule_Discover:ProcessReport Cross filters: ' + reportMetadata.getCrossFilters());
-        System.debug('***** C501_MM_Rule_Discover:ProcessReport Boolean filter: ' + reportMetadata.getReportBooleanFilter());
-        System.debug('***** C501_MM_Rule_Discover:ProcessReport Standard Filters: ' + reportMetadata.getStandardFilters());
+        // Process by Accounts to find any potential Account merges based on Accounts
+        ProcessReportByAccounts(mergeMetric, detailColumnsChecked, reportFilters, 'Account');
+
+        // Process by Accounts to find any potential Account merges based on Contacts
+        ProcessReportByAccounts(mergeMetric, detailColumnsChecked, reportFilters, 'Contact');
+
+        // Process by Contacts different Accounts to find any potential contact merges across different accounts
+        ProcessReportByContacts(mergeMetric, detailColumnsChecked, reportFilters);
+
+        // Process by Contacts same Account to find any potential contacts merges within same account
+        detailColumnsChecked.add('AccountId');
+        ProcessReportByContacts(mergeMetric, detailColumnsChecked, reportFilters);
+    }
+
+    global void ProcessReportByAccounts(C501_Merge_Metric__c mergeMetric, List<String> detailColumnsChecked, List<Reports.ReportFilter> reportFilters, String soqlTable) {
+
+        //
+        // Testing in Workbench tips
+        //      add LIMIT 10 at the end
+
+        String accountId = 'AccountId';
+        if (soqlTable.equals('Account')) {
+            accountId = 'Id';
+        }
+
+        // Find Contact matches across Accounts
+        //
+        String strSoql = 'SELECT Count(' + accountId + '), MAX(' + accountId + ')MaxAccountId, MIN(' + accountId + ')MinAccountId ';
+        strSoql += ' FROM ' + soqlTable;
+
+        // Build WHERE statement
+        //
+        List<String> whereFields = new List<String>();
+
+        // Add Null checks
+        for (String column :detailColumnsChecked) {
+            whereFields.add(column + ' <> null ');
+        }
+
+        // Add filters
+        for (Reports.ReportFilter reportFilter :reportFilters) {
+            whereFields.add(CheckReportOperator(reportFilter.getColumn(), reportFilter.getOperator(), reportFilter.getValue()));
+        }
+
+        strSoql += ' WHERE ' + String.join(whereFields, ' and ');
+        strSoql += ' GROUP BY ' + String.join(detailColumnsChecked, ', ');
+        strSoql += ' HAVING Count(' + accountId + ') > 1 ';
+        strSoql += ' ORDER BY Count(' + accountId + ') DESC';
+
+        System.debug('***** C501_MM_Rule_Discover:ProcessReportByAccounts strSoql: ' + strSoql);
+
+		AggregateResult[] allAggregatedByAccounts = Database.Query(strSoql);
+
+        Map<String, C501_Account_Merge__c> mergeAccounts = new Map<String, C501_Account_Merge__c>();
+        String uniqueId, minId, maxId;
+        for (AggregateResult result : allAggregatedByAccounts)  {
+            maxId = result.get('MaxAccountId').toString();
+            minId = result.get('MinAccountId').toString();
+
+            if (String.isEmpty(maxId) || String.isEmpty(minId) || maxId == minId) {
+                continue;
+            }
+
+            uniqueId = mergeMetric.Name + maxId + minId;
+            mergeAccounts.put(uniqueId, new C501_Account_Merge__c(
+                Unique_Id__c = uniqueId,
+                Merge_Confidence__c = mergeMetric.Confidence__c,
+                Account__c = minId,
+                Merge_Target_Account__c = maxId,
+                Merge_Metric__c = mergeMetric.Id
+            ));
+        }
+
+        C501_MassMerge_SharedCode_Account c501MassMerge_SharedCode_Account = new C501_MassMerge_SharedCode_Account();
+        c501MassMerge_SharedCode_Account.InsertObjectMergeCandidates(mergeMetric, mergeAccounts.values());
+    }
+
+    global void ProcessReportByContacts(C501_Merge_Metric__c mergeMetric, List<String> detailColumnsChecked, List<Reports.ReportFilter> reportFilters) {
+
+        //
+        // Testing in Workbench tips
+        //      add LIMIT 10 at the end
+
+        // Find Contact matches across Accounts
+        //
+        String strSoql = 'SELECT Count(Id), MAX(Id)MaxContactId, MIN(Id)MinContactId ';
+        strSoql += ' FROM Contact';
+
+        // Build WHERE statement
+        //
+        List<String> whereFields = new List<String>();
+
+        // Add Null checks
+        for (String column :detailColumnsChecked) {
+            whereFields.add(column + ' <> null ');
+        }
+
+        // Add filters
+        for (Reports.ReportFilter reportFilter :reportFilters) {
+            whereFields.add(CheckReportOperator(reportFilter.getColumn(), reportFilter.getOperator(), reportFilter.getValue()));
+        }
+
+        strSoql += ' WHERE ' + String.join(whereFields, ' and ');
+        strSoql += ' GROUP BY ' + String.join(detailColumnsChecked, ', ');
+        strSoql += ' HAVING Count(Id) > 1 ';
+        strSoql += ' ORDER BY Count(Id) DESC';
+
+        System.debug('***** C501_MM_Rule_Discover:ProcessReportByContacts strSoql: ' + strSoql);
+
+		AggregateResult[] allAggregatedByContacts = Database.Query(strSoql);
+
+        Map<String, C501_Contact_Merge__c> mergeContacts = new Map<String, C501_Contact_Merge__c>();
+        String uniqueId, minId, maxId;
+        for (AggregateResult result : allAggregatedByContacts)  {
+            maxId = result.get('MaxContactId').toString();
+            minId = result.get('MinContactId').toString();
+
+            if (String.isEmpty(maxId) || String.isEmpty(minId) || maxId == minId) {
+                continue;
+            }
+
+            uniqueId = mergeMetric.Name + maxId + minId;
+            mergeContacts.put(uniqueId, new C501_Contact_Merge__c(
+                Unique_Id__c = uniqueId,
+                Merge_Confidence__c = mergeMetric.Confidence__c,
+                Contact__c = minId,
+                Merge_Target_Contact__c = maxId,
+                Merge_Metric__c = mergeMetric.Id
+            ));
+        }
+
+        C501_MassMerge_SharedCode_Contact c501MassMerge_SharedCode_Contact = new C501_MassMerge_SharedCode_Contact();
+        c501MassMerge_SharedCode_Contact.InsertObjectMergeCandidates(mergeMetric, mergeContacts.values());
     }
 
     // Report Column Field Names don't always match the Object Field Name
@@ -142,6 +294,12 @@ global class C501_MM_Rule_Discover implements Schedulable {
         }
         else if (columnFieldName.equals('ACCOUNT_RECORDTYPE')) {
             return 'Account.RecordTypeId';
+        }
+        else if (columnFieldName.startsWith('ACCOUNT.ADDRESS1_ZIP')) {
+            return columnFieldName.replace('ACCOUNT.ADDRESS1_ZIP', 'ACCOUNT.BillingPostalCode');
+        }
+        else if (columnFieldName.startsWith('ACCOUNT.ADDRESS2_ZIP')) {
+            return columnFieldName.replace('ACCOUNT.ADDRESS2_ZIP', 'ACCOUNT.ShippingPostalCode');
         }
         else if (columnFieldName.startsWith('ACCOUNT.ADDRESS1_')) {
             return columnFieldName.replace('ACCOUNT.ADDRESS1_', 'ACCOUNT.Billing');

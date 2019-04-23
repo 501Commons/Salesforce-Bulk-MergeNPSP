@@ -50,7 +50,7 @@ global with sharing class C501_MassMerge_SharedCode {
         // Merge contacts into master
         System.debug('***** C501_MassMerge_SharedCode::ContactsMerge masterContact: ' + String.valueOf(masterContact) + ' duplicateContacts: ' + String.valueOf(duplicateContacts));
 
-        String mergeMetricName = 'Account_NoContacts';
+        String mergeMetricName = 'Merge Rule Account No Contacts';
         List<C501_Merge_Metric__c> mergeMetrics = [
             SELECT
                 Id, Name, Confidence__c,
@@ -59,6 +59,17 @@ global with sharing class C501_MassMerge_SharedCode {
                 AutoMerge_Percentage__c, AutoMerge_Objects__c
             FROM C501_Merge_Metric__c
             WHERE Name = :mergeMetricName];
+
+        if (mergeMetrics.isEmpty()) {
+            mergeMetrics.add( new C501_Merge_Metric__c (
+                Name = mergeMetricName,
+                Confidence__c = 90.0,
+                AutoMerge_Percentage__c = 0.0,
+                Description__c = 'Accounts with no contacts.'
+            ));
+
+            insert mergeMetrics;
+        }
 
         Set<Id> contactIds = new Set<Id> { masterContact.Id };
         for (Contact contact :duplicateContacts) {
@@ -183,141 +194,42 @@ global with sharing class C501_MassMerge_SharedCode {
         }
     }
 
-    global void ScheduleJobs(C501_Merge_Metric__c mergeMetric) {
+    global void ScheduleJobs(String scheduleName) {
 
-        System.debug('***** C501_MassMerge_SharedCode::ScheduleJobs mergeMetric: ' + String.valueOf(mergeMetric));
-
-        // Hourly Offset to try to avoid rules running at the same time
-        Integer hourlyOffset = 0;
-        if (mergeMetric.Name == 'Account_Address') {
-            hourlyOffset = 1;
-        }
-        else if (mergeMetric.Name == 'Account_NoContacts') {
-            hourlyOffset = 4;
-        }
-        else if (mergeMetric.Name == 'Account_Website') {
-            hourlyOffset = 2;
-        }
-        else if (mergeMetric.Name == 'Contact_NameDOB') {
-            hourlyOffset = 0;
-        }
-        else if (mergeMetric.Name == 'Contact_NameEmail') {
-            hourlyOffset = 3;
-        }
-
-        Boolean hourlySyncOnly = true;
-
-        if (mergeMetric.AutoMerge_Percentage__c <> null && mergeMetric.AutoMerge_Percentage__c > 0.0) {
-            List<String> automergeObjects = mergeMetric.AutoMerge_Objects__c.split(';');
-
-            System.debug('***** C501_MassMerge_SharedCode::ScheduleJobs automergeObjects: ' + String.valueOf(automergeObjects));
-
-            for (String automergeObject : automergeObjects) {
-                if ((automergeObject.equals('Contacts Within Account') || automergeObject.equals('Contacts Across Accounts')) && mergeMetric.Total_Unassigned_Contacts__c > 0) {
-                    System.debug('***** C501_MassMerge_SharedCode::ScheduleJobs Enable 5min merging based on Contact match');
-                    hourlySyncOnly = false;
-
-                    break;
-                }
-
-                if (automergeObject.equals('Account') && mergeMetric.Total_Unassigned_Accounts__c > 0) {
-                    System.debug('***** C501_MassMerge_SharedCode::ScheduleJobs Enable 5min merging based on Account match');
-                    hourlySyncOnly = false;
-
-                    break;
-                }
-            }
-        }
+        System.debug('***** C501_MassMerge_SharedCode::ScheduleJobs scheduleName: ' + scheduleName);
 
         List<CronJobDetail> cronJobDetails = [SELECT Id, JobType, Name FROM CronJobDetail];
-        List<CronTrigger> cronTriggers = [SELECT Id, CronJobDetailId FROM CronTrigger];
-        Boolean foundHourlySyncTrigger = false, foundAdditionalSyncTriggers = false;
+        Set<String> scheduledJobs = new Set<String>();
         for (CronJobDetail jobDetail :cronJobDetails) {
 
-            // Check for hourly trigger
-            if (jobDetail.Name.equals(mergeMetric.Name + '_0')) {
-                foundHourlySyncTrigger = true;
-            }
-            else if (jobDetail.Name.startsWith(mergeMetric.Name + '_')) {
-
-                foundAdditionalSyncTriggers = true;
-                if (hourlySyncOnly) {
-                    for (CronTrigger cronTrigger :cronTriggers) {
-                        
-                        // Stop Sync
-                        if (cronTrigger.CronJobDetailId == jobDetail.Id) {
-                            System.abortJob(cronTrigger.Id);
-                        }
-                    }
-                }
-            }
+            scheduledJobs.add(jobDetail.Name);
         }
 
-        // Check to disable rule when creating the schedule to avoid overloading system
-        Boolean resetMergeMetricEnabled = mergeMetric.Enable__c;
-        if (resetMergeMetricEnabled) {
-            mergeMetric.Enable__c = false;
-            update mergeMetric;
+        // Offset Discover and Merge so not running at the same time
+        Integer minuteOffset = 0;
+        if (scheduleName == C501_MM_Rule_Merge.class.getName()) {
+            minuteOffset = 2; 
         }
 
-        if (!foundHourlySyncTrigger || !foundAdditionalSyncTriggers) {
+        String cronExpression, scheduleJobName;
+        Integer triggerNumber = 0;
+        for (integer i = minuteOffset; i <= 59; i += 5) {
+            cronExpression = '0 ' + String.valueOf(i) + ' * * * ?';
+            scheduleJobName = scheduleName + '_' + (triggerNumber <= 9 ? '0' : '') + String.valueOf(triggerNumber++);
 
-            // Run every 5 minutes if there are more than 100 pending merges based on the automerge percentage otherwise set to hourly (abort all other hourly scheduled jobs except 0 one)
-            // Check scheduled jobs limits - online thread mentioned 100
-            // Salesforce only supports hourly not minute interval format 0 0/5 00 for s m h not supported which is every 5 minutes
-            String cronExpression, mergeMetricNameSchedule;
-
-            Integer triggerNumber = 0;
-            for (integer i = hourlyOffset; i <= 59; i += 5) {
-                cronExpression = '0 ' + String.valueOf(i) + ' * * * ?';
-                mergeMetricNameSchedule = mergeMetric.Name + '_' + String.valueOf(triggerNumber++);
-
-                // Check if Hourly Sync Trigger already created
-                if (foundHourlySyncTrigger && i == hourlyOffset) {
-
-                    if (hourlySyncOnly || foundAdditionalSyncTriggers) {
-                        System.debug('***** C501_MassMerge_SharedCode::ScheduleJobs break out');
-                        break;
-                    }
-
-                    continue;
-                }
-
-                System.debug('***** C501_MassMerge_SharedCode::ScheduleJobs schedule job mergeMetricNameSchedule: ' + mergeMetricNameSchedule + ' cronExpression: ' + cronExpression);
-
-                // Optimization for future since this is a only unique code - call out here to a Virtual function that can be overloaded from a child (e.g., SM Rules - C501_SM_Rule_Contact_NameDOB)
-                if (mergeMetric.Name == 'Account_Address') {
-                    System.schedule(mergeMetricNameSchedule, cronExpression, new C501_MM_Rule_Account_Address());
-                }
-                else if (mergeMetric.Name == 'Account_NoContacts') {
-                    System.schedule(mergeMetricNameSchedule, cronExpression, new C501_MM_Rule_Account_NoContacts());
-                }
-                else if (mergeMetric.Name == 'Account_Website') {
-                    System.schedule(mergeMetricNameSchedule, cronExpression, new C501_MM_Rule_Account_Website());
-                }
-                else if (mergeMetric.Name == 'Contact_NameDOB') {
-                    if (i == hourlyOffset) {
-                        // Hourly discovery of new merge candidates
-                        System.schedule(mergeMetricNameSchedule, cronExpression, new C501_MM_Rule_Contact_NameDOB());
-                    }
-                    else {
-                        // 5 min increments for processing merge candidates
-                        System.schedule(mergeMetricNameSchedule, cronExpression, new C501_MM_Rule_Contact_NameDOB_Process());
-                    }
-                }
-                else if (mergeMetric.Name == 'Contact_NameEmail') {
-                    System.schedule(mergeMetricNameSchedule, cronExpression, new C501_MM_Rule_Contact_NameEmail());
-                }
-
-                if (hourlySyncOnly || foundAdditionalSyncTriggers) {
-                    break;
-                }
+            if (scheduledJobs.contains(scheduleJobName)) {
+                continue;
             }
-        }
 
-        if (resetMergeMetricEnabled) {
-            mergeMetric.Enable__c = true;
-            update mergeMetric;
+            System.debug('***** C501_MassMerge_SharedCode::ScheduleJobs schedule job scheduleJobName: ' + scheduleJobName + ' cronExpression: ' + cronExpression);
+
+            // Optimization for future since this is a only unique code - call out here to a Virtual function that can be overloaded from a child (e.g., SM Rules - C501_SM_Rule_Contact_NameDOB)
+            if (scheduleName == C501_MM_Rule_Discover.class.getName()) {
+                System.schedule(scheduleJobName, cronExpression, new C501_MM_Rule_Discover());
+            }
+            else if (scheduleName == C501_MM_Rule_Merge.class.getName()) {
+                System.schedule(scheduleJobName, cronExpression, new C501_MM_Rule_Merge());
+            }
         }
     }
 
