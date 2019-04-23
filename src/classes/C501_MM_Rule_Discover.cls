@@ -49,7 +49,7 @@ global class C501_MM_Rule_Discover implements Schedulable {
             SELECT
                 Id, Name, Confidence__c,
                 Total_Unassigned_Accounts__c, Total_Unassigned_Contacts__c,
-                Enable__c, Source_Report__c,
+                Enable__c, Source_Report__c, Source_Object__c,
                 AutoMerge_Percentage__c, AutoMerge_Objects__c,
                 Last_Discover_Date__c
             FROM C501_Merge_Metric__c]) {
@@ -62,12 +62,13 @@ global class C501_MM_Rule_Discover implements Schedulable {
             String reportId = '';
             for (Report report :reports) {
                 if ((String)report.Id == mergeMetric.Source_Report__c || report.DeveloperName == mergeMetric.Source_Report__c) {
+
                     reportId = (String)report.Id;
                     break;
                 }
             }
             
-            if (String.isEmpty(reportId)) {
+            if (String.isEmpty(reportId) || String.isEmpty(mergeMetric.Source_Object__c)) {
                 continue;
             }
 
@@ -144,40 +145,74 @@ global class C501_MM_Rule_Discover implements Schedulable {
         }
 
         // Translate Report columns to Soql fields
+
+        Boolean usingAddressColumns = false;
         List<String> detailColumnsChecked = new List<String>();
         for (String column :detailColumns) {
+
+            if (column.contains('ACCOUNT.ADDRESS')) {
+                usingAddressColumns = true;
+            }
+
             detailColumnsChecked.add(CheckReportColumnName(column));
         }
 
-        // Process by Accounts to find any potential Account merges based on Accounts
-        ProcessReportByAccounts(mergeMetric, detailColumnsChecked, reportFilters, 'Account');
+        // Discover merge candidates
+        ProcessReportDiscover(mergeMetric, detailColumnsChecked, reportFilters);
 
-        // Process by Accounts to find any potential Account merges based on Contacts
-        ProcessReportByAccounts(mergeMetric, detailColumnsChecked, reportFilters, 'Contact');
+        // Check for Address columns
+        //  When using address columns need to query both the Billing and Shipping address because regardless of
+        //  which you specify in the report the column name comes in as Address1 instead of Shipping or Billing
+        if (usingAddressColumns) {
 
-        // Process by Contacts different Accounts to find any potential contact merges across different accounts
-        ProcessReportByContacts(mergeMetric, detailColumnsChecked, reportFilters);
+            List<String> detailColumnsCheckedAddressReverse = new List<String>();
+            for (String column :detailColumnsChecked) {
+                if (column.contains('Account.Billing')) {
+                    detailColumnsCheckedAddressReverse.add(column.replace('Account.Billing', 'Account.Shipping'));
+                }
+                else if (column.contains('Account.Shipping')) {
+                    detailColumnsCheckedAddressReverse.add(column.replace('Account.Shipping', 'Account.Billing'));
+                }
+                else {
+                    detailColumnsCheckedAddressReverse.add(column);
+                }
+            }
 
-        // Process by Contacts same Account to find any potential contacts merges within same account
-        detailColumnsChecked.add('AccountId');
-        ProcessReportByContacts(mergeMetric, detailColumnsChecked, reportFilters);
+            // Discover merge candidates
+            ProcessReportDiscover(mergeMetric, detailColumnsChecked, reportFilters);
+        }
     }
 
-    global void ProcessReportByAccounts(C501_Merge_Metric__c mergeMetric, List<String> detailColumnsChecked, List<Reports.ReportFilter> reportFilters, String soqlTable) {
+    global void ProcessReportDiscover(C501_Merge_Metric__c mergeMetric, List<String> detailColumnsChecked, List<Reports.ReportFilter> reportFilters) {
+
+        // Process by Accounts to find any potential Account merges
+        ProcessReportByAccounts(mergeMetric, detailColumnsChecked, reportFilters);
+
+        if (mergeMetric.Source_Object__c.equals('Contact')) {
+
+            // Process by Contacts different Accounts to find any potential contact merges across different accounts
+            ProcessReportByContacts(mergeMetric, detailColumnsChecked, reportFilters);
+
+            // Process by Contacts same Account to find any potential contacts merges within same account
+            detailColumnsChecked.add('AccountId');
+            ProcessReportByContacts(mergeMetric, detailColumnsChecked, reportFilters);
+        }
+    }
+    global void ProcessReportByAccounts(C501_Merge_Metric__c mergeMetric, List<String> detailColumnsChecked, List<Reports.ReportFilter> reportFilters) {
 
         //
         // Testing in Workbench tips
         //      add LIMIT 10 at the end
 
         String accountId = 'AccountId';
-        if (soqlTable.equals('Account')) {
+        if (mergeMetric.Source_Object__c.equals('Account')) {
             accountId = 'Id';
         }
 
         // Find Contact matches across Accounts
         //
         String strSoql = 'SELECT Count(' + accountId + '), MAX(' + accountId + ')MaxAccountId, MIN(' + accountId + ')MinAccountId ';
-        strSoql += ' FROM ' + soqlTable;
+        strSoql += ' FROM ' + mergeMetric.Source_Object__c;
 
         // Build WHERE statement
         //
