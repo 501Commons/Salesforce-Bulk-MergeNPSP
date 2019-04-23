@@ -99,7 +99,7 @@
         <externalId>false</externalId>
         <label>Confidence</label>
         <precision>18</precision>
-        <required>false</required>
+        <required>true</required>
         <scale>0</scale>
         <trackTrending>false</trackTrending>
         <type>Percent</type>
@@ -136,6 +136,17 @@
         <required>false</required>
         <trackTrending>false</trackTrending>
         <type>DateTime</type>
+    </fields>
+    <fields>
+        <fullName>Source_Object__c</fullName>
+        <description>Name of the source object to query when trying to find potential merge candidates (e.g., Contact, Account)</description>
+        <externalId>false</externalId>
+        <label>Source Object</label>
+        <length>80</length>
+        <required>true</required>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
     </fields>
     <fields>
         <fullName>Source_Report__c</fullName>

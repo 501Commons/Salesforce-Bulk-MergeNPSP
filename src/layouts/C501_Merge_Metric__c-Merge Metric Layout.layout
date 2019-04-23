@@ -24,7 +24,7 @@
                 <field>Enable__c</field>
             </layoutItems>
             <layoutItems>
-                <behavior>Edit</behavior>
+                <behavior>Required</behavior>
                 <field>Confidence__c</field>
             </layoutItems>
             <layoutItems>
@@ -34,6 +34,10 @@
             <layoutItems>
                 <behavior>Edit</behavior>
                 <field>Last_Merge_Date__c</field>
+            </layoutItems>
+            <layoutItems>
+                <behavior>Required</behavior>
+                <field>Source_Object__c</field>
             </layoutItems>
         </layoutColumns>
         <layoutColumns>

@@ -69,6 +69,7 @@
         <members>C501_Merge_Metric__c.Description__c</members>
         <members>C501_Merge_Metric__c.Last_Discover_Date__c</members>
         <members>C501_Merge_Metric__c.Last_Merge_Date__c</members>
+        <members>C501_Merge_Metric__c.Source_Object__c</members>
         <members>C501_Merge_Metric__c.Source_Report__c</members>
         <members>C501_Merge_Metric__c.Total_Ignore__c</members>
         <members>C501_Merge_Metric__c.Total_Unassigned_Accounts__c</members>
