@@ -69,6 +69,8 @@ global class C501_MM_Rule_Discover implements Schedulable {
 
                 if ((String)report.Id == mergeMetric.Source_Report__c || report.DeveloperName == mergeMetric.Source_Report__c) {
 
+                    System.debug('***** C501_MM_Rule_Discover:execute - Report Found - Merge Metric: ' + String.valueOf(mergeMetric.Name) + ' Report: ' + report.DeveloperName);
+
                     // Check for report change
                     if (mergeMetric.Source_Report_LastModifiedDate__c == null || mergeMetric.Source_Report_LastModifiedDate__c <> report.LastModifiedDate) {
 
@@ -78,7 +80,7 @@ global class C501_MM_Rule_Discover implements Schedulable {
                         // Queue merge metric to delete children since report changed
                         mergeMetricDeleteChildren.add(mergeMetric.Id);
 
-                        System.debug('***** C501_MM_Rule_Discover:execute - Report Change Detected: ' + String.valueOf(mergeMetric.Name));
+                        System.debug('***** C501_MM_Rule_Discover:execute - Report Change Detected: ' + String.valueOf(mergeMetric.Name) + ' Report: ' + report.DeveloperName);
                     }
 
                     reportId = (String)report.Id;
@@ -91,7 +93,7 @@ global class C501_MM_Rule_Discover implements Schedulable {
                 continue;
             }
 
-            if (mergeMetric.Last_Discover_Date__c == null || mergeMetricDiscover.Last_Discover_Date__c == null) {
+            if (mergeMetric.Last_Discover_Date__c == null) {
 
                 reportIdDiscover = reportId;
 
@@ -100,7 +102,7 @@ global class C501_MM_Rule_Discover implements Schedulable {
 
                 break;
             }
-            else if (mergeMetric.Last_Discover_Date__c < mergeMetricDiscover.Last_Discover_Date__c) {
+            else if (mergeMetricDiscover.Last_Discover_Date__c <> null && mergeMetric.Last_Discover_Date__c < mergeMetricDiscover.Last_Discover_Date__c) {
 
                 reportIdDiscover = reportId;
 
@@ -233,7 +235,10 @@ global class C501_MM_Rule_Discover implements Schedulable {
                 usingAddressColumns = true;
             }
 
-            detailColumnsChecked.add(CheckReportColumnName(column));
+            String checkColumn = CheckReportColumnName(column, false);
+            if (checkColumn <> null && !String.isEmpty(checkColumn)) {
+                detailColumnsChecked.add(checkColumn);
+            }
         }
 
         // Discover merge candidates
@@ -304,7 +309,10 @@ global class C501_MM_Rule_Discover implements Schedulable {
 
         // Add filters
         for (Reports.ReportFilter reportFilter :reportFilters) {
-            whereFields.add(CheckReportOperator(reportFilter.getColumn(), reportFilter.getOperator(), reportFilter.getValue()));
+            String whereField = CheckReportOperator(reportFilter.getColumn(), reportFilter.getOperator(), reportFilter.getValue());
+            if (whereField != null && !String.isEmpty(whereField)) {
+                whereFields.add(whereField);
+            }
         }
 
         strSoql += ' WHERE ' + String.join(whereFields, ' and ');
@@ -362,7 +370,10 @@ global class C501_MM_Rule_Discover implements Schedulable {
 
         // Add filters
         for (Reports.ReportFilter reportFilter :reportFilters) {
-            whereFields.add(CheckReportOperator(reportFilter.getColumn(), reportFilter.getOperator(), reportFilter.getValue()));
+            String whereField = CheckReportOperator(reportFilter.getColumn(), reportFilter.getOperator(), reportFilter.getValue());
+            if (whereField != null && !String.isEmpty(whereField)) {
+                whereFields.add(whereField);
+            }
         }
 
         strSoql += ' WHERE ' + String.join(whereFields, ' and ');
@@ -399,7 +410,13 @@ global class C501_MM_Rule_Discover implements Schedulable {
     }
 
     // Report Column Field Names don't always match the Object Field Name
-    global String CheckReportColumnName(String columnFieldName) {
+    global String CheckReportColumnName(String columnFieldName, Boolean filterColumn) {
+
+        // Filter columns - some columns not supported except in filters
+        //
+        if (!filterColumn && columnFieldName.contains('npsp__')) {
+            return null;
+        }
 
         // Contact Report Columns
         //
@@ -439,7 +456,11 @@ global class C501_MM_Rule_Discover implements Schedulable {
 
     global String CheckReportOperator(String reportColumnName, String operator, String value) {
 
-        String columnName = CheckReportColumnName(reportColumnName);
+        String columnName = CheckReportColumnName(reportColumnName, true);
+        if (columnName == null && !String.isEmpty(columnName)) {
+            return null;
+        }
+
         String checkedValue = (value.isNumeric() ? value : ('\'' + value + '\''));
 
         if (operator == 'equals') {
