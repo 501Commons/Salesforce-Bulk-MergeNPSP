@@ -156,7 +156,7 @@
         <name>Layout</name>
     </types>
     <types>
-        <members>C501_Mass_Merge</members>
+        <members>C501_Mass_Merge_Rules</members>
         <members>C501_Mass_Merge_Templates</members>
         <members>C501_Mass_Merge_Templates/Merge_Rule_Account_Address</members>
         <members>C501_Mass_Merge_Templates/Merge_Rule_Account_No_Contacts</members>

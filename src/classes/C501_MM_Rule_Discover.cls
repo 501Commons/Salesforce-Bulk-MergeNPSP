@@ -158,7 +158,7 @@ global class C501_MM_Rule_Discover implements Schedulable {
             SELECT Id, DeveloperName, FolderName, Name
             FROM Report
             WHERE
-                FolderName = 'Mass Merge']) {
+                FolderName = 'Mass Merge Rules']) {
 
                 Boolean foundMergeMetric = false;
                 for (C501_Merge_Metric__c mergeMetric :mergeMetrics) {
