@@ -149,6 +149,14 @@
         <unique>false</unique>
     </fields>
     <fields>
+        <fullName>Source_Report_LastUpdated__c</fullName>
+        <externalId>false</externalId>
+        <label>Source Report LastUpdated</label>
+        <required>false</required>
+        <trackTrending>false</trackTrending>
+        <type>DateTime</type>
+    </fields>
+    <fields>
         <fullName>Source_Report__c</fullName>
         <externalId>false</externalId>
         <label>Source Report</label>
