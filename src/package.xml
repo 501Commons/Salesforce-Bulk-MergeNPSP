@@ -86,6 +86,7 @@
         <members>Contact.C501_Merge_Rule__c</members>
         <members>Contact.C501_Merge_Target__c</members>
         <members>Contact.C501_Other_Address__c</members>
+        <members>Contact.Gender__c</members>
         <name>CustomField</name>
     </types>
     <types>
@@ -152,6 +153,17 @@
         <members>C501_Contact_Merge__c-Contact Merge Layout</members>
         <members>C501_Merge_Metric__c-Merge Metric Layout</members>
         <name>Layout</name>
+    </types>
+    <types>
+        <members>C501_Mass_Merge</members>
+        <members>C501_Mass_Merge/Merge_Rule_Account_Address</members>
+        <members>C501_Mass_Merge/Merge_Rule_Account_No_Contacts</members>
+        <members>C501_Mass_Merge/Merge_Rule_Account_Website</members>
+        <members>C501_Mass_Merge/Merge_Rule_Contact_Name_DOB</members>
+        <members>C501_Mass_Merge/Merge_Rule_Contact_Name_DOB_Gender</members>
+        <members>C501_Mass_Merge/Merge_Rule_Contact_Name_Email</members>
+        <members>C501_Mass_Merge/Merge_Rule_Contact_Name_Email_Gender</members>
+        <name>Report</name>
     </types>
     <types>
         <members>Bootstrap</members>
