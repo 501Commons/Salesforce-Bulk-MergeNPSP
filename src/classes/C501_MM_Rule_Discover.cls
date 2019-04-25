@@ -440,7 +440,7 @@ global class C501_MM_Rule_Discover implements Schedulable {
     global String CheckReportOperator(String reportColumnName, String operator, String value) {
 
         String columnName = CheckReportColumnName(reportColumnName);
-        String checkedValue = (String.isNumeric(value) ? value : '\'' + value + '\'';
+        String checkedValue = (String.isNumeric(value) ? value : ('\'' + value + '\''));
 
         if (operator == 'equals') {
             return columnName + ' = ' + checkedValue;
