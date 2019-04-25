@@ -149,9 +149,9 @@
         <unique>false</unique>
     </fields>
     <fields>
-        <fullName>Source_Report_LastUpdated__c</fullName>
+        <fullName>Source_Report_LastModifiedDate__c</fullName>
         <externalId>false</externalId>
-        <label>Source Report LastUpdated</label>
+        <label>Source Report LastModifiedDate</label>
         <required>false</required>
         <trackTrending>false</trackTrending>
         <type>DateTime</type>

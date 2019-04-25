@@ -27,7 +27,7 @@ global class C501_MM_Rule_Discover implements Schedulable {
             SELECT
                 Id, Name, Confidence__c,
                 Total_Unassigned_Accounts__c, Total_Unassigned_Contacts__c,
-                Enable__c, Source_Report__c,
+                Enable__c, Source_Report__c, Source_Report_LastModifiedDate__c, Source_Object__c,
                 AutoMerge_Percentage__c, AutoMerge_Objects__c,
                 Last_Discover_Date__c
             FROM C501_Merge_Metric__c];
@@ -40,19 +40,21 @@ global class C501_MM_Rule_Discover implements Schedulable {
         }
 
         List<Report> reports = [
-            SELECT Id, DeveloperName, FolderName
+            SELECT Id, DeveloperName, FolderName, LastModifiedDate
             FROM Report
             WHERE Id in :sourceReportIds OR DeveloperName in :sourceReportIds];
 
         // Walk through Merge Metrics
         String reportIdDiscover;
         C501_Merge_Metric__c mergeMetricDiscover = new C501_Merge_Metric__c();
+        List<C501_Merge_Metric__c> mergeMetricsUpdate = new List<C501_Merge_Metric__c>();
+        Set<Id> mergeMetricDeleteChildren = new Set<Id>();
 
         for (C501_Merge_Metric__c mergeMetric : [
             SELECT
                 Id, Name, Confidence__c,
                 Total_Unassigned_Accounts__c, Total_Unassigned_Contacts__c,
-                Enable__c, Source_Report__c, Source_Object__c,
+                Enable__c, Source_Report__c, Source_Report_LastModifiedDate__c, Source_Object__c,
                 AutoMerge_Percentage__c, AutoMerge_Objects__c,
                 Last_Discover_Date__c
             FROM C501_Merge_Metric__c]) {
@@ -64,9 +66,23 @@ global class C501_MM_Rule_Discover implements Schedulable {
             //String reportId;
             String reportId = '';
             for (Report report :reports) {
+
                 if ((String)report.Id == mergeMetric.Source_Report__c || report.DeveloperName == mergeMetric.Source_Report__c) {
 
+                    // Check for report change
+                    if (mergeMetric.Source_Report_LastModifiedDate__c == null || mergeMetric.Source_Report_LastModifiedDate__c <> report.LastModifiedDate) {
+
+                        mergeMetric.Source_Report_LastModifiedDate__c = report.LastModifiedDate;
+                        mergeMetricsUpdate.add(mergeMetric);
+
+                        // Queue merge metric to delete children since report changed
+                        mergeMetricDeleteChildren.add(mergeMetric.Id);
+
+                        System.debug('***** C501_MM_Rule_Discover:execute - Report Change Detected: ' + String.valueOf(mergeMetric.Name));
+                    }
+
                     reportId = (String)report.Id;
+
                     break;
                 }
             }
@@ -90,6 +106,23 @@ global class C501_MM_Rule_Discover implements Schedulable {
 
                 // Shallow Copy
                 mergeMetricDiscover = mergeMetric;
+            }
+        }
+
+        if (!mergeMetricsUpdate.isEmpty()) {
+            update mergeMetricsUpdate;
+        }
+
+        if (!mergeMetricDeleteChildren.isEmpty()) {
+
+            List<C501_Account_Merge__c> accountMergesDelete = [SELECT Id FROM C501_Account_Merge__c WHERE Merge_Metric__c in :mergeMetricDeleteChildren];
+            if (!accountMergesDelete.isEmpty()) {
+                delete accountMergesDelete;
+            }
+
+            List<C501_Contact_Merge__c> contactMergesDelete = [SELECT Id FROM C501_Contact_Merge__c WHERE Merge_Metric__c in :mergeMetricDeleteChildren];
+            if (!contactMergesDelete.isEmpty()) {
+                delete contactMergesDelete;
             }
         }
 
@@ -407,15 +440,18 @@ global class C501_MM_Rule_Discover implements Schedulable {
     global String CheckReportOperator(String reportColumnName, String operator, String value) {
 
         String columnName = CheckReportColumnName(reportColumnName);
+        String checkedValue = (String.isNumeric(value) ? value : '\'' + value + '\'';
 
         if (operator == 'equals') {
-            return columnName + ' = ' + value;
+            return columnName + ' = ' + checkedValue;
         }
         else if (operator == 'startsWith') {
-            return columnName + ' LIKE \'' + value + '%\'';
+            return columnName + ' LIKE \'' + checkedValue + '%\'';
         }
         else if (operator == 'contains') {
-            return columnName + ' LIKE \'%' + value + '%\'';
+            return columnName + ' LIKE \'%' + checkedValue + '%\'';
+        else {
+            return columnName + ' ' + operator + ' ' + checkedValue;
         }
 
         return null;

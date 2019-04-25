@@ -25,7 +25,7 @@
             </layoutItems>
             <layoutItems>
                 <behavior>Edit</behavior>
-                <field>Source_Report_LastUpdated__c</field>
+                <field>Source_Report_LastModifiedDate__c</field>
             </layoutItems>
             <layoutItems>
                 <behavior>Edit</behavior>

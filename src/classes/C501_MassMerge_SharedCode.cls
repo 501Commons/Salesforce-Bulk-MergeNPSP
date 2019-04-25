@@ -63,8 +63,10 @@ global with sharing class C501_MassMerge_SharedCode {
         if (mergeMetrics.isEmpty()) {
             mergeMetrics.add( new C501_Merge_Metric__c (
                 Name = mergeMetricName,
+                Enable__c = true,
                 Confidence__c = 90.0,
-                AutoMerge_Percentage__c = 0.0,
+                AutoMerge_Percentage__c = 90.0,
+                AutoMerge_Objects__c = 'Account',
                 Description__c = 'Accounts with no contacts.'
             ));
 
