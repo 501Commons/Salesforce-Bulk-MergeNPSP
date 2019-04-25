@@ -440,18 +440,34 @@ global class C501_MM_Rule_Discover implements Schedulable {
     global String CheckReportOperator(String reportColumnName, String operator, String value) {
 
         String columnName = CheckReportColumnName(reportColumnName);
-        String checkedValue = (String.isNumeric(value) ? value : ('\'' + value + '\''));
+        String checkedValue = (value.isNumeric() ? value : ('\'' + value + '\''));
 
         if (operator == 'equals') {
             return columnName + ' = ' + checkedValue;
         }
-        else if (operator == 'startsWith') {
-            return columnName + ' LIKE \'' + checkedValue + '%\'';
+        else if (operator == 'not equal to') {
+            return columnName + ' != ' + checkedValue;
+        }
+        else if (operator == 'less than') {
+            return columnName + ' < ' + checkedValue;
+        }
+        else if (operator == 'greater than') {
+            return columnName + ' > ' + checkedValue;
+        }
+        else if (operator == 'less or equal') {
+            return columnName + ' <= ' + checkedValue;
+        }
+        else if (operator == 'greater or equal') {
+            return columnName + ' >= ' + checkedValue;
         }
         else if (operator == 'contains') {
             return columnName + ' LIKE \'%' + checkedValue + '%\'';
-        else {
-            return columnName + ' ' + operator + ' ' + checkedValue;
+        }
+        else if (operator == 'does not contains') {
+            return columnName + '(NOT LIKE \'%' + checkedValue + '%\')';
+        }
+        else if (operator == 'starts with') {
+            return columnName + ' LIKE \'' + checkedValue + '%\'';
         }
 
         return null;
