@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Report xmlns="http://soap.sforce.com/2006/04/metadata">
     <columns>
-        <field>ACCOUNT_ID</field>
+        <field>ACCOUNT.NAME</field>
     </columns>
     <columns>
         <field>ACCOUNT_RECORDTYPE</field>
@@ -16,6 +16,13 @@
             <operator>equals</operator>
             <value>0</value>
         </criteriaItems>
+        <criteriaItems>
+            <column>ACCOUNT.NAME</column>
+            <isUnlocked>true</isUnlocked>
+            <operator>notContain</operator>
+            <value>Anonymous</value>
+        </criteriaItems>
+        <language>en_US</language>
     </filter>
     <format>Tabular</format>
     <name>Merge Rule Account No Contacts</name>
