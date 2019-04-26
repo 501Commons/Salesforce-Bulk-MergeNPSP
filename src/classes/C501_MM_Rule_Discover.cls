@@ -88,12 +88,12 @@ global class C501_MM_Rule_Discover implements Schedulable {
                     break;
                 }
             }
-            
+
             if (String.isEmpty(reportId) || String.isEmpty(mergeMetric.Source_Object__c)) {
                 continue;
             }
 
-            if (mergeMetric.Last_Discover_Date__c == null) {
+            if (mergeMetric.Last_Discover_Date__c == null || mergeMetricDiscover.Id == null) {
 
                 reportIdDiscover = reportId;
 
@@ -235,7 +235,7 @@ global class C501_MM_Rule_Discover implements Schedulable {
                 usingAddressColumns = true;
             }
 
-            String checkColumn = CheckReportColumnName(column, false);
+            String checkColumn = CheckReportColumnName(mergeMetric, column, false);
             if (checkColumn <> null && !String.isEmpty(checkColumn)) {
                 detailColumnsChecked.add(checkColumn);
             }
@@ -309,7 +309,7 @@ global class C501_MM_Rule_Discover implements Schedulable {
 
         // Add filters
         for (Reports.ReportFilter reportFilter :reportFilters) {
-            String whereField = CheckReportOperator(reportFilter.getColumn(), reportFilter.getOperator(), reportFilter.getValue());
+            String whereField = CheckReportOperator(mergeMetric, reportFilter.getColumn(), reportFilter.getOperator(), reportFilter.getValue());
             if (whereField != null && !String.isEmpty(whereField)) {
                 whereFields.add(whereField);
             }
@@ -370,7 +370,7 @@ global class C501_MM_Rule_Discover implements Schedulable {
 
         // Add filters
         for (Reports.ReportFilter reportFilter :reportFilters) {
-            String whereField = CheckReportOperator(reportFilter.getColumn(), reportFilter.getOperator(), reportFilter.getValue());
+            String whereField = CheckReportOperator(mergeMetric, reportFilter.getColumn(), reportFilter.getOperator(), reportFilter.getValue());
             if (whereField != null && !String.isEmpty(whereField)) {
                 whereFields.add(whereField);
             }
@@ -412,19 +412,46 @@ global class C501_MM_Rule_Discover implements Schedulable {
     // Report Column Field Names don't always match the Object Field Name
     global String CheckReportColumnName(C501_Merge_Metric__c mergeMetric, String columnFieldName, Boolean filterColumn) {
 
-        // Filter columns - some columns not supported except in filters
+        // Filter columns - some columns not supported except in filters (i.e., Group )
         //
-        if (!filterColumn && columnFieldName.contains('npsp__')) {
-            return null;
+        if (!filterColumn) {
+            if (columnFieldName.contains('npsp__')) {
+                return null;
+            }
+            else if (columnFieldName == 'LAST_UPDATE') {
+                return null;
+            }
+            else if (columnFieldName == 'CREATED_DATE') {
+                return null;
+            }
+            else if (columnFieldName.equals('ACCOUNT_ID')) {
+                if (mergeMetric.Source_Object__c.equals('Account')) {
+                    return null;
+                }
+                else {
+                    return 'AccountId';
+                }
+            }
         }
 
+        // General Columns
+        if (columnFieldName == 'LAST_UPDATE') {
+            return 'LastModifiedDate';
+        }
+        else if (columnFieldName == 'CREATED_DATE') {
+            return 'CreatedDate';
+        }
+        
         // Contact Report Columns
         //
-        if (columnFieldName == 'FIRST_NAME') {
+        else if (columnFieldName == 'FIRST_NAME') {
             return 'FirstName';
         }
         else if (columnFieldName == 'LAST_NAME') {
             return 'LastName';
+        }
+        else if (columnFieldName.equals('CONTACT_ID')) {
+            return 'Id';
         }
 
         // Account Report Columns
@@ -459,9 +486,9 @@ global class C501_MM_Rule_Discover implements Schedulable {
         return columnFieldName;
     }
 
-    global String CheckReportOperator(String reportColumnName, String operator, String value) {
+    global String CheckReportOperator(C501_Merge_Metric__c mergeMetric, String reportColumnName, String operator, String value) {
 
-        String columnName = CheckReportColumnName(reportColumnName, true);
+        String columnName = CheckReportColumnName(mergeMetric, reportColumnName, true);
         if (columnName == null && !String.isEmpty(columnName)) {
             return null;
         }
@@ -471,29 +498,29 @@ global class C501_MM_Rule_Discover implements Schedulable {
         if (operator == 'equals') {
             return columnName + ' = ' + checkedValue;
         }
-        else if (operator == 'not equal to') {
+        else if (operator == 'notEqual') {
             return columnName + ' != ' + checkedValue;
         }
-        else if (operator == 'less than') {
+        else if (operator == 'lessThan') {
             return columnName + ' < ' + checkedValue;
         }
-        else if (operator == 'greater than') {
+        else if (operator == 'greaterThan') {
             return columnName + ' > ' + checkedValue;
         }
-        else if (operator == 'less or equal') {
+        else if (operator == 'lessOrEqual') {
             return columnName + ' <= ' + checkedValue;
         }
-        else if (operator == 'greater or equal') {
+        else if (operator == 'greaterOrEqual') {
             return columnName + ' >= ' + checkedValue;
         }
         else if (operator == 'contains') {
-            return columnName + ' LIKE \'%' + checkedValue + '%\'';
+            return columnName + ' LIKE \'%' + value + '%\'';
         }
-        else if (operator == 'does not contains') {
-            return columnName + '(NOT LIKE \'%' + checkedValue + '%\')';
+        else if (operator == 'notContain') {
+            return ' (NOT ' + columnName + ' LIKE \'%' + value + '%\')';
         }
-        else if (operator == 'starts with') {
-            return columnName + ' LIKE \'' + checkedValue + '%\'';
+        else if (operator == 'startsWith') {
+            return columnName + ' LIKE \'' + value + '%\'';
         }
 
         return null;
