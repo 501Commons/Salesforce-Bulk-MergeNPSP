@@ -410,7 +410,7 @@ global class C501_MM_Rule_Discover implements Schedulable {
     }
 
     // Report Column Field Names don't always match the Object Field Name
-    global String CheckReportColumnName(String columnFieldName, Boolean filterColumn) {
+    global String CheckReportColumnName(C501_Merge_Metric__c mergeMetric, String columnFieldName, Boolean filterColumn) {
 
         // Filter columns - some columns not supported except in filters
         //
@@ -430,7 +430,12 @@ global class C501_MM_Rule_Discover implements Schedulable {
         // Account Report Columns
         //
         else if (columnFieldName.equals('ACCOUNT_ID')) {
-            return 'AccountId';
+            if (mergeMetric.Source_Object__c.equals('Account')) {
+                return 'Id';
+            }
+            else {
+                return 'AccountId';
+            }
         }
         else if (columnFieldName.equals('ACCOUNT_RECORDTYPE')) {
             return 'Account.RecordTypeId';
