@@ -32,17 +32,8 @@
 private with sharing class C501_CTRL_MassMergeContacts_TEST {
     
     @testSetup static void setup() {
-        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
-        c501MassMerge_SharedCode.TestSetupMerge();
-
-        C501_MM_Rule_Contact_NameDOB scheduleNameDOB = new C501_MM_Rule_Contact_NameDOB();
-        scheduleNameDOB.execute(null);
-
-        C501_MM_Rule_Contact_NameEmail scheduleNameEmail = new C501_MM_Rule_Contact_NameEmail();
+        C501_MM_Rule_Discover scheduleNameEmail = new C501_MM_Rule_Discover();
         scheduleNameEmail.execute(null);
-
-        C501_MM_Rule_Account_NoContacts scheduleAccountNoContacts = new C501_MM_Rule_Account_NoContacts();
-        scheduleAccountNoContacts.execute(null);
 
         List<C501_Merge_Metric__c> listMergeMetrics = new List<C501_Merge_Metric__c>();
         for (C501_Merge_Metric__c mergeMetric :[SELECT Id FROM C501_Merge_Metric__c]) {
@@ -56,7 +47,6 @@ private with sharing class C501_CTRL_MassMergeContacts_TEST {
         update listMergeMetrics;
 
         // Create Account and Contact Merges
-        scheduleNameDOB.execute(null);
         scheduleNameEmail.execute(null);
     }
 

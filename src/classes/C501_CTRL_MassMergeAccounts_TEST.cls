@@ -36,8 +36,11 @@ private with sharing class C501_CTRL_MassMergeAccounts_TEST {
         C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
         c501MassMerge_SharedCode.TestSetupMerge();
 
-        C501_MM_Rule_Contact_NameDOB scheduleNameDOB = new C501_MM_Rule_Contact_NameDOB();
-        scheduleNameDOB.execute(null);
+        C501_MM_Rule_Discover scheduleAccountAddress = new C501_MM_Rule_Discover();
+        scheduleAccountAddress.execute(null);
+
+        C501_MM_Rule_Discover scheduleAccountNoContacts = new C501_MM_Rule_Discover();
+        scheduleAccountNoContacts.execute(null);
 
         List<C501_Merge_Metric__c> listMergeMetrics = new List<C501_Merge_Metric__c>();
         for (C501_Merge_Metric__c mergeMetric :[SELECT Id FROM C501_Merge_Metric__c]) {
@@ -50,14 +53,15 @@ private with sharing class C501_CTRL_MassMergeAccounts_TEST {
 
         update listMergeMetrics;
 
-        scheduleNameDOB.execute(null);
+        scheduleAccountAddress.execute(null);
+        scheduleAccountNoContacts.execute(null);
     }
 
     //==================== TEST METHOD(s) ======================================
 
     private static testmethod void Contact_NameDOB_Test() {
 
-        C501_MM_Rule_Contact_NameDOB scheduleNameDOB = new C501_MM_Rule_Contact_NameDOB();
+        C501_MM_Rule_Discover scheduleNameDOB = new C501_MM_Rule_Discover();
         scheduleNameDOB.execute(null);
 
         List<C501_Merge_Metric__c> listMergeMetrics = new List<C501_Merge_Metric__c>();
@@ -80,7 +84,7 @@ private with sharing class C501_CTRL_MassMergeAccounts_TEST {
 
     private static testmethod void Contact_NameEmail_Test() {
 
-        C501_MM_Rule_Contact_NameEmail scheduleNameEmail = new C501_MM_Rule_Contact_NameEmail();
+        C501_MM_Rule_Discover scheduleNameEmail = new C501_MM_Rule_Discover();
         scheduleNameEmail.execute(null);
 
         List<C501_Merge_Metric__c> listMergeMetrics = new List<C501_Merge_Metric__c>();
@@ -103,7 +107,7 @@ private with sharing class C501_CTRL_MassMergeAccounts_TEST {
 
     private static testmethod void Account_Address_Test() {
 
-        C501_MM_Rule_Account_Address scheduleAccountAddress = new C501_MM_Rule_Account_Address();
+        C501_MM_Rule_Discover scheduleAccountAddress = new C501_MM_Rule_Discover();
         scheduleAccountAddress.execute(null);
 
         List<C501_Merge_Metric__c> listMergeMetrics = new List<C501_Merge_Metric__c>();
@@ -126,7 +130,7 @@ private with sharing class C501_CTRL_MassMergeAccounts_TEST {
 
     private static testmethod void Account_NoContacts_Test() {
 
-        C501_MM_Rule_Account_NoContacts scheduleAccountNoContacts = new C501_MM_Rule_Account_NoContacts();
+        C501_MM_Rule_Discover scheduleAccountNoContacts = new C501_MM_Rule_Discover();
         scheduleAccountNoContacts.execute(null);
 
         List<C501_Merge_Metric__c> listMergeMetrics = new List<C501_Merge_Metric__c>();
@@ -149,7 +153,7 @@ private with sharing class C501_CTRL_MassMergeAccounts_TEST {
 
     private static testmethod void Account_Website_Test() {
 
-        C501_MM_Rule_Account_Website scheduleAccountWebsite = new C501_MM_Rule_Account_Website();
+        C501_MM_Rule_Discover scheduleAccountWebsite = new C501_MM_Rule_Discover();
         scheduleAccountWebsite.execute(null);
 
         List<C501_Merge_Metric__c> listMergeMetrics = new List<C501_Merge_Metric__c>();

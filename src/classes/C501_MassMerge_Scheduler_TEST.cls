@@ -15,7 +15,7 @@ class C501_MassMerge_Scheduler_TEST {
         // Schedule the test job
         String jobId = System.schedule('testBasicScheduledApex',
         C501_MassMerge_Scheduler_TEST.CRON_EXP, 
-            new C501_MM_Rule_Contact_NameDOB());
+            new C501_MM_Rule_Discover());
 
         // Get the information FROM the CronTrigger API object
         CronTrigger ct = [SELECT Id, CronExpression, TimesTriggered, 
