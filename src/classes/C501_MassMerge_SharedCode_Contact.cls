@@ -115,6 +115,7 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
             List<C501_Contact_Merge__c> mergeObjectsInsert = new List<C501_Contact_Merge__c>();
             for (C501_Contact_Merge__c mergeObject :mergeObjects) {
                 if (!mergeObjectsExisting.contains(mergeObject.Unique_Id__c)) {
+                    System.Debug('***** C501_MassMerge_SharedCode_Contact::InsertObjectMergeCandidates Insert Merge: ' + String.valueOf(mergeObject));
                     mergeObjectsInsert.add(mergeObject);
                     mergeObjectsExisting.add(mergeObject.Unique_Id__c);
                 }
@@ -125,7 +126,11 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
 
                 for (Database.SaveResult result : insertResults) {
                     if (!result.isSuccess()) {
-                        System.debug('***** C501_MassMerge_SharedCode_Contact::InsertObjectMergeCandidates Merge Results: ' + String.valueOf(result));
+                        for(Database.Error resultError : result.getErrors()) {
+                            System.debug('***** C501_MassMerge_SharedCode_Contact::InsertObjectMergeCandidates Database.SaveResult');
+                            System.debug(resultError.getStatusCode() + ': ' + resultError.getMessage());
+                            System.debug('Fields that affected this error: ' + resultError.getFields());
+                        }                        
                     }
                 }
             }

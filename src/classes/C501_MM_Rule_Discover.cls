@@ -69,8 +69,6 @@ global class C501_MM_Rule_Discover implements Schedulable {
 
                 if ((String)report.Id == mergeMetric.Source_Report__c || report.DeveloperName == mergeMetric.Source_Report__c) {
 
-                    System.debug('***** C501_MM_Rule_Discover:execute - Report Found - Merge Metric: ' + String.valueOf(mergeMetric.Name) + ' Report: ' + report.DeveloperName);
-
                     // Check for report change
                     if (mergeMetric.Source_Report_LastModifiedDate__c == null || mergeMetric.Source_Report_LastModifiedDate__c <> report.LastModifiedDate) {
 
@@ -79,8 +77,6 @@ global class C501_MM_Rule_Discover implements Schedulable {
 
                         // Queue merge metric to delete children since report changed
                         mergeMetricDeleteChildren.add(mergeMetric.Id);
-
-                        System.debug('***** C501_MM_Rule_Discover:execute - Report Change Detected: ' + String.valueOf(mergeMetric.Name) + ' Report: ' + report.DeveloperName);
                     }
 
                     reportId = (String)report.Id;
@@ -172,7 +168,7 @@ global class C501_MM_Rule_Discover implements Schedulable {
                         Confidence__c = 90.0,
                         Source_Report__c = report.DeveloperName,
                         Source_Object__c = (report.DeveloperName.contains('Account') ? 'Account' : 'Contact'),
-                        Source_Aggregate__c = (report.DeveloperName.contains('Account') ? 'Account' : 'Contact'),
+                        Source_Aggregate__c = (report.DeveloperName.contains('Account') ? 'Id' : 'AccountId'),
                         AutoMerge_Percentage__c = 0.0
                     ));
                 }
@@ -303,6 +299,11 @@ global class C501_MM_Rule_Discover implements Schedulable {
 
         // Add Null checks
         for (String column :detailColumnsChecked) {
+            // Skip Null check on fields not required to uniquely group contacts
+            if (column.contains('Gender')) {
+                continue;
+            }
+
             whereFields.add(column + ' <> null ');
         }
 
@@ -333,7 +334,19 @@ global class C501_MM_Rule_Discover implements Schedulable {
         }
 
         String strSoqlWhere = ' WHERE ' + String.join(whereFields, ' and ');
-        String strSoqlGroupBy = ' GROUP BY ' + String.join(detailColumnsChecked, ', ');
+
+        // Add aggregate check
+        List<String> groupByFields = new List<String>();
+        for (String column :detailColumnsChecked) {
+
+            if (column.contains(mergeMetric.Source_Aggregate__c)) {
+                continue;
+            }
+
+            groupByFields.add(column);
+        }
+
+        String strSoqlGroupBy = ' GROUP BY ' + String.join(groupByFields, ', ');
         String strSoqlHaving = ' HAVING Count(' + mergeMetric.Source_Aggregate__c + ') > 1 ';
         String strSoqlOrderBy = ' ORDER BY Count(' + mergeMetric.Source_Aggregate__c + ') DESC';
 
@@ -372,11 +385,7 @@ global class C501_MM_Rule_Discover implements Schedulable {
                 FROM Contact
                 WHERE
                     AccountId in :mergeAccountIds
-                    and FirstName <> null 
-                    and Birthdate <> null 
-                    and Gender__c <> null
-                ORDER BY AccountId, FirstName, LastName, Birthdate, Gender__c DESC
-                LIMIT 999];
+                ORDER BY AccountId, FirstName, LastName, Birthdate, Gender__c DESC];
 
             if (contacts.isEmpty()) {
                 return;
@@ -388,7 +397,12 @@ global class C501_MM_Rule_Discover implements Schedulable {
                     contactsInfo = accountContacts.remove(contactInfo.AccountId);
                 }
 
-                contactsInfo += contactInfo.FirstName.mid(1,1) + contactInfo.LastName + contactinfo.Birthdate + contactInfo.Gender__c;
+                contactsInfo += 
+                    (String.isNotBlank(contactInfo.FirstName) ? contactInfo.FirstName.mid(1,1) : '')
+                    + (String.isNotBlank(contactInfo.LastName) ? contactInfo.LastName : '')
+                    + (contactInfo.Birthdate <> null ? String.valueOf(contactInfo.Birthdate) : '')
+                    + (String.isNotBlank(contactInfo.Gender__c) ? contactInfo.Gender__c : '');
+
                 accountContacts.put(contactInfo.AccountId, contactsInfo);
             }
         }
@@ -430,11 +444,6 @@ global class C501_MM_Rule_Discover implements Schedulable {
     }
 
     global void ProcessReportByContacts(C501_Merge_Metric__c mergeMetric, String foriegnKey, List<String> detailColumnsChecked, List<Reports.ReportFilter> reportFilters) {
-
-        //
-        // Testing in Workbench tips
-        //      add LIMIT 10 at the end
-
         // Find Contact matches across Accounts
         //
         String strSoqlSelect = 'SELECT Count(' + mergeMetric.Source_Aggregate__c + '), MAX(' + mergeMetric.Source_Aggregate__c + ')MaxId, MIN(' + mergeMetric.Source_Aggregate__c + ')MinId ';
@@ -447,6 +456,12 @@ global class C501_MM_Rule_Discover implements Schedulable {
  
         // Add Null checks
         for (String column :detailColumnsChecked) {
+
+            // Skip Null check on fields not required to uniquely group contacts
+            if (column.contains('Gender')) {
+                continue;
+            }
+
             whereFields.add(column + ' <> null ');
         }
 
@@ -466,7 +481,19 @@ global class C501_MM_Rule_Discover implements Schedulable {
         }
 
         String strSoqlWhere = ' WHERE ' + String.join(whereFields, ' and ');
-        String strSoqlGroupBy = ' GROUP BY ' + String.join(detailColumnsChecked, ', ');
+
+        // Add aggregate check
+        List<String> groupByFields = new List<String>();
+        for (String column :detailColumnsChecked) {
+
+            if (column.contains(mergeMetric.Source_Aggregate__c)) {
+                continue;
+            }
+
+            groupByFields.add(column);
+        }
+
+        String strSoqlGroupBy = ' GROUP BY ' + String.join(groupByFields, ', ');
         String strSoqlHaving = ' HAVING Count(' + mergeMetric.Source_Aggregate__c + ') > 1 ';
         String strSoqlOrderBy = ' ORDER BY Count(' + mergeMetric.Source_Aggregate__c + ') DESC';
 
@@ -531,12 +558,8 @@ global class C501_MM_Rule_Discover implements Schedulable {
 
         // Check for FK - Foriegn Key
         if (columnFieldName.startsWith('FK_')) {
-            System.debug('***** C501_MM_Rule_Discover:CheckReportColumnName aggregate foriegnKey: ' + foriegnKey + ' columnFieldName: ' + columnFieldName);
-
             List<String> foriegnKeyFields = columnFieldName.split('\\.');
-            System.debug('***** C501_MM_Rule_Discover:CheckReportColumnName foriegnKeyFields: ' + String.valueOf(foriegnKeyFields) + ' size(): ' + foriegnKeyFields.size());
             if (foriegnKeyFields.size() == 2) {
-                System.debug('***** C501_MM_Rule_Discover:CheckReportColumnName return value: ' + foriegnKey + foriegnKeyFields[1]);
                 return foriegnKey + foriegnKeyFields[1];
             }
 
@@ -603,10 +626,7 @@ global class C501_MM_Rule_Discover implements Schedulable {
     global String CheckReportOperator(C501_Merge_Metric__c mergeMetric, String foriegnKey, String reportColumnName, String operator, String value) {
 
         String columnName = CheckReportColumnName(mergeMetric, foriegnKey, reportColumnName, true);
-        System.debug('***** C501_MM_Rule_Discover:CheckReportOperator columnName: ' + columnName);
-        
         if (String.isBlank(columnName)) {
-            System.debug('***** C501_MM_Rule_Discover:CheckReportOperator columnName inValid');
             return null;
         }
 

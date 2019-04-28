@@ -120,17 +120,23 @@ global with sharing class C501_MassMerge_SharedCode_Account {
             List<C501_Account_Merge__c> mergeObjectsInsert = new List<C501_Account_Merge__c>();
             for (C501_Account_Merge__c mergeObject :mergeObjects) {
                 if (!mergeObjectsExisting.contains(mergeObject.Unique_Id__c)) {
+                    System.Debug('***** C501_MassMerge_SharedCode_Account::InsertObjectMergeCandidates Insert Merge: ' + String.valueOf(mergeObject));
                     mergeObjectsInsert.add(mergeObject);
                     mergeObjectsExisting.add(mergeObject.Unique_Id__c);
                 }
             }
 
             if (!mergeObjectsInsert.isEmpty()) {
+
                 Database.SaveResult[] insertResults = Database.insert(mergeObjectsInsert, false);
 
                 for (Database.SaveResult result : insertResults) {
                     if (!result.isSuccess()) {
-                        System.debug('***** C501_MassMerge_SharedCode_Account::InsertObjectMergeCandidates Merge Results: ' + String.valueOf(result));
+                        for(Database.Error resultError : result.getErrors()) {
+                            System.debug('***** C501_MassMerge_SharedCode_Account::InsertObjectMergeCandidates Database.SaveResult');
+                            System.debug(resultError.getStatusCode() + ': ' + resultError.getMessage());
+                            System.debug('Fields that affected this error: ' + resultError.getFields());
+                        }                        
                     }
                 }
             }
