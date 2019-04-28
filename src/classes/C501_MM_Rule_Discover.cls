@@ -63,8 +63,7 @@ global class C501_MM_Rule_Discover implements Schedulable {
                 continue;
             }
 
-            //String reportId;
-            String reportId = '';
+            String reportId;
             for (Report report :reports) {
 
                 if ((String)report.Id == mergeMetric.Source_Report__c || report.DeveloperName == mergeMetric.Source_Report__c) {
@@ -89,19 +88,27 @@ global class C501_MM_Rule_Discover implements Schedulable {
                 continue;
             }
 
+            System.debug('***** C501_MM_Rule_Discover:execute - Loop Check mergeMetric: ' + String.valueOf(mergeMetric));        
+
             if (mergeMetric.Last_Discover_Date__c == null || mergeMetricDiscover.Id == null) {
 
                 reportIdDiscover = reportId;
 
                 // Shallow Copy
                 mergeMetricDiscover = mergeMetric;
+
+                System.debug('***** C501_MM_Rule_Discover:execute - Loop Initialize mergeMetricDiscover: ' + String.valueOf(mergeMetricDiscover));        
+
+                break;
             }
-            else if (mergeMetricDiscover.Last_Discover_Date__c <> null && mergeMetric.Last_Discover_Date__c < mergeMetricDiscover.Last_Discover_Date__c) {
+            else if (mergeMetricMerge.Id == null || (mergeMetricMerge.Last_Discover_Date__c <> null && mergeMetric.Last_Discover_Date__c < mergeMetricMerge.Last_Merge_Date__c)) {
 
                 reportIdDiscover = reportId;
 
                 // Shallow Copy
                 mergeMetricDiscover = mergeMetric;
+
+                System.debug('***** C501_MM_Rule_Discover:execute - Loop Set mergeMetricDiscover: ' + String.valueOf(mergeMetricDiscover));        
             }
         }
 

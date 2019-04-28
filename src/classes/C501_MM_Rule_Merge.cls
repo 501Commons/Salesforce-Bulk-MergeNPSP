@@ -60,8 +60,7 @@ global class C501_MM_Rule_Merge implements Schedulable {
                 continue;
             }
 
-            //String reportId;
-            String reportId = '';
+            String reportId;
             for (Report report :reports) {
 
                 if ((String)report.Id == mergeMetric.Source_Report__c || report.DeveloperName == mergeMetric.Source_Report__c) {
@@ -86,11 +85,11 @@ global class C501_MM_Rule_Merge implements Schedulable {
                 }
             }
 
-            if (String.isEmpty(reportId) || String.isEmpty(mergeMetric.Source_Object__c)) {
+            if (String.isBlank(reportId)) {
                 continue;
             }
 
-            if (mergeMetric.Last_Merge_Date__c == null || mergeMetricMerge.Id == null) {
+            if (mergeMetric.Last_Merge_Date__c == null) {
 
                 reportIdMerge = reportId;
 
@@ -99,7 +98,7 @@ global class C501_MM_Rule_Merge implements Schedulable {
 
                 break;
             }
-            else if (mergeMetricMerge.Last_Merge_Date__c <> null && mergeMetric.Last_Merge_Date__c < mergeMetricMerge.Last_Merge_Date__c) {
+            else if (mergeMetricMerge.Id == null || (mergeMetricMerge.Last_Merge_Date__c <> null && mergeMetric.Last_Merge_Date__c < mergeMetricMerge.Last_Merge_Date__c)) {
 
                 reportIdMerge = reportId;
 
