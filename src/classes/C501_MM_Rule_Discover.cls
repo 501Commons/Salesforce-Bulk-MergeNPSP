@@ -27,7 +27,7 @@ global class C501_MM_Rule_Discover implements Schedulable {
             SELECT
                 Id, Name, Confidence__c,
                 Total_Unassigned_Accounts__c, Total_Unassigned_Contacts__c,
-                Enable__c, Source_Report__c, Source_Report_LastModifiedDate__c, Source_Object__c,
+                Enable__c, Source_Report__c, Source_Report_LastModifiedDate__c, Source_Object__c, Source_Aggregate__c,
                 AutoMerge_Percentage__c, AutoMerge_Objects__c,
                 Last_Discover_Date__c
             FROM C501_Merge_Metric__c];
@@ -54,7 +54,7 @@ global class C501_MM_Rule_Discover implements Schedulable {
             SELECT
                 Id, Name, Confidence__c,
                 Total_Unassigned_Accounts__c, Total_Unassigned_Contacts__c,
-                Enable__c, Source_Report__c, Source_Report_LastModifiedDate__c, Source_Object__c,
+                Enable__c, Source_Report__c, Source_Report_LastModifiedDate__c, Source_Object__c, Source_Aggregate__c,
                 AutoMerge_Percentage__c, AutoMerge_Objects__c,
                 Last_Discover_Date__c
             FROM C501_Merge_Metric__c]) {
@@ -89,7 +89,7 @@ global class C501_MM_Rule_Discover implements Schedulable {
                 }
             }
 
-            if (String.isEmpty(reportId) || String.isEmpty(mergeMetric.Source_Object__c)) {
+            if (String.isEmpty(reportId)) {
                 continue;
             }
 
@@ -174,6 +174,7 @@ global class C501_MM_Rule_Discover implements Schedulable {
                         Confidence__c = 90.0,
                         Source_Report__c = report.DeveloperName,
                         Source_Object__c = (report.DeveloperName.contains('Account') ? 'Account' : 'Contact'),
+                        Source_Aggregate__c = (report.DeveloperName.contains('Account') ? 'Account' : 'Contact'),
                         AutoMerge_Percentage__c = 0.0
                     ));
                 }
@@ -284,18 +285,9 @@ global class C501_MM_Rule_Discover implements Schedulable {
     }
     global void ProcessReportByAccounts(C501_Merge_Metric__c mergeMetric, List<String> detailColumnsChecked, List<Reports.ReportFilter> reportFilters) {
 
-        //
-        // Testing in Workbench tips
-        //      add LIMIT 10 at the end
-
-        String accountId = 'AccountId';
-        if (mergeMetric.Source_Object__c.equals('Account')) {
-            accountId = 'Id';
-        }
-
         // Find Contact matches across Accounts
         //
-        String strSoql = 'SELECT Count(' + accountId + '), MAX(' + accountId + ')MaxAccountId, MIN(' + accountId + ')MinAccountId ';
+        String strSoql = 'SELECT Count(' + mergeMetric.Source_Aggregate__c + '), MAX(' + mergeMetric.Source_Aggregate__c + ')MaxId, MIN(' + mergeMetric.Source_Aggregate__c + ')MinId ';
         strSoql += ' FROM ' + mergeMetric.Source_Object__c;
 
         // Build WHERE statement
@@ -307,8 +299,19 @@ global class C501_MM_Rule_Discover implements Schedulable {
             whereFields.add(column + ' <> null ');
         }
 
+        // Check if Full Contact Match meaning every contact in the households have to match
+        Boolean fullContactMatch = false;
+
         // Add filters
         for (Reports.ReportFilter reportFilter :reportFilters) {
+
+            // Check for full contact match
+            if (reportFilter.getValue().contains('Full Contact Match')) {
+
+                fullContactMatch = true;
+                continue;
+            }
+
             String whereField = CheckReportOperator(mergeMetric, reportFilter.getColumn(), reportFilter.getOperator(), reportFilter.getValue());
             if (whereField != null && !String.isEmpty(whereField)) {
                 whereFields.add(whereField);
@@ -317,21 +320,79 @@ global class C501_MM_Rule_Discover implements Schedulable {
 
         strSoql += ' WHERE ' + String.join(whereFields, ' and ');
         strSoql += ' GROUP BY ' + String.join(detailColumnsChecked, ', ');
-        strSoql += ' HAVING Count(' + accountId + ') > 1 ';
-        strSoql += ' ORDER BY Count(' + accountId + ') DESC';
+        strSoql += ' HAVING Count(' + mergeMetric.Source_Aggregate__c + ') > 1 ';
+        strSoql += ' ORDER BY Count(' + mergeMetric.Source_Aggregate__c + ') DESC';
 
         System.debug('***** C501_MM_Rule_Discover:ProcessReportByAccounts strSoql: ' + strSoql);
 
 		AggregateResult[] allAggregatedByAccounts = Database.Query(strSoql);
 
+        // Check for Full Contact Match
+        //
+        Map<Id,String> accountContacts = new Map<Id,String>();
+        if (fullContactMatch) {
+
+            Set<Id> mergeAccountIds = new Set<Id>();
+            String minId, maxId;
+            for (AggregateResult result : allAggregatedByAccounts)  {
+                
+                maxId = result.get('MaxId').toString();
+                minId = result.get('MinId').toString();
+
+                if (String.isEmpty(maxId) || String.isEmpty(minId) || maxId == minId) {
+                    continue;
+                }
+
+                mergeAccountIds.add(maxId);
+                mergeAccountIds.add(minId);
+            }
+
+            List<Contact> contacts = [
+                SELECT AccountId, FirstName, LastName, Birthdate, Gender__c
+                FROM Contact
+                WHERE
+                    AccountId in :mergeAccountIds
+                    and FirstName <> null 
+                    and Birthdate <> null 
+                    and Gender__c <> null
+                ORDER BY AccountId, FirstName, LastName, Birthdate, Gender__c DESC
+                LIMIT 999];
+
+            if (contacts.isEmpty()) {
+                return;
+            }
+
+            for (Contact contactInfo :contacts) {
+                String contactsInfo;
+                if (accountContacts.containsKey(contactInfo.AccountId)) {
+                    contactsInfo = accountContacts.remove(contactInfo.AccountId);
+                }
+
+                contactsInfo += contactInfo.FirstName.mid(1,1) + contactInfo.LastName + contactinfo.Birthdate + contactInfo.Gender__c;
+                accountContacts.put(contactInfo.AccountId, contactsInfo);
+            }
+        }
+
         Map<String, C501_Account_Merge__c> mergeAccounts = new Map<String, C501_Account_Merge__c>();
         String uniqueId, minId, maxId;
         for (AggregateResult result : allAggregatedByAccounts)  {
-            maxId = result.get('MaxAccountId').toString();
-            minId = result.get('MinAccountId').toString();
+            maxId = result.get('MaxId').toString();
+            minId = result.get('MinId').toString();
 
             if (String.isEmpty(maxId) || String.isEmpty(minId) || maxId == minId) {
                 continue;
+            }
+
+            // Check if Full Contact Match meaning every contact in the households have to match
+            if (fullContactMatch) {
+                if (!accountContacts.containsKey(maxId) || !accountContacts.containsKey(minId)) {
+                    continue;
+                }
+
+                // Validate Contacts same between both accounts
+                if (accountContacts.get(maxId) <> accountContacts.get(minId)) {
+                    continue;
+                }
             }
 
             uniqueId = mergeMetric.Name + maxId + minId;
@@ -356,7 +417,7 @@ global class C501_MM_Rule_Discover implements Schedulable {
 
         // Find Contact matches across Accounts
         //
-        String strSoql = 'SELECT Count(Id), MAX(Id)MaxContactId, MIN(Id)MinContactId ';
+        String strSoql = 'SELECT Count(' + mergeMetric.Source_Aggregate__c + '), MAX(' + mergeMetric.Source_Aggregate__c + ')MaxId, MIN(' + mergeMetric.Source_Aggregate__c + ')MinId ';
         strSoql += ' FROM Contact';
 
         // Build WHERE statement
@@ -378,8 +439,8 @@ global class C501_MM_Rule_Discover implements Schedulable {
 
         strSoql += ' WHERE ' + String.join(whereFields, ' and ');
         strSoql += ' GROUP BY ' + String.join(detailColumnsChecked, ', ');
-        strSoql += ' HAVING Count(Id) > 1 ';
-        strSoql += ' ORDER BY Count(Id) DESC';
+        strSoql += ' HAVING Count(' + mergeMetric.Source_Aggregate__c + ') > 1 ';
+        strSoql += ' ORDER BY Count(' + mergeMetric.Source_Aggregate__c + ') DESC';
 
         System.debug('***** C501_MM_Rule_Discover:ProcessReportByContacts strSoql: ' + strSoql);
 
@@ -388,8 +449,8 @@ global class C501_MM_Rule_Discover implements Schedulable {
         Map<String, C501_Contact_Merge__c> mergeContacts = new Map<String, C501_Contact_Merge__c>();
         String uniqueId, minId, maxId;
         for (AggregateResult result : allAggregatedByContacts)  {
-            maxId = result.get('MaxContactId').toString();
-            minId = result.get('MinContactId').toString();
+            maxId = result.get('MaxId').toString();
+            minId = result.get('MinId').toString();
 
             if (String.isEmpty(maxId) || String.isEmpty(minId) || maxId == minId) {
                 continue;
