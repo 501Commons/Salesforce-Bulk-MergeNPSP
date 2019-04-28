@@ -63,8 +63,6 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
         String mergeMetricName = mergeMetric.Name;
         Decimal mergeMetricAutoPercentage = mergeMetric.AutoMerge_Percentage__c;
 
-        System.debug('***** C501_MassMerge_SharedCode_Contact::InsertObjectMergeCandidates mergeMetricName: ' + mergeMetricName + ' mergeObjects: ' + String.valueOf(mergeObjects));
-
         Set<Id> objectIds = new Set<Id>();
         Set<String> mergeObjectsExisting = new Set<String>();
         Map<Id, C501_Contact_Merge__c> objectMergeMap = new Map<Id, C501_Contact_Merge__c>();
