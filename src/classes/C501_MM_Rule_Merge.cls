@@ -98,7 +98,7 @@ global class C501_MM_Rule_Merge implements Schedulable {
 
                 break;
             }
-            else if (mergeMetricMerge.Id == null || (mergeMetricMerge.Last_Merge_Date__c <> null && mergeMetric.Last_Merge_Date__c < mergeMetricMerge.Last_Merge_Date__c)) {
+            else if (mergeMetricMerge.Id == null || (mergeMetric.Last_Merge_Date__c <> null && mergeMetric.Last_Merge_Date__c < mergeMetricMerge.Last_Merge_Date__c)) {
 
                 reportIdMerge = reportId;
 

@@ -90,7 +90,7 @@ global class C501_MM_Rule_Discover implements Schedulable {
 
             System.debug('***** C501_MM_Rule_Discover:execute - Loop Check mergeMetric: ' + String.valueOf(mergeMetric));        
 
-            if (mergeMetric.Last_Discover_Date__c == null || mergeMetricDiscover.Id == null) {
+            if (mergeMetric.Last_Discover_Date__c == null) {
 
                 reportIdDiscover = reportId;
 
@@ -101,7 +101,7 @@ global class C501_MM_Rule_Discover implements Schedulable {
 
                 break;
             }
-            else if (mergeMetricMerge.Id == null || (mergeMetricMerge.Last_Discover_Date__c <> null && mergeMetric.Last_Discover_Date__c < mergeMetricMerge.Last_Merge_Date__c)) {
+            else if (mergeMetricDiscover.Id == null || (mergeMetric.Last_Discover_Date__c <> null && mergeMetric.Last_Discover_Date__c < mergeMetricDiscover.Last_Discover_Date__c)) {
 
                 reportIdDiscover = reportId;
 
