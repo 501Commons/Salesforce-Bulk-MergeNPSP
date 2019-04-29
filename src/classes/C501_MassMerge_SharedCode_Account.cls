@@ -74,6 +74,12 @@ global with sharing class C501_MassMerge_SharedCode_Account {
         List<C501_Account_Merge__c> invalidMerges = new List<C501_Account_Merge__c>();
         Set<Id> objectIdsValid = new Set<Id>();
 
+        Boolean isSandbox = false;
+        List<Organization> organizations = [SELECT IsSandbox FROM Organization LIMIT 1];
+        if (!organizations.isEmpty()) {
+            isSandbox = Boolean.valueOf(organizations[0].IsSandbox);
+        }
+
         for (C501_Account_Merge__c mergeObject :[
             SELECT Id, Unique_Id__c, Account__c, Account__r.IsDeleted, Merge_Target_Account__c, Merge_Target_Account__r.IsDeleted, Merge_Confidence__c, Merge_Action__c
             FROM C501_Account_Merge__c
@@ -120,7 +126,6 @@ global with sharing class C501_MassMerge_SharedCode_Account {
             List<C501_Account_Merge__c> mergeObjectsInsert = new List<C501_Account_Merge__c>();
             for (C501_Account_Merge__c mergeObject :mergeObjects) {
                 if (!mergeObjectsExisting.contains(mergeObject.Unique_Id__c)) {
-                    System.Debug('***** C501_MassMerge_SharedCode_Account::InsertObjectMergeCandidates Insert Merge: ' + String.valueOf(mergeObject));
                     mergeObjectsInsert.add(mergeObject);
                     mergeObjectsExisting.add(mergeObject.Unique_Id__c);
                 }
@@ -133,8 +138,16 @@ global with sharing class C501_MassMerge_SharedCode_Account {
                 for (Database.SaveResult result : insertResults) {
                     if (!result.isSuccess()) {
                         for(Database.Error resultError : result.getErrors()) {
+
+                            String statusCode = String.valueOf(resultError.getStatusCode());
+
+                            // Sandbox ignore the INVALID_CROSS_REFERENCE_KEY expection because there is partial data in Sandbox
+                            if (isSandbox && statusCode.contains('INVALID_CROSS_REFERENCE_KEY')) {
+                                continue;
+                            }
+
                             System.debug('***** C501_MassMerge_SharedCode_Account::InsertObjectMergeCandidates Database.SaveResult');
-                            System.debug(resultError.getStatusCode() + ': ' + resultError.getMessage());
+                            System.debug(statusCode + ': ' + resultError.getMessage());
                             System.debug('Fields that affected this error: ' + resultError.getFields());
                         }                        
                     }

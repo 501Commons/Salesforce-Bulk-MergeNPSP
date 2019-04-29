@@ -88,16 +88,12 @@ global class C501_MM_Rule_Discover implements Schedulable {
                 continue;
             }
 
-            System.debug('***** C501_MM_Rule_Discover:execute - Loop Check mergeMetric: ' + String.valueOf(mergeMetric));        
-
             if (mergeMetric.Last_Discover_Date__c == null) {
 
                 reportIdDiscover = reportId;
 
                 // Shallow Copy
                 mergeMetricDiscover = mergeMetric;
-
-                System.debug('***** C501_MM_Rule_Discover:execute - Loop Initialize mergeMetricDiscover: ' + String.valueOf(mergeMetricDiscover));        
 
                 break;
             }
@@ -107,8 +103,6 @@ global class C501_MM_Rule_Discover implements Schedulable {
 
                 // Shallow Copy
                 mergeMetricDiscover = mergeMetric;
-
-                System.debug('***** C501_MM_Rule_Discover:execute - Loop Set mergeMetricDiscover: ' + String.valueOf(mergeMetricDiscover));        
             }
         }
 
@@ -285,11 +279,10 @@ global class C501_MM_Rule_Discover implements Schedulable {
         if (mergeMetric.Source_Object__c.equals('Contact')) {
 
             // Process by Contacts different Accounts to find any potential contact merges across different accounts
-            ProcessReportByContacts(mergeMetric, foriegnKey, detailColumnsChecked, reportFilters);
+            ProcessReportByContacts(mergeMetric, foriegnKey, detailColumnsChecked, reportFilters, null);
 
             // Process by Contacts same Account to find any potential contacts merges within same account
-            detailColumnsChecked.add('AccountId');
-            ProcessReportByContacts(mergeMetric, foriegnKey, detailColumnsChecked, reportFilters);
+            ProcessReportByContacts(mergeMetric, foriegnKey, detailColumnsChecked, reportFilters, 'AccountId');
         }
     }
     global void ProcessReportByAccounts(C501_Merge_Metric__c mergeMetric, String foriegnKey, List<String> detailColumnsChecked, List<Reports.ReportFilter> reportFilters) {
@@ -450,10 +443,10 @@ global class C501_MM_Rule_Discover implements Schedulable {
         c501MassMerge_SharedCode_Account.InsertObjectMergeCandidates(mergeMetric, mergeAccounts.values());
     }
 
-    global void ProcessReportByContacts(C501_Merge_Metric__c mergeMetric, String foriegnKey, List<String> detailColumnsChecked, List<Reports.ReportFilter> reportFilters) {
+    global void ProcessReportByContacts(C501_Merge_Metric__c mergeMetric, String foriegnKey, List<String> detailColumnsChecked, List<Reports.ReportFilter> reportFilters, String additionalGroupByField) {
         // Find Contact matches across Accounts
         //
-        String strSoqlSelect = 'SELECT Count(' + mergeMetric.Source_Aggregate__c + '), MAX(' + mergeMetric.Source_Aggregate__c + ')MaxId, MIN(' + mergeMetric.Source_Aggregate__c + ')MinId ';
+        String strSoqlSelect = 'SELECT Count(Id), MAX(Id)MaxId, MIN(Id)MinId ';
         String strSoqlFrom = ' FROM ' + mergeMetric.Source_Object__c;
 
         // Build WHERE statement
@@ -500,9 +493,14 @@ global class C501_MM_Rule_Discover implements Schedulable {
             groupByFields.add(column);
         }
 
+        // Check to add additional groupByFields
+        if (String.isNotBlank(additionalGroupByField)) {
+            groupByFields.add(additionalGroupByField);
+        }
+
         String strSoqlGroupBy = ' GROUP BY ' + String.join(groupByFields, ', ');
-        String strSoqlHaving = ' HAVING Count(' + mergeMetric.Source_Aggregate__c + ') > 1 ';
-        String strSoqlOrderBy = ' ORDER BY Count(' + mergeMetric.Source_Aggregate__c + ') DESC';
+        String strSoqlHaving = ' HAVING Count(Id) > 1 ';
+        String strSoqlOrderBy = ' ORDER BY Count(Id) DESC';
 
         System.debug('***** C501_MM_Rule_Discover:ProcessReportByContacts aggregate SOQL');
         System.debug(strSoqlSelect);
