@@ -8,6 +8,14 @@
 */
 //  3) click Execute
 //
+// Abort scheduled jobs
+/*
+    List<CronJobDetail> scheduledJobs = [SELECT Id FROM CronJobDetail WHERE Name like 'Contact_%' or Name like 'SM_Contact_%' or Name like 'Account_%'];
+    for (CronJobDetail scheduledJob :scheduledJobs) {
+        Id jobId = [SELECT Id FROM CronTrigger WHERE CronJobDetailId = :scheduledJob.Id].Id;
+        System.abortJob(jobId);
+    }
+*/
 
 global class C501_MM_Rule_Discover implements Schedulable {
 
@@ -17,20 +25,29 @@ global class C501_MM_Rule_Discover implements Schedulable {
 		// Perform all SOQL Queries outside of loop to avoid Salesforce Governor Limits: https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/apex_gov_limits.htm
 		//
 
-        // Make sure mass merge instances exist for Mass Merge reports
-        InitializeMassMergeInstances();
-
+        // Make sure mass merge metric instances exist for Mass Merge reports
         C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
+
+        String reportFolder = 'Mass Merge Rules';
+        if (Test.isRunningTest()) {
+            reportFolder = 'Mass Merge Tests';
+        }
+        c501MassMerge_SharedCode.InitializeMassMergeInstances(reportFolder);
+
+        // Schedule discovery jobs
         c501MassMerge_SharedCode.ScheduleJobs(C501_MM_Rule_Discover.class.getName());
 
-        List<C501_Merge_Metric__c> mergeMetrics = [
-            SELECT
-                Id, Name, Confidence__c,
-                Total_Unassigned_Accounts__c, Total_Unassigned_Contacts__c,
-                Enable__c, Source_Report__c, Source_Report_LastModifiedDate__c, Source_Object__c, Source_Aggregate__c,
-                AutoMerge_Percentage__c, AutoMerge_Objects__c,
-                Last_Discover_Date__c
-            FROM C501_Merge_Metric__c];
+        String strSoql = 'SELECT';
+        strSoql += ' Id, Name, Confidence__c, Enable__c,';
+        strSoql += ' Total_Unassigned_Accounts__c, Total_Unassigned_Contacts__c,';
+        strSoql += ' Source_Report__c, Source_Report_LastModifiedDate__c, Source_Object__c, Source_Aggregate__c,';
+        strSoql += ' AutoMerge_Percentage__c, AutoMerge_Objects__c,';
+        strSoql += ' Last_Discover_Date__c, Last_Merge_Date__c';
+        strSoql += ' FROM C501_Merge_Metric__c';
+        if (Test.isRunningTest()) {        
+            strSoql += ' WHERE Name LIKE \'TESTDATA%\'';
+        }
+        List<C501_Merge_Metric__c> mergeMetrics = Database.Query(strSoql);
 
         Set<String> sourceReportIds = new Set<String>();
         for (C501_Merge_Metric__c mergeMetric : mergeMetrics) {
@@ -50,14 +67,7 @@ global class C501_MM_Rule_Discover implements Schedulable {
         List<C501_Merge_Metric__c> mergeMetricsUpdate = new List<C501_Merge_Metric__c>();
         Set<Id> mergeMetricDeleteChildren = new Set<Id>();
 
-        for (C501_Merge_Metric__c mergeMetric : [
-            SELECT
-                Id, Name, Confidence__c,
-                Total_Unassigned_Accounts__c, Total_Unassigned_Contacts__c,
-                Enable__c, Source_Report__c, Source_Report_LastModifiedDate__c, Source_Object__c, Source_Aggregate__c,
-                AutoMerge_Percentage__c, AutoMerge_Objects__c,
-                Last_Discover_Date__c
-            FROM C501_Merge_Metric__c]) {
+        for (C501_Merge_Metric__c mergeMetric : mergeMetrics) {
 
             if (!mergeMetric.Enable__c) {
                 continue;
@@ -134,50 +144,6 @@ global class C501_MM_Rule_Discover implements Schedulable {
 
         // NOTE: Calling Reports.ReportManager within this loop context get compile error ReportManager variable does not exist.  Future task - investigate why
         ProcessReport(reportIdDiscover, mergeMetricDiscover);
-    }
-
-    global void InitializeMassMergeInstances() {
-
-        List<C501_Merge_Metric__c> mergeMetrics = [
-            SELECT
-                Id, Name, Confidence__c,
-                Total_Unassigned_Accounts__c, Total_Unassigned_Contacts__c,
-                Enable__c, Source_Report__c,
-                AutoMerge_Percentage__c, AutoMerge_Objects__c,
-                Last_Discover_Date__c
-            FROM C501_Merge_Metric__c];
-
-        // Initialize Merge Metrics - make sure there is a merge metric for each report in Mass Merge folder
-        List<C501_Merge_Metric__c> mergeMetricsInsert = new List<C501_Merge_Metric__c>();
-        for (Report report :[
-            SELECT Id, DeveloperName, FolderName, Name
-            FROM Report
-            WHERE
-                FolderName = 'Mass Merge Rules']) {
-
-                Boolean foundMergeMetric = false;
-                for (C501_Merge_Metric__c mergeMetric :mergeMetrics) {
-                    if (mergeMetric.Source_Report__c == (String)report.Id || mergeMetric.Source_Report__c == report.DeveloperName) {
-                        foundMergeMetric = true;
-                        break;
-                    }
-                }
-
-                if (!foundMergeMetric) {
-                    mergeMetricsInsert.add( new C501_Merge_Metric__c (
-                        Name = report.Name,
-                        Confidence__c = 90.0,
-                        Source_Report__c = report.DeveloperName,
-                        Source_Object__c = (report.DeveloperName.contains('Account') ? 'Account' : 'Contact'),
-                        Source_Aggregate__c = (report.DeveloperName.contains('Account') ? 'Id' : 'AccountId'),
-                        AutoMerge_Percentage__c = 0.0
-                    ));
-                }
-        }
-
-        if (!mergeMetricsInsert.isEmpty()) {
-            insert mergeMetricsInsert;
-        }
     }
 
     global void ProcessReport(String reportId, C501_Merge_Metric__c mergeMetric) {

@@ -3,12 +3,11 @@ class C501_MassMerge_Scheduler_TEST {
 
     public static String CRON_EXP = '0 0 0 3 9 ? 2022';
 
-    @testSetup static void setup() {
+    @isTest(SeeAllData='true')
+    public static void C501_MassMerge_Scheduler_TEST_Schedule() {
+
         C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
         c501MassMerge_SharedCode.TestSetupMerge();
-    }
-
-    static testmethod void C501_MassMerge_Scheduler_TEST_Schedule() {
 
         Test.startTest();
 

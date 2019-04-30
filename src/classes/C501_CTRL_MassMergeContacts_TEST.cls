@@ -29,14 +29,14 @@
 */
 
 @isTest
-private with sharing class C501_CTRL_MassMergeContacts_TEST {
+public with sharing class C501_CTRL_MassMergeContacts_TEST {
     
-    @testSetup static void setup() {
-        C501_MM_Rule_Discover scheduleNameEmail = new C501_MM_Rule_Discover();
-        scheduleNameEmail.execute(null);
+    private static void setupTest() {
+        C501_MM_Rule_Discover scheduleDiscover = new C501_MM_Rule_Discover();
+        scheduleDiscover.execute(null);
 
         List<C501_Merge_Metric__c> listMergeMetrics = new List<C501_Merge_Metric__c>();
-        for (C501_Merge_Metric__c mergeMetric :[SELECT Id FROM C501_Merge_Metric__c]) {
+        for (C501_Merge_Metric__c mergeMetric :[SELECT Id FROM C501_Merge_Metric__c WHERE Name LIKE 'TESTDATA%']) {
             mergeMetric.Enable__c = true;
             mergeMetric.AutoMerge_Percentage__c = 0.0;
             mergeMetric.AutoMerge_Objects__c = 'Account;Contacts Within Account;Contacts Across Accounts';
@@ -46,19 +46,22 @@ private with sharing class C501_CTRL_MassMergeContacts_TEST {
 
         update listMergeMetrics;
 
-        // Create Account and Contact Merges
-        scheduleNameEmail.execute(null);
+        // Run discover for each merge metric
+        scheduleDiscover.execute(null);
     }
 
     //==================== TEST METHOD(s) ======================================
 
-    private static testMethod void ProcessContactMerges_BatchTest() {
+    @isTest(SeeAllData='true')
+    public static void ProcessContactMerges_BatchTest() {
 
-        List<C501_Merge_Metric__c> listMergeMetrics = [SELECT Id FROM C501_Merge_Metric__c];
-        List<Contact> listContacts = [SELECT Id FROM Contact];
+        setupTest();
+
+        List<C501_Merge_Metric__c> listMergeMetrics = [SELECT Id FROM C501_Merge_Metric__c WHERE Name LIKE 'TESTDATA%'];
+        List<Contact> listContacts = [SELECT Id FROM Contact WHERE Name LIKE '%TESTDATA%'];
 
         C501_Contact_Merge__c contactMerge1 = new C501_Contact_Merge__c(
-                Unique_Id__c = 'Name ' + listContacts[0].Id,
+                Unique_Id__c = 'TESTDATA Name ' + listContacts[0].Id,
                 Merge_Metric__c = listMergeMetrics[0].Id,
                 Contact__c = listContacts[0].Id,
                 Merge_Target_Contact__c = listContacts[1].Id,
@@ -67,7 +70,7 @@ private with sharing class C501_CTRL_MassMergeContacts_TEST {
         insert contactMerge1;
 
         C501_Contact_Merge__c contactMerge2 = new C501_Contact_Merge__c(
-                Unique_Id__c = 'Name ' + listContacts[2].Id,
+                Unique_Id__c = 'TESTDATA Name ' + listContacts[2].Id,
                 Merge_Metric__c = listMergeMetrics[0].Id,
                 Contact__c = listContacts[2].Id,
                 Merge_Target_Contact__c = listContacts[3].Id,
@@ -76,17 +79,38 @@ private with sharing class C501_CTRL_MassMergeContacts_TEST {
 
         insert contactMerge2;
 
-        C501_MassMerge_SharedCode_Contact c501MassMerge_SharedCode_Contact = new C501_MassMerge_SharedCode_Contact();
-        c501MassMerge_SharedCode_Contact.ProcessObjectMerges(new List<C501_Contact_Merge__c> { contactMerge1 }, true);
+        Test.StartTest();
+
+        Boolean exceptionRaised = false;
+        try
+        {
+            C501_MassMerge_SharedCode_Contact c501MassMerge_SharedCode_Contact = new C501_MassMerge_SharedCode_Contact();
+            c501MassMerge_SharedCode_Contact.ProcessObjectMerges(new List<C501_Contact_Merge__c> { contactMerge1 }, true);
+        }
+        catch (C501_MassMerge_SharedCode_Account.C501_MassMerge_SharedCode_AccountException customException)
+        {
+            exceptionRaised = true;
+        }
+        catch (System.DmlException dmlException) {
+            exceptionRaised = true;
+        }
+        catch (Exception generalException) {
+            exceptionRaised = true;
+        }
+       
+        Test.StopTest();
     }
 
-    private static testMethod void ProcessContactMerges_SyncTest() {
+    @isTest(SeeAllData='true')
+    public static void ProcessContactMerges_SyncTest() {
 
-        List<C501_Merge_Metric__c> listMergeMetrics = [SELECT Id FROM C501_Merge_Metric__c];
-        List<Contact> listContacts = [SELECT Id FROM Contact];
+        setupTest();
+
+        List<C501_Merge_Metric__c> listMergeMetrics = [SELECT Id FROM C501_Merge_Metric__c WHERE Name LIKE 'TESTDATA%'];
+        List<Contact> listContacts = [SELECT Id FROM Contact WHERE Name LIKE '%TESTDATA%'];
 
         C501_Contact_Merge__c contactMerge1 = new C501_Contact_Merge__c(
-                Unique_Id__c = 'Name ' + listContacts[0].Id,
+                Unique_Id__c = 'TESTDATA Name ' + listContacts[0].Id,
                 Merge_Metric__c = listMergeMetrics[0].Id,
                 Contact__c = listContacts[0].Id,
                 Merge_Target_Contact__c = listContacts[1].Id,
@@ -95,7 +119,7 @@ private with sharing class C501_CTRL_MassMergeContacts_TEST {
         insert contactMerge1;
 
         C501_Contact_Merge__c contactMerge2 = new C501_Contact_Merge__c(
-                Unique_Id__c = 'Name ' + listContacts[2].Id,
+                Unique_Id__c = 'TESTDATA Name ' + listContacts[2].Id,
                 Merge_Metric__c = listMergeMetrics[0].Id,
                 Contact__c = listContacts[2].Id,
                 Merge_Target_Contact__c = listContacts[3].Id,
@@ -103,22 +127,29 @@ private with sharing class C501_CTRL_MassMergeContacts_TEST {
                 Merge_Action__c = 'Merge');
 
         insert contactMerge2;
+
+        Test.StartTest();
 
         C501_MassMerge_SharedCode_Contact c501MassMerge_SharedCode_Contact = new C501_MassMerge_SharedCode_Contact();
         c501MassMerge_SharedCode_Contact.ProcessObjectMerges(new List<C501_Contact_Merge__c> { contactMerge1 }, false);
+
+        Test.StopTest();
     }
 
-    private static testMethod void ProcessContactMerges_AcrossAccountsTest() {
+    @isTest(SeeAllData='true')
+    public static void ProcessContactMerges_AcrossAccountsTest() {
+
+        setupTest();
 
         Account account1 = new Account(
-            Name = 'Account1',
+            Name = 'TESTDATA Account1',
             BillingStreet = '123 Street',
             Phone = '(123) 456-7890'
         );
         insert account1;
 
         Contact contact11 = new Contact(
-            LastName = 'LastName',
+            LastName = 'TESTDATA LastName',
             FirstName = 'FirstName',
             Birthdate = System.today(),
             AccountId = account1.Id
@@ -126,14 +157,14 @@ private with sharing class C501_CTRL_MassMergeContacts_TEST {
         insert contact11;
 
         Account account2 = new Account(
-            Name = 'Account2',
+            Name = 'TESTDATA Account2',
             BillingStreet = '123 Street',
             Phone = '(123) 456-7890'
         );
         insert account2;
 
         Contact contact21 = new Contact(
-            LastName = 'LastName',
+            LastName = 'TESTDATA LastName',
             FirstName = 'FirstName',
             Email = 'email@email.com',
             Gender__c = 'Male',
@@ -141,10 +172,10 @@ private with sharing class C501_CTRL_MassMergeContacts_TEST {
         );
         insert contact21;
 
-        List<C501_Merge_Metric__c> listMergeMetrics = [SELECT Id FROM C501_Merge_Metric__c];
+        List<C501_Merge_Metric__c> listMergeMetrics = [SELECT Id FROM C501_Merge_Metric__c WHERE Name LIKE 'TESTDATA%'];
 
         C501_Contact_Merge__c contactMerge1 = new C501_Contact_Merge__c(
-                Unique_Id__c = 'Name ' + contact11.Id,
+                Unique_Id__c = 'TESTDATA Name ' + contact11.Id,
                 Merge_Metric__c = listMergeMetrics[0].Id,
                 Contact__c = contact11.Id,
                 Merge_Target_Contact__c = contact21.Id,
@@ -155,7 +186,7 @@ private with sharing class C501_CTRL_MassMergeContacts_TEST {
         // Add some invalids merges
         //
         C501_Contact_Merge__c contactMerge2 = new C501_Contact_Merge__c(
-                Unique_Id__c = 'Name2 ' + contact11.Id,
+                Unique_Id__c = 'TESTDATA Name2 ' + contact11.Id,
                 Merge_Metric__c = listMergeMetrics[0].Id,
                 Contact__c = contact11.Id,
                 Merge_Confidence__c = 100.0);
@@ -163,7 +194,7 @@ private with sharing class C501_CTRL_MassMergeContacts_TEST {
         insert contactMerge2;
 
         C501_Contact_Merge__c contactMerge3 = new C501_Contact_Merge__c(
-                Unique_Id__c = 'Name3 ' + contact11.Id,
+                Unique_Id__c = 'TESTDATA Name3 ' + contact11.Id,
                 Merge_Metric__c = listMergeMetrics[0].Id,
                 Contact__c = contact11.Id,
                 Merge_Target_Contact__c = contact11.Id,
@@ -171,13 +202,22 @@ private with sharing class C501_CTRL_MassMergeContacts_TEST {
 
         insert contactMerge3;
 
+        Test.StartTest();
+
         C501_MassMerge_SharedCode_Contact c501MassMerge_SharedCode_Contact = new C501_MassMerge_SharedCode_Contact();
         c501MassMerge_SharedCode_Contact.ProcessObjectMerges(new List<C501_Contact_Merge__c> { contactMerge1 }, false);
+
+        Test.StopTest();
     }
 
-    private static testmethod void CodeCoverageTests() {
+    @isTest(SeeAllData='true')
+    public static void CodeCoverageTests() {
 
-        Id masterContactId = [SELECT Id FROM Contact ORDER BY Id ASC LIMIT 1].Id;
+        setupTest();
+
+        Id masterContactId = [SELECT Id FROM Contact WHERE Name LIKE '%TESTDATA%' ORDER BY Id ASC LIMIT 1].Id;
+
+        Test.StartTest();
 
         //point to our VF page
         PageReference p = new PageReference('Page.MassMergeContacts');
@@ -245,6 +285,8 @@ private with sharing class C501_CTRL_MassMergeContacts_TEST {
 
         // Clear out household filter
         ctrl.contactFilter.Id = null;
-        ctrl.SaveAndCloseContacts();      
+        ctrl.SaveAndCloseContacts();
+
+        Test.StopTest();
     }
 }

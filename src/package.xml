@@ -166,6 +166,9 @@
         <members>C501_Mass_Merge_Templates/Merge_Rule_Contact_Name_DOB_Gender</members>
         <members>C501_Mass_Merge_Templates/Merge_Rule_Contact_Name_Email</members>
         <members>C501_Mass_Merge_Templates/Merge_Rule_Contact_Name_Email_Gender</members>
+        <members>C501_Mass_Merge_Tests</members>
+        <members>C501_Mass_Merge_Tests/Test_Merge_Rule_Account_Address</members>
+        <members>C501_Mass_Merge_Tests/Test_Merge_Rule_Contact_Name_DOB</members>
         <name>Report</name>
     </types>
     <types>

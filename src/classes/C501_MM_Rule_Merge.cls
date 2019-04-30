@@ -20,14 +20,17 @@ global class C501_MM_Rule_Merge implements Schedulable {
         C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
         c501MassMerge_SharedCode.ScheduleJobs(C501_MM_Rule_Merge.class.getName());
 
-        List<C501_Merge_Metric__c> mergeMetrics = [
-            SELECT
-                Id, Name, Confidence__c,
-                Total_Unassigned_Accounts__c, Total_Unassigned_Contacts__c,
-                Enable__c, Source_Report__c, Source_Report_LastModifiedDate__c, Source_Object__c,
-                AutoMerge_Percentage__c, AutoMerge_Objects__c,
-                Last_Merge_Date__c
-            FROM C501_Merge_Metric__c];
+        String strSoql = 'SELECT';
+        strSoql += ' Id, Name, Confidence__c, Enable__c,';
+        strSoql += ' Total_Unassigned_Accounts__c, Total_Unassigned_Contacts__c,';
+        strSoql += ' Source_Report__c, Source_Report_LastModifiedDate__c, Source_Object__c, Source_Aggregate__c,';
+        strSoql += ' AutoMerge_Percentage__c, AutoMerge_Objects__c,';
+        strSoql += ' Last_Discover_Date__c, Last_Merge_Date__c';
+        strSoql += ' FROM C501_Merge_Metric__c';
+        if (Test.isRunningTest()) {        
+            strSoql += ' WHERE Name LIKE \'TESTDATA%\'';
+        }
+        List<C501_Merge_Metric__c> mergeMetrics = Database.Query(strSoql);
 
         Set<String> sourceReportIds = new Set<String>();
         for (C501_Merge_Metric__c mergeMetric : mergeMetrics) {
@@ -47,14 +50,7 @@ global class C501_MM_Rule_Merge implements Schedulable {
         List<C501_Merge_Metric__c> mergeMetricsUpdate = new List<C501_Merge_Metric__c>();
         Set<Id> mergeMetricDeleteChildren = new Set<Id>();
 
-        for (C501_Merge_Metric__c mergeMetric : [
-            SELECT
-                Id, Name, Confidence__c,
-                Total_Unassigned_Accounts__c, Total_Unassigned_Contacts__c,
-                Enable__c, Source_Report__c, Source_Report_LastModifiedDate__c, Source_Object__c,
-                AutoMerge_Percentage__c, AutoMerge_Objects__c,
-                Last_Merge_Date__c
-            FROM C501_Merge_Metric__c]) {
+        for (C501_Merge_Metric__c mergeMetric :mergeMetrics) {
 
             if (!mergeMetric.Enable__c) {
                 continue;

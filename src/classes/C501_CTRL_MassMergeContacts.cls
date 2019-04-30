@@ -535,7 +535,7 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
         return null;
     }
     
-    // this was a testmethod which can't be compiled in this class under api 31.  
+    // this was a which can't be compiled in this class under api 31.  
     // but because it was marked global, it could not be completely removed.
     global static void CodeCoverageTests() {}
 }

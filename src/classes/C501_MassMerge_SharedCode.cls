@@ -30,12 +30,65 @@
 
 global with sharing class C501_MassMerge_SharedCode { 
 
+    // Legacy functions - delete
+    void ScheduleJobs(C501_Merge_Metric__c mergeMetric) {
+
+    }
+
     global String GetAllIterableFields(String sObjectType) {
 
         Set<String> fieldNames = schema.describeSObjects(new String[] { sObjectType })[0].fields.getMap().keyset();
         List<String> iterableFields = new List<String>(fieldNames);
 
         return String.join(iterableFields, ',');
+    }
+
+    global void InitializeMassMergeInstances(String reportFolder) {
+
+        List<C501_Merge_Metric__c> mergeMetrics = [
+            SELECT
+                Id, Name, Confidence__c,
+                Total_Unassigned_Accounts__c, Total_Unassigned_Contacts__c,
+                Enable__c, Source_Report__c,
+                AutoMerge_Percentage__c, AutoMerge_Objects__c,
+                Last_Discover_Date__c
+            FROM C501_Merge_Metric__c];
+
+        System.debug('***** C501_MassMerge_SharedCode::InitializeMassMergeInstances Check for merge reports - Folder: ' + reportFolder);
+
+        // Initialize Merge Metrics - make sure there is a merge metric for each report in Mass Merge folder
+        List<C501_Merge_Metric__c> mergeMetricsInsert = new List<C501_Merge_Metric__c>();
+        for (Report report :[
+            SELECT Id, DeveloperName, FolderName, Name
+            FROM Report
+            WHERE
+                FolderName = :reportFolder]) {
+
+                System.debug('***** C501_MassMerge_SharedCode::InitializeMassMergeInstances report - Name: ' + report.Name);
+
+                Boolean foundMergeMetric = false;
+                for (C501_Merge_Metric__c mergeMetric :mergeMetrics) {
+                    if (mergeMetric.Source_Report__c == (String)report.Id || mergeMetric.Source_Report__c == report.DeveloperName) {
+                        foundMergeMetric = true;
+                        break;
+                    }
+                }
+
+                if (!foundMergeMetric) {
+                    mergeMetricsInsert.add( new C501_Merge_Metric__c (
+                        Name = (Test.isRunningTest() ? ('TESTDATA ' + report.Name) : report.Name),
+                        Confidence__c = 90.0,
+                        Source_Report__c = report.DeveloperName,
+                        Source_Object__c = (report.DeveloperName.contains('Account') ? 'Account' : 'Contact'),
+                        Source_Aggregate__c = (report.DeveloperName.contains('Account') ? 'Id' : 'AccountId'),
+                        AutoMerge_Percentage__c = 0.0
+                    ));
+                }
+        }
+
+        if (!mergeMetricsInsert.isEmpty()) {
+            insert mergeMetricsInsert;
+        }
     }
 
     global void ObjectsMerge_Account(Account masterAccount, List<Account> duplicateAccounts) {
@@ -62,7 +115,7 @@ global with sharing class C501_MassMerge_SharedCode {
 
         if (mergeMetrics.isEmpty()) {
             mergeMetrics.add( new C501_Merge_Metric__c (
-                Name = mergeMetricName,
+                Name = (Test.isRunningTest() ? ('TESTDATA ' + mergeMetricName) : mergeMetricName),
                 Enable__c = true,
                 Confidence__c = 90.0,
                 AutoMerge_Percentage__c = 90.0,
@@ -237,12 +290,14 @@ global with sharing class C501_MassMerge_SharedCode {
 
     global void TestSetupMerge() {
 
+        InitializeMassMergeInstances('Mass Merge Tests');
+
         List<Account> listAccounts = new List<Account>();   
         integer cAccounts = 9;     
         for (integer i = 0; i < cAccounts; i++) {
             Account account = new Account(
                 
-                Name='Flintstone Household',
+                Name='TESTDATA Flintstone Household',
                 BillingStreet = 'BillingStreet',
                 BillingCity = 'BillingCity',
                 BillingState = 'WA',
@@ -260,7 +315,7 @@ global with sharing class C501_MassMerge_SharedCode {
         for (Account account :listAccounts) {
 
             listOpportunityHouseholds.put(account.Id, new Opportunity(
-                Name = 'Name ' + account.Id,
+                Name = 'TESTDATA Name ' + account.Id,
                 StageName = 'Closed Won',
                 CloseDate = System.today()
             ));
@@ -268,7 +323,7 @@ global with sharing class C501_MassMerge_SharedCode {
             for (integer i = 0; i < cAccounts; i++) {
 
                 listContacts.add( new Contact(
-                    LastName = 'Flintstone',
+                    LastName = 'TESTDATA Flintstone',
                     FirstName = 'Fred',
                     AccountId = account.Id,
                     Birthdate = date.today().addYears(-21),
@@ -277,7 +332,7 @@ global with sharing class C501_MassMerge_SharedCode {
                 ));
 
                 listContacts.add( new Contact(
-                    LastName = 'Flintstone',
+                    LastName = 'TESTDATA Flintstone',
                     FirstName = 'Wilma',
                     AccountId = account.Id,
                     Birthdate = date.today().addYears(-21),
@@ -286,7 +341,7 @@ global with sharing class C501_MassMerge_SharedCode {
                 ));
 
                 listContacts.add( new Contact(
-                    LastName = 'Flintstone',
+                    LastName = 'TESTDATA Flintstone',
                     FirstName = 'Dino',
                     AccountId = account.Id,
                     Birthdate = date.today().addYears(-2),
