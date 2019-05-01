@@ -166,8 +166,6 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
         get {
             if (listAccounts == null) {
                 FillListAccounts();
-
-                System.debug('***** C501_CTRL_MassMergeAccounts::listAccounts listAccounts: ' + String.valueOf(listAccounts));
             }
 
             return listAccounts;

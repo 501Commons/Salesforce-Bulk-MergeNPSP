@@ -53,7 +53,9 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
         // handle optional parameters (must use string, not ID, to handle null)
         string id = ApexPages.currentPage().getParameters().get('id');
         if (id != null && id != '') contactFilter.Id = id;
-        
+
+        System.debug('***** C501_CTRL_MassMergeContacts::C501_CTRL_MassMergeContacts contactFilter.Id: ' + contactFilter.Id);
+
         // Get list of fields FROM fieldset
         listStrFields = new List<String>();
         for (Schema.FieldSetMember f : SObjectType.contact.FieldSets.MassMergeContacts.getFields()) {
@@ -166,8 +168,6 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
         get {
             if (listContacts == null) {
                 FillListContacts();
-
-                System.debug('***** C501_CTRL_MassMergeContacts::listContacts listContacts: ' + String.valueOf(listContacts));
             }
 
             return listContacts;

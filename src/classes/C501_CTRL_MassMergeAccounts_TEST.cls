@@ -36,11 +36,8 @@ public class C501_CTRL_MassMergeAccounts_TEST {
         C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
         c501MassMerge_SharedCode.TestSetupMerge();
 
-        C501_MM_Rule_Discover scheduleDiscover = new C501_MM_Rule_Discover();
-        scheduleDiscover.execute(null);
-
         List<C501_Merge_Metric__c> listMergeMetrics = new List<C501_Merge_Metric__c>();
-        for (C501_Merge_Metric__c mergeMetric :[SELECT Id FROM C501_Merge_Metric__c WHERE Name LIKE 'TESTDATA%']) {
+        for (C501_Merge_Metric__c mergeMetric :[SELECT Id FROM C501_Merge_Metric__c WHERE Name LIKE 'TESTDATA%' AND Name LIKE '%Account%']) {
             mergeMetric.Enable__c = true;
             mergeMetric.AutoMerge_Percentage__c = 0.0;
             mergeMetric.AutoMerge_Objects__c = 'Account;Contacts Within Account;Contacts Across Accounts';
@@ -50,8 +47,11 @@ public class C501_CTRL_MassMergeAccounts_TEST {
 
         update listMergeMetrics;
 
-        // Run discover for each merge metric
+        C501_MM_Rule_Discover scheduleDiscover = new C501_MM_Rule_Discover();
         scheduleDiscover.execute(null);
+
+        C501_MM_Rule_Merge scheduleMerge = new C501_MM_Rule_Merge();
+        scheduleMerge.execute(null);
     }
 
     //==================== TEST METHOD(s) ======================================
@@ -303,7 +303,7 @@ public class C501_CTRL_MassMergeAccounts_TEST {
 
         // Check filter by Rule
         ctrl.accountFilter.Id = masterAccountId;
-        ctrl.accountFilter.C501_Merge_Rule__c = 'Contact_NameDOB';
+        ctrl.accountFilter.C501_Merge_Rule__c = [SELECT Name FROM C501_Merge_Metric__c WHERE Name LIKE '%Account%' LIMIT 1].Name;
         System.Assert(ctrl.listAccounts.size() > 0);
 
         // Check filter by Confidence

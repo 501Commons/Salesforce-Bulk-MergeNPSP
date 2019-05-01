@@ -32,11 +32,12 @@
 public with sharing class C501_CTRL_MassMergeContacts_TEST {
     
     private static void setupTest() {
-        C501_MM_Rule_Discover scheduleDiscover = new C501_MM_Rule_Discover();
-        scheduleDiscover.execute(null);
+
+        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
+        c501MassMerge_SharedCode.TestSetupMerge();
 
         List<C501_Merge_Metric__c> listMergeMetrics = new List<C501_Merge_Metric__c>();
-        for (C501_Merge_Metric__c mergeMetric :[SELECT Id FROM C501_Merge_Metric__c WHERE Name LIKE 'TESTDATA%']) {
+        for (C501_Merge_Metric__c mergeMetric :[SELECT Id FROM C501_Merge_Metric__c WHERE Name LIKE 'TESTDATA%' AND Name LIKE '%Contact%']) {
             mergeMetric.Enable__c = true;
             mergeMetric.AutoMerge_Percentage__c = 0.0;
             mergeMetric.AutoMerge_Objects__c = 'Account;Contacts Within Account;Contacts Across Accounts';
@@ -46,8 +47,11 @@ public with sharing class C501_CTRL_MassMergeContacts_TEST {
 
         update listMergeMetrics;
 
-        // Run discover for each merge metric
+        C501_MM_Rule_Discover scheduleDiscover = new C501_MM_Rule_Discover();
         scheduleDiscover.execute(null);
+
+        C501_MM_Rule_Merge scheduleMerge = new C501_MM_Rule_Merge();
+        scheduleMerge.execute(null);
     }
 
     //==================== TEST METHOD(s) ======================================
@@ -58,7 +62,7 @@ public with sharing class C501_CTRL_MassMergeContacts_TEST {
         setupTest();
 
         List<C501_Merge_Metric__c> listMergeMetrics = [SELECT Id FROM C501_Merge_Metric__c WHERE Name LIKE 'TESTDATA%'];
-        List<Contact> listContacts = [SELECT Id FROM Contact WHERE Name LIKE '%TESTDATA%'];
+        List<Contact> listContacts = [SELECT Id FROM Contact WHERE LastName LIKE 'TESTDATA%'];
 
         C501_Contact_Merge__c contactMerge1 = new C501_Contact_Merge__c(
                 Unique_Id__c = 'TESTDATA Name ' + listContacts[0].Id,
@@ -109,7 +113,7 @@ public with sharing class C501_CTRL_MassMergeContacts_TEST {
         setupTest();
 
         List<C501_Merge_Metric__c> listMergeMetrics = [SELECT Id FROM C501_Merge_Metric__c WHERE Name LIKE 'TESTDATA%'];
-        List<Contact> listContacts = [SELECT Id FROM Contact WHERE Name LIKE '%TESTDATA%'];
+        List<Contact> listContacts = [SELECT Id FROM Contact WHERE LastName LIKE 'TESTDATA%'];
 
         C501_Contact_Merge__c contactMerge1 = new C501_Contact_Merge__c(
                 Unique_Id__c = 'TESTDATA Name ' + listContacts[0].Id,
@@ -217,7 +221,7 @@ public with sharing class C501_CTRL_MassMergeContacts_TEST {
 
         setupTest();
 
-        Id masterContactId = [SELECT Id FROM Contact WHERE Name LIKE '%TESTDATA%' ORDER BY Id ASC LIMIT 1].Id;
+        Id masterContactId = [SELECT Id FROM Contact WHERE LastName LIKE 'TESTDATA%' ORDER BY Id ASC LIMIT 1].Id;
 
         Test.StartTest();
 
@@ -242,7 +246,8 @@ public with sharing class C501_CTRL_MassMergeContacts_TEST {
 
         // Check filter by Rule
         ctrl.contactFilter.Id = masterContactId;
-        ctrl.contactFilter.C501_Merge_Rule__c = 'Contact_NameDOB';
+
+        ctrl.contactFilter.C501_Merge_Rule__c = [SELECT Name FROM C501_Merge_Metric__c WHERE Name LIKE '%Contact%' LIMIT 1].Name;
         System.Assert(ctrl.listContacts.size() > 0);
 
         // Check filter by Confidence

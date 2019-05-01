@@ -45,14 +45,17 @@ global with sharing class C501_MassMerge_SharedCode {
 
     global void InitializeMassMergeInstances(String reportFolder) {
 
-        List<C501_Merge_Metric__c> mergeMetrics = [
-            SELECT
-                Id, Name, Confidence__c,
-                Total_Unassigned_Accounts__c, Total_Unassigned_Contacts__c,
-                Enable__c, Source_Report__c,
-                AutoMerge_Percentage__c, AutoMerge_Objects__c,
-                Last_Discover_Date__c
-            FROM C501_Merge_Metric__c];
+        String strSoql = 'SELECT';
+        strSoql += ' Id, Name, Confidence__c, Enable__c,';
+        strSoql += ' Total_Unassigned_Accounts__c, Total_Unassigned_Contacts__c,';
+        strSoql += ' Source_Report__c, Source_Report_LastModifiedDate__c, Source_Object__c, Source_Aggregate__c,';
+        strSoql += ' AutoMerge_Percentage__c, AutoMerge_Objects__c,';
+        strSoql += ' Last_Discover_Date__c, Last_Merge_Date__c';
+        strSoql += ' FROM C501_Merge_Metric__c';
+        if (Test.isRunningTest()) {        
+            strSoql += ' WHERE Name LIKE \'TESTDATA%\'';
+        }
+        List<C501_Merge_Metric__c> mergeMetrics = Database.Query(strSoql);
 
         System.debug('***** C501_MassMerge_SharedCode::InitializeMassMergeInstances Check for merge reports - Folder: ' + reportFolder);
 
@@ -120,6 +123,9 @@ global with sharing class C501_MassMerge_SharedCode {
                 Confidence__c = 90.0,
                 AutoMerge_Percentage__c = 90.0,
                 AutoMerge_Objects__c = 'Account',
+                Source_Report__c = 'User_Merge_Rule_Account_No_Contacts',
+                Source_Object__c = 'Account',
+                Source_Aggregate__c = 'Id',
                 Description__c = 'Accounts with no contacts.'
             ));
 
