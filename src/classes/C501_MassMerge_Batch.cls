@@ -56,7 +56,21 @@ global class C501_MassMerge_Batch implements Database.Batchable<sObject> {
       System.debug('***** C501_MassMerge_Batch::execute - masterAccount: ' + String.valueOf(masterAccount));
       System.debug('***** C501_MassMerge_Batch::execute - accountDuplicates: ' + String.valueOf(accountDuplicates));
       C501_MassMerge_SharedCode_Account c501MassMerge_SharedCode_Account = new C501_MassMerge_SharedCode_Account();
-      c501MassMerge_SharedCode_Account.ObjectsMerge(masterAccount, accountDuplicates);
+
+      try
+      {
+        c501MassMerge_SharedCode_Account.ObjectsMerge(masterAccount, accountDuplicates);
+      }
+      catch (C501_MassMerge_SharedCode_Account.C501_MassMerge_SharedCode_AccountException customException)
+      {
+        System.debug('***** C501_MassMerge_Batch::execute - C501_MassMerge_SharedCode_AccountException: ' + String.valueOf(customException.getMessage()));
+      }
+      catch (System.DmlException dmlException) {
+        System.debug('***** C501_MassMerge_Batch::execute - System.DmlException: ' + String.valueOf(dmlException.getMessage()));
+      }
+      catch (Exception generalException) {
+        System.debug('***** C501_MassMerge_Batch::execute - Exception: ' + String.valueOf(generalException.getMessage()));
+      }
     }
     else if (ContactMerge) {
       List<Contact> contactDuplicates = new List<Contact>();

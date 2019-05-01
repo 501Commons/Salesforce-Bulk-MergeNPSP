@@ -81,6 +81,8 @@ public with sharing class C501_CTRL_MassMergeContacts_TEST {
 
         Test.StartTest();
 
+        // Exception Note:  Currently not getting the exception in the test code for Batch scheduled job.  Thinking need to query the batch job status instead to figure out if exception thrown
+        //
         Boolean exceptionRaised = false;
         try
         {
