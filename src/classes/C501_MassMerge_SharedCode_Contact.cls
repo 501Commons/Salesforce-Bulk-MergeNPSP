@@ -159,7 +159,7 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
         String mergeMetricName = mergeMetric.Name;
         Decimal mergeMetricAutoPercentage = mergeMetric.AutoMerge_Percentage__c;
 
-        System.debug('***** C501_MassMerge_SharedCode_Contact::ProcesContactMergeCandidates mergeMetricName: ' + mergeMetricName);
+        System.debug('***** C501_MassMerge_SharedCode_Contact::ProcessContactMergeCandidates mergeMetricName: ' + mergeMetricName);
 
         Set<Id> objectIds = new Set<Id>();
         Map<Id, C501_Contact_Merge__c> objectMergeMap = new Map<Id, C501_Contact_Merge__c>();
@@ -194,8 +194,7 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
             if (mergeObject.Merge_Action__c == 'Merge') {
                 pendingMerges.add(mergeObject);
             }
-
-            if (mergeObject.Merge_Action__c == null || mergeObject.Merge_Action__c == '') {
+            else if (mergeObject.Merge_Action__c == null || mergeObject.Merge_Action__c == '') {
                 pendingAutoMerges.add(mergeObject);
             }
 
@@ -232,7 +231,7 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
         }
 
         C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
-        c501MassMerge_SharedCode.ProcessObjectMergeCandidates_Contact(mergeMetric, pendingMerges, contactHouseholdMap);
+        c501MassMerge_SharedCode.ProcessObjectMergeCandidates_Contact(mergeMetric, pendingAutoMerges, contactHouseholdMap);
     }
 
     global void ProcessObjectMerges(List<C501_Contact_Merge__c> objectMerges, Boolean batchMerge)
