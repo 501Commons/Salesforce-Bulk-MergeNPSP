@@ -10,7 +10,7 @@
 //
 // Abort scheduled jobs
 /*
-    List<CronJobDetail> scheduledJobs = [SELECT Id FROM CronJobDetail WHERE Name like 'Contact_%' or Name like 'SM_Contact_%' or Name like 'Account_%'];
+    List<CronJobDetail> scheduledJobs = [SELECT Id FROM CronJobDetail WHERE Name like 'C501_%'];
     for (CronJobDetail scheduledJob :scheduledJobs) {
         Id jobId = [SELECT Id FROM CronTrigger WHERE CronJobDetailId = :scheduledJob.Id].Id;
         System.abortJob(jobId);
