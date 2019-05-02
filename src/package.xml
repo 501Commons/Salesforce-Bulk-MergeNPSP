@@ -5,12 +5,6 @@
         <members>C501_CTRL_MassMergeAccounts_TEST</members>
         <members>C501_CTRL_MassMergeContacts</members>
         <members>C501_CTRL_MassMergeContacts_TEST</members>
-        <members>C501_MM_Rule_Account_Address</members>
-        <members>C501_MM_Rule_Account_NoContacts</members>
-        <members>C501_MM_Rule_Account_Website</members>
-        <members>C501_MM_Rule_Contact_NameDOB</members>
-        <members>C501_MM_Rule_Contact_NameDOB_Process</members>
-        <members>C501_MM_Rule_Contact_NameEmail</members>
         <members>C501_MM_Rule_Discover</members>
         <members>C501_MM_Rule_Merge</members>
         <members>C501_MassMerge_Batch</members>

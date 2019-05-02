@@ -326,6 +326,16 @@ global class C501_MM_Rule_Discover implements Schedulable {
 
 		AggregateResult[] allAggregatedByAccounts = Database.Query(strSoqlSelect + strSoqlFrom + strSoqlWhere + strSoqlGroupBy + strSoqlHaving + strSoqlOrderBy);
 
+        // Filter out account ids already associated with merge metric
+        Set<Id> existingAccountIds = new Set<Id>();
+        for(C501_Account_Merge__c existingMerge : [
+            SELECT Account__c, Merge_Target_Account__c
+            FROM C501_Account_Merge__c
+            WHERE Merge_Metric__c = :mergeMetric.Id]) {
+                existingAccountIds.add(existingMerge.Account__c);
+                existingAccountIds.add(existingMerge.Merge_Target_Account__c);
+        }
+
         // Check for Full Contact Match
         //
         Map<Id,String> accountContacts = new Map<Id,String>();
@@ -342,15 +352,49 @@ global class C501_MM_Rule_Discover implements Schedulable {
                     continue;
                 }
 
+                if (existingAccountIds.contains(maxId) || existingAccountIds.contains(minId)) {
+                    continue;
+                }
+
                 mergeAccountIds.add(maxId);
                 mergeAccountIds.add(minId);
             }
 
+            // Get Household Sizes
+            Map<Id, Decimal> existingAccountSizes = new Map<Id, Decimal>();
+            for(Account account : [
+                SELECT Id, npsp__Number_of_Household_Members__c
+                FROM Account
+                WHERE Id IN :mergeAccountIds AND npsp__Number_of_Household_Members__c > 1]) {
+                    existingAccountSizes.put(account.Id, account.npsp__Number_of_Household_Members__c);
+            }
+
+            Set<Id> mergeAccountIdsMatching = new Set<Id>();
+            for (AggregateResult result : allAggregatedByAccounts)  {
+                
+                maxId = result.get('MaxId').toString();
+                minId = result.get('MinId').toString();
+
+                if (!existingAccountSizes.containsKey(maxId) || !existingAccountSizes.containsKey(minId)) {
+                    continue;
+                }
+
+                // Make sure household contact count equal
+                if (existingAccountSizes.get(maxId) <> existingAccountSizes.get(minId)) {
+                    continue;
+                }
+
+                mergeAccountIdsMatching.add(maxId);
+                mergeAccountIdsMatching.add(minId);
+            }
+
+            System.debug('***** C501_MM_Rule_Discover:ProcessReportByAccounts mergeAccountIds.size(): ' + mergeAccountIds.size());
+            System.debug('***** C501_MM_Rule_Discover:ProcessReportByAccounts mergeAccountIdsMatching.size(): ' + mergeAccountIdsMatching.size());
+
             List<Contact> contacts = [
                 SELECT AccountId, FirstName, LastName, Birthdate, Gender__c
                 FROM Contact
-                WHERE
-                    AccountId in :mergeAccountIds
+                WHERE AccountId in :mergeAccountIdsMatching
                 ORDER BY AccountId, FirstName, LastName, Birthdate, Gender__c DESC];
 
             if (contacts.isEmpty()) {
@@ -380,6 +424,11 @@ global class C501_MM_Rule_Discover implements Schedulable {
             minId = result.get('MinId').toString();
 
             if (String.isBlank(maxId) || String.isBlank(minId) || maxId == minId) {
+                continue;
+            }
+
+            // Check if merge metric already created
+            if (existingAccountIds.contains(maxId) || existingAccountIds.contains(minId)) {
                 continue;
             }
 
