@@ -30,12 +30,6 @@
 
 global virtual with sharing class C501_CTRL_MassMergeContacts {
 
-    global integer cEmptyContactRecords {
-        get {
-            return 1;
-        }
-    }
-    
     private C501_MassMerge_SharedCode_Contact c501MassMerge_SharedCode_Contact;
     private List<String> listStrFields;
     

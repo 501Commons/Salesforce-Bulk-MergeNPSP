@@ -33,9 +33,7 @@ global class C501_MM_Rule_Discover implements Schedulable {
             reportFolder = 'Mass Merge Tests';
         }
         c501MassMerge_SharedCode.InitializeMassMergeInstances(reportFolder);
-
-        // Schedule discovery jobs
-        c501MassMerge_SharedCode.ScheduleJobs(C501_MM_Rule_Discover.class.getName());
+        c501MassMerge_SharedCode.ScheduleJobs();
 
         String strSoql = 'SELECT';
         strSoql += ' Id, Name, Confidence__c, Enable__c,';
@@ -387,9 +385,6 @@ global class C501_MM_Rule_Discover implements Schedulable {
                 mergeAccountIdsMatching.add(maxId);
                 mergeAccountIdsMatching.add(minId);
             }
-
-            System.debug('***** C501_MM_Rule_Discover:ProcessReportByAccounts mergeAccountIds.size(): ' + mergeAccountIds.size());
-            System.debug('***** C501_MM_Rule_Discover:ProcessReportByAccounts mergeAccountIdsMatching.size(): ' + mergeAccountIdsMatching.size());
 
             List<Contact> contacts = [
                 SELECT AccountId, FirstName, LastName, Birthdate, Gender__c

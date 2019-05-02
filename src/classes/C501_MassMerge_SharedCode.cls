@@ -30,11 +30,6 @@
 
 global with sharing class C501_MassMerge_SharedCode { 
 
-    // Legacy functions - delete
-    void ScheduleJobs(C501_Merge_Metric__c mergeMetric) {
-
-    }
-
     global String GetAllIterableFields(String sObjectType) {
 
         Set<String> fieldNames = schema.describeSObjects(new String[] { sObjectType })[0].fields.getMap().keyset();
@@ -185,7 +180,7 @@ global with sharing class C501_MassMerge_SharedCode {
 
         List<SelectOption> lessSelectOption = new List<SelectOption>();
         List<SelectOption> greaterSelectOption = new List<SelectOption>();
-        integer pivot = selectOptionsToSort.size() / 2;
+        Integer pivot = selectOptionsToSort.size() / 2;
         
         //save the pivot and remove it FROM the selectOption list
         SelectOption pivotValue = selectOptionsToSort[pivot];
@@ -255,9 +250,7 @@ global with sharing class C501_MassMerge_SharedCode {
         }
     }
 
-    global void ScheduleJobs(String scheduleName) {
-
-        System.debug('***** C501_MassMerge_SharedCode::ScheduleJobs scheduleName: ' + scheduleName);
+    global void ScheduleJobs() {
 
         List<CronJobDetail> cronJobDetails = [SELECT Id, JobType, Name FROM CronJobDetail];
         Set<String> scheduledJobs = new Set<String>();
@@ -266,29 +259,30 @@ global with sharing class C501_MassMerge_SharedCode {
             scheduledJobs.add(jobDetail.Name);
         }
 
-        // Offset Discover and Merge so not running at the same time
-        Integer minuteOffset = 0;
-        if (scheduleName == C501_MM_Rule_Merge.class.getName()) {
-            minuteOffset = 2; 
-        }
-
         String cronExpression, scheduleJobName;
         Integer triggerNumber = 0;
-        for (integer i = minuteOffset; i <= 59; i += 5) {
+        for (Integer i = 0; i <= 59; i += 2) {
+
             cronExpression = '0 ' + String.valueOf(i) + ' * * * ?';
-            scheduleJobName = scheduleName + '_' + (triggerNumber <= 9 ? '0' : '') + String.valueOf(triggerNumber++);
 
-            if (scheduledJobs.contains(scheduleJobName)) {
-                continue;
-            }
+            // Schedule discover every 10 minutes otherwise schedule merge
+            if (math.mod(i, 10) == 0) {
 
-            System.debug('***** C501_MassMerge_SharedCode::ScheduleJobs schedule job scheduleJobName: ' + scheduleJobName + ' cronExpression: ' + cronExpression);
+                scheduleJobName = C501_MM_Rule_Discover.class.getName() + '_' + (triggerNumber <= 9 ? '0' : '') + String.valueOf(triggerNumber++);
 
-            // Optimization for future since this is a only unique code - call out here to a Virtual function that can be overloaded from a child (e.g., SM Rules - C501_SM_Rule_Contact_NameDOB)
-            if (scheduleName == C501_MM_Rule_Discover.class.getName()) {
+                if (scheduledJobs.contains(scheduleJobName)) {
+                    continue;
+                }
+
                 System.schedule(scheduleJobName, cronExpression, new C501_MM_Rule_Discover());
             }
-            else if (scheduleName == C501_MM_Rule_Merge.class.getName()) {
+            else {
+                scheduleJobName = C501_MM_Rule_Merge.class.getName() + '_' + (triggerNumber <= 9 ? '0' : '') + String.valueOf(triggerNumber++);
+
+                if (scheduledJobs.contains(scheduleJobName)) {
+                    continue;
+                }
+
                 System.schedule(scheduleJobName, cronExpression, new C501_MM_Rule_Merge());
             }
         }
@@ -299,16 +293,22 @@ global with sharing class C501_MassMerge_SharedCode {
         InitializeMassMergeInstances('Mass Merge Tests');
 
         List<Account> listAccounts = new List<Account>();   
-        integer cAccounts = 9;     
-        for (integer i = 0; i < cAccounts; i++) {
+        Integer cAccounts = 10;     
+        Integer matchIndex = 1;
+        for (Integer i = 0; i < cAccounts; i++) {
+
+            if (math.mod((i + 2), 2) == 0) {
+                matchIndex++;
+            }
+
             Account account = new Account(
                 
                 Name='TESTDATA Flintstone Household',
-                BillingStreet = 'BillingStreet',
+                BillingStreet = String.valueOf(matchIndex) + ' BillingStreet',
                 BillingCity = 'BillingCity',
                 BillingState = 'WA',
                 BillingPostalCode =  '12345',
-                Website = 'https://www.flintstone.org'
+                Website = 'https://www.flintstone.org' + String.valueOf(matchIndex)
             );
 
             listAccounts.add(account);
@@ -318,48 +318,48 @@ global with sharing class C501_MassMerge_SharedCode {
 
         Map<Id, Opportunity> listOpportunityHouseholds = new Map<Id, Opportunity>();
         List<Contact> listContacts = new List<Contact>();
-        for (Account account :listAccounts) {
+        for (Integer i = 0; i < cAccounts; i++) {
 
-            listOpportunityHouseholds.put(account.Id, new Opportunity(
-                Name = 'TESTDATA Name ' + account.Id,
+            if (math.mod((i + 2), 2) == 0) {
+                matchIndex++;
+            }
+
+            listOpportunityHouseholds.put(listAccounts[i].Id, new Opportunity(
+                Name = 'TESTDATA Name ' + listAccounts[i].Id,
                 StageName = 'Closed Won',
                 CloseDate = System.today()
             ));
 
-            for (integer i = 0; i < cAccounts; i++) {
+            listContacts.add( new Contact(
+                LastName = 'TESTDATA Flintstone' + String.valueOf(matchIndex),
+                FirstName = 'Fred' + String.valueOf(matchIndex),
+                AccountId = listAccounts[i].Id,
+                Birthdate = date.today().addYears(-21 - matchIndex),
+                Email = String.valueOf(matchIndex) + 'fred@bedrock.org',
+                Gender__c = 'Male'
+            ));
 
-                listContacts.add( new Contact(
-                    LastName = 'TESTDATA Flintstone',
-                    FirstName = 'Fred',
-                    AccountId = account.Id,
-                    Birthdate = date.today().addYears(-21),
-                    Email = 'fred@bedrock.org',
-                    Gender__c = 'Male'
-                ));
+            listContacts.add( new Contact(
+                LastName = 'TESTDATA Flintstone' + String.valueOf(matchIndex),
+                FirstName = 'Wilma' + String.valueOf(matchIndex),
+                AccountId = listAccounts[i].Id,
+                Birthdate = date.today().addYears(-21 - matchIndex),
+                Email = String.valueOf(matchIndex) + 'wilma@bedrock.org',
+                Gender__c = 'Female'
+            ));
 
-                listContacts.add( new Contact(
-                    LastName = 'TESTDATA Flintstone',
-                    FirstName = 'Wilma',
-                    AccountId = account.Id,
-                    Birthdate = date.today().addYears(-21),
-                    Email = 'wilma@bedrock.org',
-                    Gender__c = 'Female'
-                ));
-
-                listContacts.add( new Contact(
-                    LastName = 'TESTDATA Flintstone',
-                    FirstName = 'Dino',
-                    AccountId = account.Id,
-                    Birthdate = date.today().addYears(-2),
-                    Email = 'dino@bedrock.org'
-                ));
-            }
+            listContacts.add( new Contact(
+                LastName = 'TESTDATA Flintstone' + String.valueOf(matchIndex),
+                FirstName = 'Dino' + String.valueOf(matchIndex),
+                AccountId = listAccounts[i].Id,
+                Birthdate = date.today().addYears(-2 - matchIndex),
+                Email = String.valueOf(matchIndex) + 'dino@bedrock.org'
+            ));
         }
 
         insert listOpportunityHouseholds.values();
         insert listContacts;
 
-        // Print Structure
         //PrintSalesforceStructure();
     }
 
@@ -367,16 +367,24 @@ global with sharing class C501_MassMerge_SharedCode {
 
         System.debug('***** C501_MassMerge_SharedCode::PrintSalesforceStructure');
 
-        System.debug('***** C501_MassMerge_SharedCode::PrintSalesforceStructure - Account ' + String.valueOf([select Id, Name from Account]));
-        System.debug('***** C501_MassMerge_SharedCode::PrintSalesforceStructure - Contact ' + String.valueOf([select Id, AccountId, LastName, Birthdate from Contact]));
-        System.debug('***** C501_MassMerge_SharedCode::PrintSalesforceStructure - Opportunity ' + String.valueOf([select Id, Name from Opportunity]));
-
-        for (C501_Account_Merge__c mergeAccount :[select Id, Merge_Confidence__c, Merge_Action__c from C501_Account_Merge__c]) {
-            System.debug('***** C501_MassMerge_SharedCode::PrintSalesforceStructure - C501_Account_Merge__c ' + String.valueOf(mergeAccount));
+        for (Account account :[select Id, Name, Website, BillingStreet from Account WHERE Name LIKE 'TESTDATA%']) {
+            System.debug('***** C501_MassMerge_SharedCode::PrintSalesforceStructure - ' + String.valueOf(account));
         }
+/*        for (Contact contact :[select Id, Account.Name, LastName, FirstName, Birthdate, Email from Contact WHERE LastName LIKE 'TESTDATA%']) {
+            System.debug('***** C501_MassMerge_SharedCode::PrintSalesforceStructure - ' + String.valueOf(contact));
+        }
+        for (Opportunity opportunity :[select Id, Name from Opportunity WHERE Name LIKE 'TESTDATA%']) {
+            System.debug('***** C501_MassMerge_SharedCode::PrintSalesforceStructure - ' + String.valueOf(opportunity));
+        }
+*/       
+        for (C501_Merge_Metric__c mergeMetric :[SELECT Id FROM C501_Merge_Metric__c WHERE Name LIKE 'TESTDATA%']) {
 
-        for (C501_Contact_Merge__c mergeContact :[select Id, Merge_Confidence__c, Merge_Action__c from C501_Contact_Merge__c]) {
-            System.debug('***** C501_MassMerge_SharedCode::PrintSalesforceStructure - C501_Contact_Merge__c ' + String.valueOf(mergeContact));
+            for (C501_Account_Merge__c mergeAccount :[select Id, Merge_Confidence__c, Merge_Action__c from C501_Account_Merge__c WHERE Merge_Metric__c = :mergeMetric.Id]) {
+                System.debug('***** C501_MassMerge_SharedCode::PrintSalesforceStructure - ' + String.valueOf(mergeAccount));
+            }
+            for (C501_Contact_Merge__c mergeContact :[select Id, Merge_Confidence__c, Merge_Action__c from C501_Contact_Merge__c WHERE Merge_Metric__c = :mergeMetric.Id]) {
+                System.debug('***** C501_MassMerge_SharedCode::PrintSalesforceStructure - ' + String.valueOf(mergeContact));
+            }
         }
     }
 }

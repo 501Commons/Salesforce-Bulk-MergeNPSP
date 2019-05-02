@@ -18,7 +18,7 @@ global class C501_MM_Rule_Merge implements Schedulable {
 		//
 
         C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
-        c501MassMerge_SharedCode.ScheduleJobs(C501_MM_Rule_Merge.class.getName());
+        c501MassMerge_SharedCode.ScheduleJobs();
 
         String strSoql = 'SELECT';
         strSoql += ' Id, Name, Confidence__c, Enable__c,';

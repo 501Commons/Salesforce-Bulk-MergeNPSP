@@ -52,6 +52,8 @@ public class C501_CTRL_MassMergeAccounts_TEST {
 
         C501_MM_Rule_Merge scheduleMerge = new C501_MM_Rule_Merge();
         scheduleMerge.execute(null);
+
+        c501MassMerge_SharedCode.PrintSalesforceStructure();
     }
 
     //==================== TEST METHOD(s) ======================================
@@ -294,6 +296,10 @@ public class C501_CTRL_MassMergeAccounts_TEST {
         System.Assert(ctrl.listAccounts.size() > 0);
 
         ctrl.accountFilter.Id = null;
+
+        System.Assert(ctrl.listSOAccounts.size() > 1);
+        System.Assert(ctrl.listAccounts.size() > 0);
+
         ctrl.ChangeMergeConfidence();
         ctrl.ChangeRule();
         ctrl.ChangeAccount();
@@ -331,6 +337,7 @@ public class C501_CTRL_MassMergeAccounts_TEST {
 
         // test the save!
         for (Account accountMerge :ctrl.listAccounts) {
+            System.Debug('*****C501_CTRL_MassMergeAccounts_TEST::CodeCoverageTests accountMerge: ' + String.valueOf(accountMerge));
             accountMerge.C501_Merge_Action__c = 'Merge';
         }
         ctrl.listAccounts[0].C501_Merge_Action__c = 'Master';

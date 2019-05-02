@@ -237,6 +237,10 @@ public with sharing class C501_CTRL_MassMergeContacts_TEST {
         System.Assert(ctrl.listContacts.size() > 0);
 
         ctrl.contactFilter.Id = null;
+
+        System.Assert(ctrl.listSOContacts.size() > 1);
+        System.Assert(ctrl.listContacts.size() > 0);
+
         ctrl.ChangeMergeConfidence();
         ctrl.ChangeRule();
         ctrl.ChangeContact();
