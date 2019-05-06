@@ -1,5 +1,11 @@
 //
-// GENERIC CLASS - Do Not Modify Code in this Class.  The Class is generated from the C501_MassMerge_SharedCode_Contact.cls file
+// GENERIC CLASS - modify of the C501_MassMerge_SharedCode_[Object].cls classes then complete copy to the all the others
+//
+//      1) Make changes to the class
+//      2) Copy/Paste entire class to all other C501_MassMerge_SharedCode_[Object].cls classes
+//      3) Search and replace all [Object] references with [Target Object]
+//
+//  This is a workaround for Generic classes since <T> - Templating not supported in Apex
 //
 
 global with sharing class C501_MassMerge_SharedCode_Contact { 
@@ -162,62 +168,38 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
 
         System.debug('***** C501_MassMerge_SharedCode_Contact::ProcessContactMergeCandidates mergeMetricName: ' + mergeMetricName);
 
-        Set<Id> objectIds = new Set<Id>();
-        Map<Id, C501_Contact_Merge__c> objectMergeMap = new Map<Id, C501_Contact_Merge__c>();
         List<C501_Contact_Merge__c> invalidMerges = new List<C501_Contact_Merge__c>();
         List<C501_Contact_Merge__c> pendingMerges = new List<C501_Contact_Merge__c>();
         List<C501_Contact_Merge__c> pendingAutoMerges = new List<C501_Contact_Merge__c>();
-        Set<Id> objectIdsValid = new Set<Id>();
 
         Map<Id, Id> contactHouseholdMap = new Map<Id, Id>();
         String strSoql = 'SELECT Id, Unique_Id__c, Contact__c, Contact__r.C501_Household_Id__c, Contact__r.IsDeleted, Merge_Target_Contact__c, Merge_Target_Contact__r.C501_Household_Id__c, Merge_Target_Contact__r.IsDeleted, Merge_Confidence__c, Merge_Action__c';
         strSoql += ' FROM C501_Contact_Merge__c';
-        strSoql += ' WHERE Merge_Metric__r.Name = :mergeMetricName';
+        strSoql += ' WHERE Merge_Metric__r.Name = :mergeMetricName AND Merge_Action__c <> \'Ignore\'';
 
         for(C501_Contact_Merge__c mergeObject : Database.Query(strSoql)) {
 
-            if (mergeObject.Contact__c == null || mergeObject.Merge_Target_Contact__c == null) {
-                invalidMerges.add(mergeObject);
+            if (mergeObject.Contact__c == null || mergeObject.Merge_Target_Contact__c == null ||
+                mergeObject.Contact__r.IsDeleted || mergeObject.Merge_Target_Contact__r.IsDeleted ||
+                String.isBlank(mergeObject.Contact__r.C501_Household_Id__c) || String.isBlank(mergeObject.Merge_Target_Contact__r.C501_Household_Id__c)) {
 
+                invalidMerges.add(mergeObject);
                 continue;
             }
 
-            if (!mergeObject.Contact__r.IsDeleted) {
-                objectIdsValid.add(mergeObject.Contact__c);
-                contactHouseholdMap.put(mergeObject.Contact__c, mergeObject.Contact__r.AccountId);
-            }
-
-            if (!mergeObject.Merge_Target_Contact__r.IsDeleted) {
-                objectIdsValid.add(mergeObject.Merge_Target_Contact__c);
-                contactHouseholdMap.put(mergeObject.Contact__c, mergeObject.Contact__r.AccountId);
-            }
+            contactHouseholdMap.put(mergeObject.Contact__c, mergeObject.Contact__r.C501_Household_Id__c);
+            contactHouseholdMap.put(mergeObject.Merge_Target_Contact__c, mergeObject.Merge_Target_Contact__r.C501_Household_Id__c);
 
             if (mergeObject.Merge_Action__c == 'Merge') {
                 pendingMerges.add(mergeObject);
             }
-            else if (mergeObject.Merge_Action__c == null || mergeObject.Merge_Action__c == '') {
+            else if (String.isBlank(mergeObject.Merge_Action__c)) {
                 pendingAutoMerges.add(mergeObject);
             }
-
-            objectIds.add(mergeObject.Contact__c);
-            objectIds.add(mergeObject.Merge_Target_Contact__c);
-            objectMergeMap.put(mergeObject.Contact__c, mergeObject);
-            objectMergeMap.put(mergeObject.Merge_Target_Contact__c, mergeObject);
         }
 
         if (!invalidMerges.isEmpty()) {
             delete invalidMerges;
-        }
-
-        Map<Id, C501_Contact_Merge__c> deleteMerges = new Map<Id, C501_Contact_Merge__c>();
-        for (Id objectId :objectMergeMap.keyset()) {
-            if (!objectIdsValid.contains(objectId)) {
-                deleteMerges.put(objectMergeMap.get(objectId).Id, objectMergeMap.get(objectId));
-            }
-        }
-
-        if (!deleteMerges.values().isEmpty()) {
-            delete deleteMerges.values();
         }
 
         // Check for batch queued merges
@@ -245,6 +227,13 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
         List<C501_Contact_Merge__c> deleteMergeCandidates = new List<C501_Contact_Merge__c>();
         for (C501_Contact_Merge__c mergeCandidate : objectMerges) {
 
+            // Check Contact and Target Contact valid
+            if (String.isBlank(mergeCandidate.Contact__c) || String.isBlank(mergeCandidate.Merge_Target_Contact__c)) {
+
+                deleteMergeCandidates.add(mergeCandidate);
+                continue;
+            }
+
             // Check Contact and Target Contact same Id
             if (mergeCandidate.Contact__c == mergeCandidate.Merge_Target_Contact__c) {
 
@@ -252,15 +241,10 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
                 continue;
             }
 
-            // Check Contact and Target Contact valid
-            if (mergeCandidate.Contact__c == null || mergeCandidate.Merge_Target_Contact__c == null) {
-
-                deleteMergeCandidates.add(mergeCandidate);
-                continue;
-            }
-
             // Check whether Contact or Target Contact Id merge already attempted
             if (objectsProcessed.contains(mergeCandidate.Contact__c) || objectsProcessed.contains(mergeCandidate.Merge_Target_Contact__c)) {
+
+                deleteMergeCandidates.add(mergeCandidate);
                 continue;
             }
 
@@ -276,8 +260,6 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
                 // NPSP - Not supported - throws error in Future call.  Check back if Salesforce fixes issue
                 // https://github.com/SalesforceFoundation/Cumulus/issues/4178                
 
-                System.debug('***** C501_MassMerge_SharedCode_Contact::ProcessObjectMerges Batch Schedule Merge mergeCandidate: ' + String.valueOf(mergeCandidate));
-
                 // Schedule Batch Job in Flex Queue (can schedule up to 100 jobs)
                 List<String> objectsMergeIds = new List<String> { mergeCandidate.Contact__c, mergeCandidate.Merge_Target_Contact__c };
                 C501_MassMerge_Batch batchMergeRequest = new C501_MassMerge_Batch();
@@ -286,8 +268,6 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
                 Database.executeBatch(batchMergeRequest);
             }
             else {
-
-                System.debug('***** C501_MassMerge_SharedCode_Contact::ProcessObjectMerges Schedule Merge mergeCandidate: ' + String.valueOf(mergeCandidate));
 
                 ObjectsMerge( 
                     new Contact(
@@ -434,15 +414,9 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
         ObjectsFieldMerge(masterObject, duplicateObjects);
 
         // Merge Contacts into master
-        System.debug('***** C501_MassMerge_SharedCode::ObjectsMerge Contact masterObject: ' + String.valueOf(masterObject) + ' duplicateObjects: ' + String.valueOf(duplicateObjects));
-
         Database.MergeResult[] objectResults = Database.merge(masterObject, duplicateObjects, false);
-
         for(Database.MergeResult res : objectResults) {
-            if (res.isSuccess()) {
-                System.debug('***** C501_MassMerge_SharedCode::ObjectsMerge Contact Merge Successful');
-            }
-            else {
+            if (!res.isSuccess()) {
                 for (Database.Error err : res.getErrors()) {
                     System.debug('***** C501_MassMerge_SharedCode::ObjectsMerge Contact Merge Exception: ' + err.getMessage());
                 }

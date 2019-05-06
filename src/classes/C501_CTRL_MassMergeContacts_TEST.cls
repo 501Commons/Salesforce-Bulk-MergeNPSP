@@ -52,6 +52,8 @@ public with sharing class C501_CTRL_MassMergeContacts_TEST {
 
         C501_MM_Rule_Merge scheduleMerge = new C501_MM_Rule_Merge();
         scheduleMerge.execute(null);
+
+        c501MassMerge_SharedCode.PrintSalesforceStructure();
     }
 
     //==================== TEST METHOD(s) ======================================
@@ -61,7 +63,7 @@ public with sharing class C501_CTRL_MassMergeContacts_TEST {
 
         setupTest();
 
-        List<C501_Merge_Metric__c> listMergeMetrics = [SELECT Id FROM C501_Merge_Metric__c WHERE Name LIKE 'TESTDATA%'];
+        List<C501_Merge_Metric__c> listMergeMetrics = [SELECT Id FROM C501_Merge_Metric__c WHERE Name LIKE 'TESTDATA%' AND Name LIKE '%Contact%'];
         List<Contact> listContacts = [SELECT Id FROM Contact WHERE LastName LIKE 'TESTDATA%'];
 
         C501_Contact_Merge__c contactMerge1 = new C501_Contact_Merge__c(
@@ -112,7 +114,7 @@ public with sharing class C501_CTRL_MassMergeContacts_TEST {
 
         setupTest();
 
-        List<C501_Merge_Metric__c> listMergeMetrics = [SELECT Id FROM C501_Merge_Metric__c WHERE Name LIKE 'TESTDATA%'];
+        List<C501_Merge_Metric__c> listMergeMetrics = [SELECT Id FROM C501_Merge_Metric__c WHERE Name LIKE 'TESTDATA%' AND Name LIKE '%Contact%'];
         List<Contact> listContacts = [SELECT Id FROM Contact WHERE LastName LIKE 'TESTDATA%'];
 
         C501_Contact_Merge__c contactMerge1 = new C501_Contact_Merge__c(
@@ -178,7 +180,7 @@ public with sharing class C501_CTRL_MassMergeContacts_TEST {
         );
         insert contact21;
 
-        List<C501_Merge_Metric__c> listMergeMetrics = [SELECT Id FROM C501_Merge_Metric__c WHERE Name LIKE 'TESTDATA%'];
+        List<C501_Merge_Metric__c> listMergeMetrics = [SELECT Id FROM C501_Merge_Metric__c WHERE Name LIKE 'TESTDATA%' AND Name LIKE '%Contact%'];
 
         C501_Contact_Merge__c contactMerge1 = new C501_Contact_Merge__c(
                 Unique_Id__c = 'TESTDATA Name ' + contact11.Id,
@@ -251,7 +253,8 @@ public with sharing class C501_CTRL_MassMergeContacts_TEST {
         // Check filter by Rule
         ctrl.contactFilter.Id = masterContactId;
 
-        ctrl.contactFilter.C501_Merge_Rule__c = [SELECT Name FROM C501_Merge_Metric__c WHERE Name LIKE '%Contact%' LIMIT 1].Name;
+        List<C501_Merge_Metric__c> listMergeMetrics = [SELECT Name FROM C501_Merge_Metric__c WHERE Name LIKE 'TESTDATA%' AND Name LIKE '%Contact%'];
+        ctrl.contactFilter.C501_Merge_Rule__c = listMergeMetrics[0].Name;
         System.Assert(ctrl.listContacts.size() > 0);
 
         // Check filter by Confidence

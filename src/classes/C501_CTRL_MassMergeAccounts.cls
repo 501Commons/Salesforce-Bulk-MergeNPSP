@@ -306,12 +306,6 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
         listAccounts = Database.Query(strSoql);
     }
     
-    global Boolean fHasListAccounts {
-        get {
-            return listAccounts != null && listAccounts.size() > 0;
-        }
-    }     
- 
     // used to track the Id's of all Account records that get modified.
     global Set<ID> setAccountsIdDirty {
         get {

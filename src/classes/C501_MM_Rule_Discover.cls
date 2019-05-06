@@ -315,7 +315,7 @@ global class C501_MM_Rule_Discover implements Schedulable {
         if (groupByFields.size() <= 0) {
             return;
         }
-        
+
         String strSoqlGroupBy = ' GROUP BY ' + String.join(groupByFields, ', ');
         String strSoqlHaving = ' HAVING Count(' + mergeMetric.Source_Aggregate__c + ') > 1 ';
         String strSoqlOrderBy = ' ORDER BY Count(' + mergeMetric.Source_Aggregate__c + ') DESC';

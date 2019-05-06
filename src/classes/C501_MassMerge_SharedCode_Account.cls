@@ -1,10 +1,11 @@
 //
-// GENERIC CLASS - only modify the C501_MassMerge_SharedCode_Account.cls class which is used to generate the C501_MassMerge_SharedCode_Contact.cls file.
-//      1) Make changes to this class
-//      2) Copy/Paste entire class to C501_MassMerge_SharedCode_Contact.cls
-//      3) Search and replace all Account references with Contact
+// GENERIC CLASS - modify of the C501_MassMerge_SharedCode_[Object].cls classes then complete copy to the all the others
 //
-//  This is a work around for Generic classes since <T> - Templating not supported in Apex
+//      1) Make changes to the class
+//      2) Copy/Paste entire class to all other C501_MassMerge_SharedCode_[Object].cls classes
+//      3) Search and replace all [Object] references with [Target Object]
+//
+//  This is a workaround for Generic classes since <T> - Templating not supported in Apex
 //
 
 global with sharing class C501_MassMerge_SharedCode_Account { 
@@ -167,62 +168,38 @@ global with sharing class C501_MassMerge_SharedCode_Account {
 
         System.debug('***** C501_MassMerge_SharedCode_Account::ProcessAccountMergeCandidates mergeMetricName: ' + mergeMetricName);
 
-        Set<Id> objectIds = new Set<Id>();
-        Map<Id, C501_Account_Merge__c> objectMergeMap = new Map<Id, C501_Account_Merge__c>();
         List<C501_Account_Merge__c> invalidMerges = new List<C501_Account_Merge__c>();
         List<C501_Account_Merge__c> pendingMerges = new List<C501_Account_Merge__c>();
         List<C501_Account_Merge__c> pendingAutoMerges = new List<C501_Account_Merge__c>();
-        Set<Id> objectIdsValid = new Set<Id>();
 
-        Map<Id, Id> contactHouseholdMap = new Map<Id, Id>();
+        Map<Id, Id> AccountHouseholdMap = new Map<Id, Id>();
         String strSoql = 'SELECT Id, Unique_Id__c, Account__c, Account__r.C501_Household_Id__c, Account__r.IsDeleted, Merge_Target_Account__c, Merge_Target_Account__r.C501_Household_Id__c, Merge_Target_Account__r.IsDeleted, Merge_Confidence__c, Merge_Action__c';
         strSoql += ' FROM C501_Account_Merge__c';
-        strSoql += ' WHERE Merge_Metric__r.Name = :mergeMetricName';
+        strSoql += ' WHERE Merge_Metric__r.Name = :mergeMetricName AND Merge_Action__c <> \'Ignore\'';
 
         for(C501_Account_Merge__c mergeObject : Database.Query(strSoql)) {
 
-            if (mergeObject.Account__c == null || mergeObject.Merge_Target_Account__c == null) {
-                invalidMerges.add(mergeObject);
+            if (mergeObject.Account__c == null || mergeObject.Merge_Target_Account__c == null ||
+                mergeObject.Account__r.IsDeleted || mergeObject.Merge_Target_Account__r.IsDeleted ||
+                String.isBlank(mergeObject.Account__r.C501_Household_Id__c) || String.isBlank(mergeObject.Merge_Target_Account__r.C501_Household_Id__c)) {
 
+                invalidMerges.add(mergeObject);
                 continue;
             }
 
-            if (!mergeObject.Account__r.IsDeleted) {
-                objectIdsValid.add(mergeObject.Account__c);
-                contactHouseholdMap.put(mergeObject.Account__c, mergeObject.Account__r.C501_Household_Id__c);
-            }
-
-            if (!mergeObject.Merge_Target_Account__r.IsDeleted) {
-                objectIdsValid.add(mergeObject.Merge_Target_Account__c);
-                contactHouseholdMap.put(mergeObject.Account__c, mergeObject.Account__r.C501_Household_Id__c);
-            }
+            AccountHouseholdMap.put(mergeObject.Account__c, mergeObject.Account__r.C501_Household_Id__c);
+            AccountHouseholdMap.put(mergeObject.Merge_Target_Account__c, mergeObject.Merge_Target_Account__r.C501_Household_Id__c);
 
             if (mergeObject.Merge_Action__c == 'Merge') {
                 pendingMerges.add(mergeObject);
             }
-            else if (mergeObject.Merge_Action__c == null || mergeObject.Merge_Action__c == '') {
+            else if (String.isBlank(mergeObject.Merge_Action__c)) {
                 pendingAutoMerges.add(mergeObject);
             }
-
-            objectIds.add(mergeObject.Account__c);
-            objectIds.add(mergeObject.Merge_Target_Account__c);
-            objectMergeMap.put(mergeObject.Account__c, mergeObject);
-            objectMergeMap.put(mergeObject.Merge_Target_Account__c, mergeObject);
         }
 
         if (!invalidMerges.isEmpty()) {
             delete invalidMerges;
-        }
-
-        Map<Id, C501_Account_Merge__c> deleteMerges = new Map<Id, C501_Account_Merge__c>();
-        for (Id objectId :objectMergeMap.keyset()) {
-            if (!objectIdsValid.contains(objectId)) {
-                deleteMerges.put(objectMergeMap.get(objectId).Id, objectMergeMap.get(objectId));
-            }
-        }
-
-        if (!deleteMerges.values().isEmpty()) {
-            delete deleteMerges.values();
         }
 
         // Check for batch queued merges
@@ -236,7 +213,7 @@ global with sharing class C501_MassMerge_SharedCode_Account {
         }
 
         C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
-        c501MassMerge_SharedCode.ProcessObjectMergeCandidates_Account(mergeMetric, pendingAutoMerges, contactHouseholdMap);
+        c501MassMerge_SharedCode.ProcessObjectMergeCandidates_Account(mergeMetric, pendingAutoMerges, AccountHouseholdMap);
     }
 
     global void ProcessObjectMerges(List<C501_Account_Merge__c> objectMerges, Boolean batchMerge)
@@ -250,6 +227,13 @@ global with sharing class C501_MassMerge_SharedCode_Account {
         List<C501_Account_Merge__c> deleteMergeCandidates = new List<C501_Account_Merge__c>();
         for (C501_Account_Merge__c mergeCandidate : objectMerges) {
 
+            // Check Account and Target Account valid
+            if (String.isBlank(mergeCandidate.Account__c) || String.isBlank(mergeCandidate.Merge_Target_Account__c)) {
+
+                deleteMergeCandidates.add(mergeCandidate);
+                continue;
+            }
+
             // Check Account and Target Account same Id
             if (mergeCandidate.Account__c == mergeCandidate.Merge_Target_Account__c) {
 
@@ -257,15 +241,10 @@ global with sharing class C501_MassMerge_SharedCode_Account {
                 continue;
             }
 
-            // Check Account and Target Account valid
-            if (mergeCandidate.Account__c == null || mergeCandidate.Merge_Target_Account__c == null) {
-
-                deleteMergeCandidates.add(mergeCandidate);
-                continue;
-            }
-
             // Check whether Account or Target Account Id merge already attempted
             if (objectsProcessed.contains(mergeCandidate.Account__c) || objectsProcessed.contains(mergeCandidate.Merge_Target_Account__c)) {
+
+                deleteMergeCandidates.add(mergeCandidate);
                 continue;
             }
 
@@ -364,7 +343,7 @@ global with sharing class C501_MassMerge_SharedCode_Account {
 
         query += 'Id from Account where Id IN :mergeCandidates';
         
-        System.debug('***** C501_MassMerge_SharedCode::ObjectsFieldMerge - The contact query is: ' + query);
+        System.debug('***** C501_MassMerge_SharedCode::ObjectsFieldMerge - The Account query is: ' + query);
         
         List<Account> objectList;
         try {

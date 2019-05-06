@@ -309,12 +309,6 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
         listContacts = Database.Query(strSoql);
     }
     
-    global Boolean fHasListContacts {
-        get {
-            return listContacts != null && listContacts.size() > 0;
-        }
-    }     
- 
     // used to track the Id's of all Contact records that get modified.
     global Set<ID> setContactsIdDirty {
         get {

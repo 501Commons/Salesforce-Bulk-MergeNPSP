@@ -119,9 +119,7 @@ global with sharing class C501_MassMerge_SharedCode {
         }
 
         // Merge contacts into master
-        System.debug('***** C501_MassMerge_SharedCode::ContactsMerge masterContact: ' + String.valueOf(masterContact) + ' duplicateContacts: ' + String.valueOf(duplicateContacts));
-
-        String mergeMetricName = 'Merge Rule Account No Contacts';
+        String mergeMetricName = 'User Merge Rule Account No Contacts';
         List<C501_Merge_Metric__c> mergeMetrics = [
             SELECT
                 Id, Name, Confidence__c,
@@ -141,7 +139,7 @@ global with sharing class C501_MassMerge_SharedCode {
                 Source_Report__c = 'User_Merge_Rule_Account_No_Contacts',
                 Source_Object__c = 'Account',
                 Source_Aggregate__c = 'Id',
-                Description__c = 'Accounts with no contacts.'
+                Description__c = mergeMetricName
             ));
 
             insert mergeMetrics;
@@ -159,8 +157,6 @@ global with sharing class C501_MassMerge_SharedCode {
                 Id = contact.AccountId,
                 npsp__Number_of_Household_Members__c = contact.Account.npsp__Number_of_Household_Members__c));
         }
-
-        System.debug('***** C501_MassMerge_SharedCode::ContactsMerge contactIds: ' + String.valueOf(contactIds) + ' contactAccounts: ' + String.valueOf(contactAccounts));
 
         // Check to add an account merge request - can not Account merge here because might be in a batch call which is not supported for Account merging
         Account masterAccount = contactAccounts.get(masterContact.Id);
@@ -231,7 +227,10 @@ global with sharing class C501_MassMerge_SharedCode {
 
     global void ProcessObjectMergeCandidates_Account(C501_Merge_Metric__c mergeMetric, List<C501_Account_Merge__c> pendingAutoMerges, Map<Id, Id> contactHouseholdMap) {
 
-        List<String> automergeObjects = mergeMetric.AutoMerge_Objects__c.split(';');
+        List<String> automergeObjects = new List<String> { mergeMetric.AutoMerge_Objects__c };
+        if (mergeMetric.AutoMerge_Objects__c.contains(';')) {
+            mergeMetric.AutoMerge_Objects__c.split(';');
+        }
         if (automergeObjects.contains('Account')) {
 
             if (!pendingAutoMerges.isEmpty()) {
@@ -244,7 +243,11 @@ global with sharing class C501_MassMerge_SharedCode {
 
     global void ProcessObjectMergeCandidates_Contact(C501_Merge_Metric__c mergeMetric, List<C501_Contact_Merge__c> pendingAutoMerges, Map<Id, Id> contactHouseholdMap) {
 
-        List<String> automergeObjects = mergeMetric.AutoMerge_Objects__c.split(';');
+        List<String> automergeObjects = new List<String> { mergeMetric.AutoMerge_Objects__c };
+        if (mergeMetric.AutoMerge_Objects__c.contains(';')) {
+            automergeObjects = mergeMetric.AutoMerge_Objects__c.split(';');
+        }
+
         if (automergeObjects.contains('Contacts Within Account') || automergeObjects.contains('Contacts Across Accounts')) {
 
             List<C501_Contact_Merge__c> pendingAutoMergeCandidates = new List<C501_Contact_Merge__c>();
@@ -399,10 +402,10 @@ global with sharing class C501_MassMerge_SharedCode {
 */       
         for (C501_Merge_Metric__c mergeMetric :[SELECT Id FROM C501_Merge_Metric__c WHERE Name LIKE 'TESTDATA%']) {
 
-            for (C501_Account_Merge__c mergeAccount :[select Id, Merge_Confidence__c, Merge_Action__c from C501_Account_Merge__c WHERE Merge_Metric__c = :mergeMetric.Id]) {
+            for (C501_Account_Merge__c mergeAccount :[select Id, Merge_Metric__r.Name, Merge_Confidence__c, Merge_Action__c from C501_Account_Merge__c WHERE Merge_Metric__c = :mergeMetric.Id]) {
                 System.debug('***** C501_MassMerge_SharedCode::PrintSalesforceStructure - ' + String.valueOf(mergeAccount));
             }
-            for (C501_Contact_Merge__c mergeContact :[select Id, Merge_Confidence__c, Merge_Action__c from C501_Contact_Merge__c WHERE Merge_Metric__c = :mergeMetric.Id]) {
+            for (C501_Contact_Merge__c mergeContact :[select Id, Merge_Metric__r.Name, Merge_Confidence__c, Merge_Action__c from C501_Contact_Merge__c WHERE Merge_Metric__c = :mergeMetric.Id]) {
                 System.debug('***** C501_MassMerge_SharedCode::PrintSalesforceStructure - ' + String.valueOf(mergeContact));
             }
         }

@@ -67,7 +67,7 @@ public class C501_CTRL_MassMergeAccounts_TEST {
         scheduleDiscover.execute(null);
 
         List<C501_Merge_Metric__c> listMergeMetrics = new List<C501_Merge_Metric__c>();
-        for (C501_Merge_Metric__c mergeMetric :[SELECT Id FROM C501_Merge_Metric__c WHERE Name LIKE 'TESTDATA%']) {
+        for (C501_Merge_Metric__c mergeMetric :[SELECT Id FROM C501_Merge_Metric__c WHERE Name LIKE 'TESTDATA%' AND Name LIKE '%Account%']) {
             mergeMetric.Enable__c = true;
             mergeMetric.AutoMerge_Percentage__c = 90.0;
             mergeMetric.AutoMerge_Objects__c = 'Account;Contacts Within Account;Contacts Across Accounts';
@@ -96,7 +96,7 @@ public class C501_CTRL_MassMergeAccounts_TEST {
         scheduleDiscover.execute(null);
 
         List<C501_Merge_Metric__c> listMergeMetrics = new List<C501_Merge_Metric__c>();
-        for (C501_Merge_Metric__c mergeMetric :[SELECT Id FROM C501_Merge_Metric__c WHERE Name LIKE 'TESTDATA%']) {
+        for (C501_Merge_Metric__c mergeMetric :[SELECT Id FROM C501_Merge_Metric__c WHERE Name LIKE 'TESTDATA%' AND Name LIKE '%Account%']) {
             mergeMetric.Enable__c = true;
             mergeMetric.AutoMerge_Percentage__c = 90.0;
             mergeMetric.AutoMerge_Objects__c = 'Account;Contacts Within Account;Contacts Across Accounts';
@@ -125,7 +125,7 @@ public class C501_CTRL_MassMergeAccounts_TEST {
         scheduleDiscover.execute(null);
 
         List<C501_Merge_Metric__c> listMergeMetrics = new List<C501_Merge_Metric__c>();
-        for (C501_Merge_Metric__c mergeMetric :[SELECT Id FROM C501_Merge_Metric__c WHERE Name LIKE 'TESTDATA%']) {
+        for (C501_Merge_Metric__c mergeMetric :[SELECT Id FROM C501_Merge_Metric__c WHERE Name LIKE 'TESTDATA%' AND Name LIKE '%Account%']) {
             mergeMetric.Enable__c = true;
             mergeMetric.AutoMerge_Percentage__c = 90.0;
             mergeMetric.AutoMerge_Objects__c = 'Account;Contacts Within Account;Contacts Across Accounts';
@@ -154,7 +154,7 @@ public class C501_CTRL_MassMergeAccounts_TEST {
         scheduleDiscover.execute(null);
 
         List<C501_Merge_Metric__c> listMergeMetrics = new List<C501_Merge_Metric__c>();
-        for (C501_Merge_Metric__c mergeMetric :[SELECT Id FROM C501_Merge_Metric__c WHERE Name LIKE 'TESTDATA%']) {
+        for (C501_Merge_Metric__c mergeMetric :[SELECT Id FROM C501_Merge_Metric__c WHERE Name LIKE 'TESTDATA%' AND Name LIKE '%Account%']) {
             mergeMetric.Enable__c = true;
             mergeMetric.AutoMerge_Percentage__c = 90.0;
             mergeMetric.AutoMerge_Objects__c = 'Account;Contacts Within Account;Contacts Across Accounts';
@@ -183,7 +183,7 @@ public class C501_CTRL_MassMergeAccounts_TEST {
         scheduleDiscover.execute(null);
 
         List<C501_Merge_Metric__c> listMergeMetrics = new List<C501_Merge_Metric__c>();
-        for (C501_Merge_Metric__c mergeMetric :[SELECT Id FROM C501_Merge_Metric__c WHERE Name LIKE 'TESTDATA%']) {
+        for (C501_Merge_Metric__c mergeMetric :[SELECT Id FROM C501_Merge_Metric__c WHERE Name LIKE 'TESTDATA%' AND Name LIKE '%Account%']) {
             mergeMetric.Enable__c = true;
             mergeMetric.AutoMerge_Percentage__c = 90.0;
             mergeMetric.AutoMerge_Objects__c = 'Account;Contacts Within Account;Contacts Across Accounts';
@@ -208,7 +208,7 @@ public class C501_CTRL_MassMergeAccounts_TEST {
 
         setupTest();
 
-        List<C501_Merge_Metric__c> listMergeMetrics = [SELECT Id FROM C501_Merge_Metric__c WHERE Name LIKE 'TESTDATA%'];
+        List<C501_Merge_Metric__c> listMergeMetrics = [SELECT Id FROM C501_Merge_Metric__c WHERE Name LIKE 'TESTDATA%' AND Name LIKE '%Account%'];
         List<Account> listAccounts = [SELECT Id FROM Account WHERE Name LIKE 'TESTDATA%'];
 
         C501_Account_Merge__c accountMerge = new C501_Account_Merge__c(
@@ -253,7 +253,7 @@ public class C501_CTRL_MassMergeAccounts_TEST {
 
         setupTest();
 
-        List<C501_Merge_Metric__c> listMergeMetrics = [SELECT Id FROM C501_Merge_Metric__c WHERE Name LIKE 'TESTDATA%'];
+        List<C501_Merge_Metric__c> listMergeMetrics = [SELECT Id FROM C501_Merge_Metric__c WHERE Name LIKE 'TESTDATA%' AND Name LIKE '%Account%'];
         List<Account> listAccounts = [SELECT Id FROM Account WHERE Name LIKE 'TESTDATA%'];
 
         C501_Account_Merge__c accountMerge = new C501_Account_Merge__c(
@@ -309,7 +309,8 @@ public class C501_CTRL_MassMergeAccounts_TEST {
 
         // Check filter by Rule
         ctrl.accountFilter.Id = masterAccountId;
-        ctrl.accountFilter.C501_Merge_Rule__c = [SELECT Name FROM C501_Merge_Metric__c WHERE Name LIKE '%Account%' LIMIT 1].Name;
+        List<C501_Merge_Metric__c> listMergeMetrics = [SELECT Name FROM C501_Merge_Metric__c WHERE Name LIKE 'TESTDATA%' AND Name LIKE '%Account%'];
+        ctrl.accountFilter.C501_Merge_Rule__c = listMergeMetrics[0].Name;
         System.Assert(ctrl.listAccounts.size() > 0);
 
         // Check filter by Confidence
