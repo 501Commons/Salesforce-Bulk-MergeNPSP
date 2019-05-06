@@ -313,6 +313,119 @@ global with sharing class C501_MassMerge_SharedCode_Account {
         }
     }
 
+    global void ObjectsFieldMerge(Account masterObject, List<Account> duplicateObjects) {
+
+        Set<Id> mergeCandidates = new Set<Id> { masterObject.Id };
+        for (Account objectItem :duplicateObjects) {
+            mergeCandidates.add(objectItem.Id);
+        }
+
+        Map<String, Schema.SObjectField> objectFields = Schema.SObjectType.Account.fields.getMap();
+        Map<String, Schema.DescribeFieldResult> standardFieldMap = new Map<String, Schema.DescribeFieldResult>();
+        Map<String, Schema.DescribeFieldResult> customFieldMap = new Map<String, Schema.DescribeFieldResult>();
+        
+        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
+
+        // Construct the query string
+        String query = 'Select ';
+        for (String fieldName : objectFields.keySet()) {
+
+            Schema.SObjectField f = objectFields.get(fieldName);
+            Schema.DescribeFieldResult fResult = f.getDescribe();
+            
+            // Ignore fields that have an identical API name as an npsp prefixed field
+            // This is due to a bug in dynamic SOQL, which causes querying for two real fields, 
+            // e.g. npsp__foo__c and foo__c, to throw a duplicate field selected error.
+            // Only select the NPSP namespaced field and ignore the same field without namespace
+/*            if (!fieldName.startsWith('npsp__') && 
+                objectFields.containsKey(UTIL_Namespace.StrTokenNSPrefix(fieldName))) {
+                
+                continue;
+            }
+*/
+            // Only include the fields which are updateable and accessible
+            if (fResult.isUpdateable() && fResult.isAccessible() && !c501MassMerge_SharedCode.isNPSPHiddenField(fieldname)) {
+
+                // If the field is type lookup, then ignore in the merge fields because is handled during the object merge
+                string relName = fResult.getRelationshipName();
+                if (string.isBlank(relName)) {
+                    query += (fieldName + ',');
+                } else {
+                    continue;
+                }
+
+                if(fResult.isCustom()) {
+                    customFieldMap.put(fieldName, fResult);
+                } else {
+                    standardFieldMap.put(fieldName, fResult);
+                }
+            }
+        }
+
+        query += 'Id from Account where Id IN :mergeCandidates';
+        
+        System.debug('***** C501_MassMerge_SharedCode::ObjectsFieldMerge - The contact query is: ' + query);
+        
+        List<Account> objectList;
+        try {
+            objectList = Database.query(query); // Query the records
+
+            // Ensure we got back the same number of records as expected. In case any record got deleted/moved since last search.
+            if (objectList == null || objectList.size() != mergeCandidates.size()) {
+
+                System.debug('***** C501_MassMerge_SharedCode::ObjectsFieldMerge Query failed to return expected number of objects');
+                return;
+            }
+
+            // Merge fields into master
+            SObject masterRecord = null;
+            for (SObject objectItem :objectList) {
+
+                // Check to assign master object
+                if (masterRecord == null) {
+                    masterRecord = objectItem;
+                    continue;
+                }
+
+                for (String fieldName :standardFieldMap.keySet()) {
+                    if ( (masterRecord.get(fieldName) == null || String.isBlank(String.valueOf(masterRecord.get(fieldName)))) &&
+                        objectItem.get(fieldName) <> null && !String.isBlank(String.valueOf(objectItem.get(fieldName)))) {
+
+                        System.debug('***** C501_MassMerge_SharedCode::ObjectsFieldMerge Update Merge Standard Field - fieldName: ' + fieldName + ' master value: ' + String.valueOf(masterRecord.get(fieldName)) + ' merge value: ' + String.valueOf(objectItem.get(fieldName)));
+                        try{
+                            masterRecord.put(fieldName, objectItem.get(fieldName));
+                        } catch (Exception e) {
+                            System.debug('***** C501_MassMerge_SharedCode::ObjectsFieldMerge Update Merge Standard Field - fieldName: ' + fieldName + ' Exception: ' + String.valueOf(e.getMessage()));
+                        }
+                    }
+                }
+
+                for (String fieldName :customFieldMap.keySet()) {
+                    if ( (masterRecord.get(fieldName) == null || String.isBlank(String.valueOf(masterRecord.get(fieldName)))) &&
+                        objectItem.get(fieldName) <> null && !String.isBlank(String.valueOf(objectItem.get(fieldName)))) {
+
+                        System.debug('***** C501_MassMerge_SharedCode::ObjectsFieldMerge Update Merge Custom Field - fieldName: ' + fieldName + ' master value: ' + String.valueOf(masterRecord.get(fieldName)) + ' merge value: ' + String.valueOf(objectItem.get(fieldName)));
+                        try{
+                            masterRecord.put(fieldName, objectItem.get(fieldName));
+                        } catch (Exception e) {
+                            System.debug('***** C501_MassMerge_SharedCode::ObjectsFieldMerge Update Merge Custom Field - fieldName: ' + fieldName + ' Exception: ' + String.valueOf(e.getMessage()));
+                        }
+                    }
+                }
+            }
+
+        } catch (Exception e) {
+            System.debug('***** C501_MassMerge_SharedCode::ObjectsFieldMerge update fields exception: ' + String.valueOf(e.getMessage()));
+        }
+
+        Database.SaveResult updateResult = Database.update(masterObject, false);
+        if (!updateResult.isSuccess()) {
+            for (Database.Error err : updateResult.getErrors()) {
+                System.debug('***** C501_MassMerge_SharedCode::ObjectsMerge Account Merge Exception: ' + err.getMessage());
+            }
+        }
+    }
+
     global void ObjectsMerge(Account masterObject, List<Account> duplicateObjects) {
 
         if (masterObject == null || duplicateObjects == null || duplicateObjects.isEmpty()) {
@@ -322,16 +435,8 @@ global with sharing class C501_MassMerge_SharedCode_Account {
         C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
         c501MassMerge_SharedCode.ObjectsMerge_Account(masterObject, duplicateObjects);
  
- /*
-        // Merge Account fields into master
-        for (Schema.FieldSetMember f : SObjectType.Account.FieldSets.MassMergeAccounts.getFields()) {
-            for (Account object :duplicateObjects) {
-                
-                // Check to merge field - If field on master null then merge
-                masterObject.set(f.getFieldPath(), duplicateObject.get(f.getFieldPath());
-            }
-        }
-*/
+        // Merge fields into master
+        ObjectsFieldMerge(masterObject, duplicateObjects);
 
         // Merge Accounts into master
         System.debug('***** C501_MassMerge_SharedCode::ObjectsMerge Account masterObject: ' + String.valueOf(masterObject) + ' duplicateObjects: ' + String.valueOf(duplicateObjects));

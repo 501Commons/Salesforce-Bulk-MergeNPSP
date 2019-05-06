@@ -30,6 +30,26 @@
 
 global with sharing class C501_MassMerge_SharedCode { 
 
+    /*******************************************************************************************************
+    * @description returns whether the field should be treated as an NPSP hidden field, typically one
+    * of our deprecated or system fields
+    * @return boolean true if should be treated as hidden, false if not.
+    */
+    global boolean isNPSPHiddenField(string strField) {
+        list<string> listStrField = new list<string>{
+            'npe01__SystemAccountProcessor__c',
+            'npo02__SystemHouseholdProcessor__c',
+            'npe01__SystemIsIndividual__c',
+            'Current_Address__c'
+        };
+
+        for (string strF : listStrField) {
+           if (strField.equalsIgnoreCase(strF))
+               return true;
+        }
+        return false;
+    }
+
     global String GetAllIterableFields(String sObjectType) {
 
         Set<String> fieldNames = schema.describeSObjects(new String[] { sObjectType })[0].fields.getMap().keyset();

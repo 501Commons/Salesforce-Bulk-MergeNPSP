@@ -27,8 +27,9 @@ global class C501_MM_Rule_Merge implements Schedulable {
         strSoql += ' AutoMerge_Percentage__c, AutoMerge_Objects__c,';
         strSoql += ' Last_Discover_Date__c, Last_Merge_Date__c';
         strSoql += ' FROM C501_Merge_Metric__c';
+        strSoql += ' WHERE Source_Aggregate__c <> null AND Source_Object__c <> NULL AND Source_Report__c <> NULL';
         if (Test.isRunningTest()) {        
-            strSoql += ' WHERE Name LIKE \'TESTDATA%\'';
+            strSoql += ' AND Name LIKE \'TESTDATA%\'';
         }
         List<C501_Merge_Metric__c> mergeMetrics = Database.Query(strSoql);
 

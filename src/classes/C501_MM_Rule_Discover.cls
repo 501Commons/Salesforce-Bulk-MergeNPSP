@@ -42,8 +42,9 @@ global class C501_MM_Rule_Discover implements Schedulable {
         strSoql += ' AutoMerge_Percentage__c, AutoMerge_Objects__c,';
         strSoql += ' Last_Discover_Date__c, Last_Merge_Date__c';
         strSoql += ' FROM C501_Merge_Metric__c';
+        strSoql += ' WHERE Source_Aggregate__c <> null AND Source_Object__c <> NULL AND Source_Report__c <> NULL';
         if (Test.isRunningTest()) {        
-            strSoql += ' WHERE Name LIKE \'TESTDATA%\'';
+            strSoql += ' AND Name LIKE \'TESTDATA%\'';
         }
         List<C501_Merge_Metric__c> mergeMetrics = Database.Query(strSoql);
 
@@ -310,6 +311,11 @@ global class C501_MM_Rule_Discover implements Schedulable {
             groupByFields.add(column);
         }
 
+        // Check for valid group fields
+        if (groupByFields.size() <= 0) {
+            return;
+        }
+        
         String strSoqlGroupBy = ' GROUP BY ' + String.join(groupByFields, ', ');
         String strSoqlHaving = ' HAVING Count(' + mergeMetric.Source_Aggregate__c + ') > 1 ';
         String strSoqlOrderBy = ' ORDER BY Count(' + mergeMetric.Source_Aggregate__c + ') DESC';

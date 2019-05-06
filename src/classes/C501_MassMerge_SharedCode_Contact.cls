@@ -1,5 +1,5 @@
 //
-// GENERIC CLASS - Do Not Modify Code in this Class.  The Class is generated from the C501_MassMerge_SharedCode_Account.cls file
+// GENERIC CLASS - Do Not Modify Code in this Class.  The Class is generated from the C501_MassMerge_SharedCode_Contact.cls file
 //
 
 global with sharing class C501_MassMerge_SharedCode_Contact { 
@@ -127,6 +127,7 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
             }
 
             if (!mergeObjectsInsert.isEmpty()) {
+
                 Database.SaveResult[] insertResults = Database.insert(mergeObjectsInsert, false);
 
                 for (Database.SaveResult result : insertResults) {
@@ -183,12 +184,12 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
 
             if (!mergeObject.Contact__r.IsDeleted) {
                 objectIdsValid.add(mergeObject.Contact__c);
-                contactHouseholdMap.put(mergeObject.Contact__c, mergeObject.Contact__r.C501_Household_Id__c);
+                contactHouseholdMap.put(mergeObject.Contact__c, mergeObject.Contact__r.AccountId);
             }
 
             if (!mergeObject.Merge_Target_Contact__r.IsDeleted) {
                 objectIdsValid.add(mergeObject.Merge_Target_Contact__c);
-                contactHouseholdMap.put(mergeObject.Contact__c, mergeObject.Contact__r.C501_Household_Id__c);
+                contactHouseholdMap.put(mergeObject.Contact__c, mergeObject.Contact__r.AccountId);
             }
 
             if (mergeObject.Merge_Action__c == 'Merge') {
@@ -221,7 +222,6 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
 
         // Check for batch queued merges
         if (!pendingMerges.isEmpty()) {
-            System.debug('***** C501_MassMerge_SharedCode_Contact::ProcessObjectMergeCandidates Process pending merge candidates pendingMerges: ' + String.valueOf(pendingMerges));
             ProcessObjectMerges(pendingMerges, false);
         }
 
@@ -308,6 +308,119 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
         }
     }
 
+    global void ObjectsFieldMerge(Contact masterObject, List<Contact> duplicateObjects) {
+
+        Set<Id> mergeCandidates = new Set<Id> { masterObject.Id };
+        for (Contact objectItem :duplicateObjects) {
+            mergeCandidates.add(objectItem.Id);
+        }
+
+        Map<String, Schema.SObjectField> objectFields = Schema.SObjectType.Contact.fields.getMap();
+        Map<String, Schema.DescribeFieldResult> standardFieldMap = new Map<String, Schema.DescribeFieldResult>();
+        Map<String, Schema.DescribeFieldResult> customFieldMap = new Map<String, Schema.DescribeFieldResult>();
+        
+        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
+
+        // Construct the query string
+        String query = 'Select ';
+        for (String fieldName : objectFields.keySet()) {
+
+            Schema.SObjectField f = objectFields.get(fieldName);
+            Schema.DescribeFieldResult fResult = f.getDescribe();
+            
+            // Ignore fields that have an identical API name as an npsp prefixed field
+            // This is due to a bug in dynamic SOQL, which causes querying for two real fields, 
+            // e.g. npsp__foo__c and foo__c, to throw a duplicate field selected error.
+            // Only select the NPSP namespaced field and ignore the same field without namespace
+/*            if (!fieldName.startsWith('npsp__') && 
+                objectFields.containsKey(UTIL_Namespace.StrTokenNSPrefix(fieldName))) {
+                
+                continue;
+            }
+*/
+            // Only include the fields which are updateable and accessible
+            if (fResult.isUpdateable() && fResult.isAccessible() && !c501MassMerge_SharedCode.isNPSPHiddenField(fieldname)) {
+
+                // If the field is type lookup, then ignore in the merge fields because is handled during the object merge
+                string relName = fResult.getRelationshipName();
+                if (string.isBlank(relName)) {
+                    query += (fieldName + ',');
+                } else {
+                    continue;
+                }
+
+                if(fResult.isCustom()) {
+                    customFieldMap.put(fieldName, fResult);
+                } else {
+                    standardFieldMap.put(fieldName, fResult);
+                }
+            }
+        }
+
+        query += 'Id from Contact where Id IN :mergeCandidates';
+        
+        System.debug('***** C501_MassMerge_SharedCode::ObjectsFieldMerge - The contact query is: ' + query);
+        
+        List<Contact> objectList;
+        try {
+            objectList = Database.query(query); // Query the records
+
+            // Ensure we got back the same number of records as expected. In case any record got deleted/moved since last search.
+            if (objectList == null || objectList.size() != mergeCandidates.size()) {
+
+                System.debug('***** C501_MassMerge_SharedCode::ObjectsFieldMerge Query failed to return expected number of objects');
+                return;
+            }
+
+            // Merge fields into master
+            SObject masterRecord = null;
+            for (SObject objectItem :objectList) {
+
+                // Check to assign master object
+                if (masterRecord == null) {
+                    masterRecord = objectItem;
+                    continue;
+                }
+
+                for (String fieldName :standardFieldMap.keySet()) {
+                    if ( (masterRecord.get(fieldName) == null || String.isBlank(String.valueOf(masterRecord.get(fieldName)))) &&
+                        objectItem.get(fieldName) <> null && !String.isBlank(String.valueOf(objectItem.get(fieldName)))) {
+
+                        System.debug('***** C501_MassMerge_SharedCode::ObjectsFieldMerge Update Merge Standard Field - fieldName: ' + fieldName + ' master value: ' + String.valueOf(masterRecord.get(fieldName)) + ' merge value: ' + String.valueOf(objectItem.get(fieldName)));
+                        try{
+                            masterRecord.put(fieldName, objectItem.get(fieldName));
+                        } catch (Exception e) {
+                            System.debug('***** C501_MassMerge_SharedCode::ObjectsFieldMerge Update Merge Standard Field - fieldName: ' + fieldName + ' Exception: ' + String.valueOf(e.getMessage()));
+                        }
+                    }
+                }
+
+                for (String fieldName :customFieldMap.keySet()) {
+                    if ( (masterRecord.get(fieldName) == null || String.isBlank(String.valueOf(masterRecord.get(fieldName)))) &&
+                        objectItem.get(fieldName) <> null && !String.isBlank(String.valueOf(objectItem.get(fieldName)))) {
+
+                        System.debug('***** C501_MassMerge_SharedCode::ObjectsFieldMerge Update Merge Custom Field - fieldName: ' + fieldName + ' master value: ' + String.valueOf(masterRecord.get(fieldName)) + ' merge value: ' + String.valueOf(objectItem.get(fieldName)));
+                        try{
+                            masterRecord.put(fieldName, objectItem.get(fieldName));
+                        } catch (Exception e) {
+                            System.debug('***** C501_MassMerge_SharedCode::ObjectsFieldMerge Update Merge Custom Field - fieldName: ' + fieldName + ' Exception: ' + String.valueOf(e.getMessage()));
+                        }
+                    }
+                }
+            }
+
+        } catch (Exception e) {
+            System.debug('***** C501_MassMerge_SharedCode::ObjectsFieldMerge update fields exception: ' + String.valueOf(e.getMessage()));
+        }
+
+        Database.SaveResult updateResult = Database.update(masterObject, false);
+        if (!updateResult.isSuccess()) {
+            for (Database.Error err : updateResult.getErrors()) {
+                System.debug('***** C501_MassMerge_SharedCode::ObjectsMerge Contact Merge Exception: ' + err.getMessage());
+            }
+        }
+    }
+
     global void ObjectsMerge(Contact masterObject, List<Contact> duplicateObjects) {
 
         if (masterObject == null || duplicateObjects == null || duplicateObjects.isEmpty()) {
@@ -316,6 +429,9 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
 
         C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
         c501MassMerge_SharedCode.ObjectsMerge_Contact(masterObject, duplicateObjects);
+ 
+        // Merge fields into master
+        ObjectsFieldMerge(masterObject, duplicateObjects);
 
         // Merge Contacts into master
         System.debug('***** C501_MassMerge_SharedCode::ObjectsMerge Contact masterObject: ' + String.valueOf(masterObject) + ' duplicateObjects: ' + String.valueOf(duplicateObjects));
@@ -351,5 +467,5 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
         if (!deleteMerges.isEmpty()) {
             delete deleteMerges;
         }
-    }
+   }
 }
