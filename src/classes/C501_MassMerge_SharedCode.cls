@@ -234,7 +234,6 @@ global with sharing class C501_MassMerge_SharedCode {
         if (automergeObjects.contains('Account')) {
 
             if (!pendingAutoMerges.isEmpty()) {
-                System.debug('***** C501_MassMerge_SharedCode::ProcessMergeCandidates Process auto merge candidates pendingAutoMerges: ' + String.valueOf(pendingAutoMerges));
                 C501_MassMerge_SharedCode_Account c501MassMerge_SharedCode_Account = new C501_MassMerge_SharedCode_Account();
                 c501MassMerge_SharedCode_Account.ProcessObjectMerges(pendingAutoMerges, false);
             }
