@@ -260,8 +260,6 @@ global with sharing class C501_MassMerge_SharedCode_Account {
                 // NPSP - Not supported - throws error in Future call.  Check back if Salesforce fixes issue
                 // https://github.com/SalesforceFoundation/Cumulus/issues/4178                
 
-                System.debug('***** C501_MassMerge_SharedCode_Account::ProcessObjectMerges Batch Schedule Merge mergeCandidate: ' + String.valueOf(mergeCandidate));
-
                 // Schedule Batch Job in Flex Queue (can schedule up to 100 jobs)
                 List<String> objectsMergeIds = new List<String> { mergeCandidate.Account__c, mergeCandidate.Merge_Target_Account__c };
                 C501_MassMerge_Batch batchMergeRequest = new C501_MassMerge_Batch();
@@ -270,8 +268,6 @@ global with sharing class C501_MassMerge_SharedCode_Account {
                 Database.executeBatch(batchMergeRequest);
             }
             else {
-
-                System.debug('***** C501_MassMerge_SharedCode_Account::ProcessObjectMerges Schedule Merge mergeCandidate: ' + String.valueOf(mergeCandidate));
 
                 ObjectsMerge( 
                     new Account(
@@ -342,8 +338,7 @@ global with sharing class C501_MassMerge_SharedCode_Account {
         }
 
         query += 'Id from Account where Id IN :mergeCandidates';
-        
-        System.debug('***** C501_MassMerge_SharedCode::ObjectsFieldMerge - The Account query is: ' + query);
+        //System.debug('***** C501_MassMerge_SharedCode::ObjectsFieldMerge - The Account query is: ' + query);
         
         List<Account> objectList;
         try {
@@ -370,7 +365,6 @@ global with sharing class C501_MassMerge_SharedCode_Account {
                     if ( (masterRecord.get(fieldName) == null || String.isBlank(String.valueOf(masterRecord.get(fieldName)))) &&
                         objectItem.get(fieldName) <> null && !String.isBlank(String.valueOf(objectItem.get(fieldName)))) {
 
-                        System.debug('***** C501_MassMerge_SharedCode::ObjectsFieldMerge Update Merge Standard Field - fieldName: ' + fieldName + ' master value: ' + String.valueOf(masterRecord.get(fieldName)) + ' merge value: ' + String.valueOf(objectItem.get(fieldName)));
                         try{
                             masterRecord.put(fieldName, objectItem.get(fieldName));
                         } catch (Exception e) {
@@ -383,7 +377,6 @@ global with sharing class C501_MassMerge_SharedCode_Account {
                     if ( (masterRecord.get(fieldName) == null || String.isBlank(String.valueOf(masterRecord.get(fieldName)))) &&
                         objectItem.get(fieldName) <> null && !String.isBlank(String.valueOf(objectItem.get(fieldName)))) {
 
-                        System.debug('***** C501_MassMerge_SharedCode::ObjectsFieldMerge Update Merge Custom Field - fieldName: ' + fieldName + ' master value: ' + String.valueOf(masterRecord.get(fieldName)) + ' merge value: ' + String.valueOf(objectItem.get(fieldName)));
                         try{
                             masterRecord.put(fieldName, objectItem.get(fieldName));
                         } catch (Exception e) {
@@ -393,15 +386,15 @@ global with sharing class C501_MassMerge_SharedCode_Account {
                 }
             }
 
+            Database.SaveResult updateResult = Database.update((Account)masterRecord, false);
+            if (!updateResult.isSuccess()) {
+                for (Database.Error err : updateResult.getErrors()) {
+                    System.debug('***** C501_MassMerge_SharedCode::ObjectsMerge Account Merge Exception: ' + err.getMessage());
+                }
+            }
+
         } catch (Exception e) {
             System.debug('***** C501_MassMerge_SharedCode::ObjectsFieldMerge update fields exception: ' + String.valueOf(e.getMessage()));
-        }
-
-        Database.SaveResult updateResult = Database.update(masterObject, false);
-        if (!updateResult.isSuccess()) {
-            for (Database.Error err : updateResult.getErrors()) {
-                System.debug('***** C501_MassMerge_SharedCode::ObjectsMerge Account Merge Exception: ' + err.getMessage());
-            }
         }
     }
 
@@ -418,15 +411,9 @@ global with sharing class C501_MassMerge_SharedCode_Account {
         ObjectsFieldMerge(masterObject, duplicateObjects);
 
         // Merge Accounts into master
-        System.debug('***** C501_MassMerge_SharedCode::ObjectsMerge Account masterObject: ' + String.valueOf(masterObject) + ' duplicateObjects: ' + String.valueOf(duplicateObjects));
-
         Database.MergeResult[] objectResults = Database.merge(masterObject, duplicateObjects, false);
-
         for(Database.MergeResult res : objectResults) {
-            if (res.isSuccess()) {
-                System.debug('***** C501_MassMerge_SharedCode::ObjectsMerge Account Merge Successful');
-            }
-            else {
+            if (!res.isSuccess()) {
                 for (Database.Error err : res.getErrors()) {
                     System.debug('***** C501_MassMerge_SharedCode::ObjectsMerge Account Merge Exception: ' + err.getMessage());
                 }

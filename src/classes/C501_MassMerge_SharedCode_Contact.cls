@@ -338,8 +338,7 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
         }
 
         query += 'Id from Contact where Id IN :mergeCandidates';
-        
-        System.debug('***** C501_MassMerge_SharedCode::ObjectsFieldMerge - The contact query is: ' + query);
+        //System.debug('***** C501_MassMerge_SharedCode::ObjectsFieldMerge - The contact query is: ' + query);
         
         List<Contact> objectList;
         try {
@@ -366,7 +365,6 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
                     if ( (masterRecord.get(fieldName) == null || String.isBlank(String.valueOf(masterRecord.get(fieldName)))) &&
                         objectItem.get(fieldName) <> null && !String.isBlank(String.valueOf(objectItem.get(fieldName)))) {
 
-                        System.debug('***** C501_MassMerge_SharedCode::ObjectsFieldMerge Update Merge Standard Field - fieldName: ' + fieldName + ' master value: ' + String.valueOf(masterRecord.get(fieldName)) + ' merge value: ' + String.valueOf(objectItem.get(fieldName)));
                         try{
                             masterRecord.put(fieldName, objectItem.get(fieldName));
                         } catch (Exception e) {
@@ -379,7 +377,6 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
                     if ( (masterRecord.get(fieldName) == null || String.isBlank(String.valueOf(masterRecord.get(fieldName)))) &&
                         objectItem.get(fieldName) <> null && !String.isBlank(String.valueOf(objectItem.get(fieldName)))) {
 
-                        System.debug('***** C501_MassMerge_SharedCode::ObjectsFieldMerge Update Merge Custom Field - fieldName: ' + fieldName + ' master value: ' + String.valueOf(masterRecord.get(fieldName)) + ' merge value: ' + String.valueOf(objectItem.get(fieldName)));
                         try{
                             masterRecord.put(fieldName, objectItem.get(fieldName));
                         } catch (Exception e) {
@@ -389,15 +386,15 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
                 }
             }
 
+            Database.SaveResult updateResult = Database.update((Contact)masterRecord, false);
+            if (!updateResult.isSuccess()) {
+                for (Database.Error err : updateResult.getErrors()) {
+                    System.debug('***** C501_MassMerge_SharedCode::ObjectsMerge Account Merge Exception: ' + err.getMessage());
+                }
+            }
+
         } catch (Exception e) {
             System.debug('***** C501_MassMerge_SharedCode::ObjectsFieldMerge update fields exception: ' + String.valueOf(e.getMessage()));
-        }
-
-        Database.SaveResult updateResult = Database.update(masterObject, false);
-        if (!updateResult.isSuccess()) {
-            for (Database.Error err : updateResult.getErrors()) {
-                System.debug('***** C501_MassMerge_SharedCode::ObjectsMerge Contact Merge Exception: ' + err.getMessage());
-            }
         }
     }
 
