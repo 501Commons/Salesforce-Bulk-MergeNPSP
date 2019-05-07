@@ -3,5 +3,8 @@ project:
     package:
         name:  Salesforce-Bulk-MergeNPSP
         api_version: '43.0'
+    dependencies:
+        - github: https://github.com/SalesforceFoundation/Cumulus
+        - github: https://github.com/SalesforceFoundation/Volunteers-for-Salesforce
 
 
