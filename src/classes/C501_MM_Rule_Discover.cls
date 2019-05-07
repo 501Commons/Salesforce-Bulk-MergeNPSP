@@ -367,10 +367,10 @@ global class C501_MM_Rule_Discover implements Schedulable {
             // Get Household Sizes
             Map<Id, Decimal> existingAccountSizes = new Map<Id, Decimal>();
             for(Account account : [
-                SELECT Id, npsp__Number_of_Household_Members__c
+                SELECT Id, C501_Number_of_Household_Members__c
                 FROM Account
-                WHERE Id IN :mergeAccountIds AND npsp__Number_of_Household_Members__c > 1]) {
-                    existingAccountSizes.put(account.Id, account.npsp__Number_of_Household_Members__c);
+                WHERE Id IN :mergeAccountIds AND C501_Number_of_Household_Members__c > 1]) {
+                    existingAccountSizes.put(account.Id, account.C501_Number_of_Household_Members__c);
             }
 
             Set<Id> mergeAccountIdsMatching = new Set<Id>();

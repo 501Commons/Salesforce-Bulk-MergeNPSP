@@ -149,25 +149,27 @@ global with sharing class C501_MassMerge_SharedCode {
         for (Contact contact :duplicateContacts) {
             contactIds.add(contact.Id);
         }
-        Map<Id, Account> contactAccounts = new Map<Id, Account>();
-        for (Contact contact : [
-            SELECT Id, AccountId, Account.npsp__Number_of_Household_Members__c FROM Contact WHERE Id in :contactIds]) {
 
-            contactAccounts.put(contact.Id, new Account(
-                Id = contact.AccountId,
-                npsp__Number_of_Household_Members__c = contact.Account.npsp__Number_of_Household_Members__c));
+        Map<Id, String> contactAccounts = new Map<Id, String>();
+        Map<Id, Decimal> contactAccountMembers = new Map<Id, Decimal>();
+        for (Contact contact : [
+            SELECT Id, AccountId, Account.C501_Number_of_Household_Members__c FROM Contact WHERE Id in :contactIds]) {
+
+            contactAccounts.put(contact.Id, contact.AccountId);
+            contactAccountMembers.put(contact.Id, contact.Account.C501_Number_of_Household_Members__c);
         }
 
         // Check to add an account merge request - can not Account merge here because might be in a batch call which is not supported for Account merging
-        Account masterAccount = contactAccounts.get(masterContact.Id);
+        String masterAccountId = contactAccounts.get(masterContact.Id);
         Map<String, C501_Account_Merge__c> accountMergeInserts = new Map<String, C501_Account_Merge__c>();
         for (Contact contact :duplicateContacts) {
-            Account account = contactAccounts.get(contact.Id);
-            if (account.Id <> masterAccount.Id && account.npsp__Number_of_Household_Members__c <= 1) {
+
+            String accountId = contactAccounts.get(contact.Id);
+            if (accountId <> masterAccountId && contactAccountMembers.get(contact.Id) <= 1) {
 
                 // Create an account merge because the duplicate account now has no children
-                String maxId = (masterAccount.Id > account.Id) ? masterAccount.Id : account.Id;
-                String minId = (masterAccount.Id <= account.Id) ? masterAccount.Id : account.Id;
+                String maxId = (masterAccountId > accountId) ? masterAccountId : accountId;
+                String minId = (masterAccountId <= accountId) ? masterAccountId : accountId;
                 String uniqueId = mergeMetricName + maxId + minId;
                 accountMergeInserts.put(uniqueId, new C501_Account_Merge__c(
                     Unique_Id__c = uniqueId,
