@@ -169,4 +169,19 @@
         <type>Text</type>
         <unique>false</unique>
     </fields>
+    <fields>
+        <fullName>npsp__Number_of_Household_Members__c</fullName>
+        <deprecated>false</deprecated>
+        <description>The number of Contacts who are members of this Household.</description>
+        <externalId>false</externalId>
+        <inlineHelpText>for Household Accounts, the number of Contacts in the Household.</inlineHelpText>
+        <label>Number of Household Members</label>
+        <precision>10</precision>
+        <required>false</required>
+        <scale>0</scale>
+        <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
+        <type>Number</type>
+        <unique>false</unique>
+    </fields>
 </CustomObject>
