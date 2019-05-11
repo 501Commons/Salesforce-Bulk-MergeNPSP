@@ -157,16 +157,16 @@
         <name>Report</name>
     </types>
     <types>
-        <members>c501_sfdo213</members>
-        <members>c501_v4sStaticResources</members>
-        <members>c501_wtooltip</members>
         <members>Bootstrap</members>
         <members>Bootstrap4Force</members>
         <members>FullCalendar</members>
+        <members>c501_sfdo213</members>
+        <members>c501_v4sStaticResources</members>
+        <members>c501_wtooltip</members>
         <members>jQueryFiles</members>
         <members>sfdo213</members>
         <members>v4sStaticResources</members>
-        <members>wtooltip</members>        
+        <members>wtooltip</members>
         <name>StaticResource</name>
     </types>
     <version>42.0</version>
