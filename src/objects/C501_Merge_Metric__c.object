@@ -114,14 +114,6 @@
         <visibleLines>3</visibleLines>
     </fields>
     <fields>
-        <fullName>Enable__c</fullName>
-        <defaultValue>false</defaultValue>
-        <externalId>false</externalId>
-        <label>Enable</label>
-        <trackTrending>false</trackTrending>
-        <type>Checkbox</type>
-    </fields>
-    <fields>
         <fullName>Last_Discover_Date__c</fullName>
         <externalId>false</externalId>
         <label>Last Discover Date</label>
@@ -218,7 +210,6 @@
     <listViews>
         <fullName>All</fullName>
         <columns>NAME</columns>
-        <columns>Enable__c</columns>
         <columns>Confidence__c</columns>
         <columns>AutoMerge_Percentage__c</columns>
         <filterScope>Everything</filterScope>
@@ -234,7 +225,6 @@
         <columns>NAME</columns>
         <columns>Total_Unassigned_Accounts__c</columns>
         <columns>Total_Unassigned_Contacts__c</columns>
-        <columns>Enable__c</columns>
         <columns>Confidence__c</columns>
         <columns>AutoMerge_Percentage__c</columns>
         <columns>AutoMerge_Objects__c</columns>

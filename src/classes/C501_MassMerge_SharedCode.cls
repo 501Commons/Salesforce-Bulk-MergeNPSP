@@ -75,7 +75,7 @@ global with sharing class C501_MassMerge_SharedCode {
     global void InitializeMassMergeInstances(String reportFolder) {
 
         String strSoql = 'SELECT';
-        strSoql += ' Id, Name, Confidence__c, Enable__c,';
+        strSoql += ' Id, Name, Confidence__c,';
         strSoql += ' Total_Unassigned_Accounts__c, Total_Unassigned_Contacts__c,';
         strSoql += ' Source_Report__c, Source_Report_LastModifiedDate__c, Source_Object__c, Source_Aggregate__c,';
         strSoql += ' AutoMerge_Percentage__c, AutoMerge_Objects__c,';
@@ -138,7 +138,6 @@ global with sharing class C501_MassMerge_SharedCode {
             SELECT
                 Id, Name, Confidence__c,
                 Total_Unassigned_Accounts__c, Total_Unassigned_Contacts__c,
-                Enable__c,
                 AutoMerge_Percentage__c, AutoMerge_Objects__c
             FROM C501_Merge_Metric__c
             WHERE Name = :mergeMetricName];
@@ -146,7 +145,6 @@ global with sharing class C501_MassMerge_SharedCode {
         if (mergeMetrics.isEmpty()) {
             mergeMetrics.add( new C501_Merge_Metric__c (
                 Name = (Test.isRunningTest() ? ('TESTDATA ' + mergeMetricName) : mergeMetricName),
-                Enable__c = true,
                 Confidence__c = 90.0,
                 AutoMerge_Percentage__c = 90.0,
                 AutoMerge_Objects__c = 'Account',

@@ -28,23 +28,43 @@
     POSSIBILITY OF SUCH DAMAGE.
 */
 
-public with sharing class C501_MassMerge_Fx_Base {
-    public C501_MassMerge_Fx_Base() {
+public with sharing class C501_MM_MergeMetric_Trigger {
 
+    public Id Id { get; set; }
+    public C501_Merge_Metric__c mergeMetric { get; set; }
+
+    public C501_MM_MergeMetric_Trigger(ApexPages.StandardController controller) {
+
+        mergeMetric =  (C501_Merge_Metric__c)controller.getRecord();
+        Id = mergeMetric.Id;
+        System.debug('*****C501_MM_MergeMetric_Trigger::Constructor Id: ' + mergeMetric);
     }
 
-    // Save date each time called and if not called in 24 hours then turn off schedule
-    // Update a custom object list; Id, IdType, FieldName, Partial (8).
-    //    Example: For Contact with FirstName equals Partial Match and FirstName is David
-    //    C501_Contact_Match, C501_Account_Match, C501_Merge_Match (list of merge matches - if not updated in 24 hours then remove)
-    //    Master/Detail so if Contact delete the partials are deleted
-    //      00O2g000000JJEq, Partial Match, Contact, FirstName, d
-    //      00O2g000000JJEq, Partial Match, Contact, FirstName, da
-    //      00O2g000000JJEq, Partial Match, Contact, FirstName, dav
-    //      00O2g000000JJEq, Partial Match, Contact, FirstName, davi
-    //      00O2g000000JJEq, Partial Match, Contact, FirstName, david
+    //Method that can is called from the Visual Force page action attribute
+    public PageReference discoverTrigger() {
 
-    // Need a field on the contact and on the account - C501_MassMerge_LastChecked__c - this is what you use to get a DESC list and that a limit of to process on each schedule run
-    // during schedule run process each Fx - for instance if Partial Match and Fuzzy Match both enabled for FirstName then loop through both Fx classes per contact for firstname.
-    // have a Fx base collection that you loop through.
+        System.debug('*****C501_MM_MergeMetric_Trigger::discoverTrigger Merge Metric Id: ' + Id);
+
+        //build your code logic here
+
+        PageReference pageRef = new PageReference('/' + Id);
+        pageRef.setRedirect(true);
+
+        // Returns to the original page
+        return pageRef;
+    }
+
+    //Method that can is called from the Visual Force page action attribute
+    public PageReference mergeTrigger() {
+
+        System.debug('*****C501_MM_MergeMetric_Trigger::discoverTrigger Merge Metric Id: ' + Id);
+
+        //build your code logic here
+
+        PageReference pageRef = new PageReference('/' + Id);
+        pageRef.setRedirect(true);
+
+        // Returns to the original page
+        return pageRef;
+    }
 }

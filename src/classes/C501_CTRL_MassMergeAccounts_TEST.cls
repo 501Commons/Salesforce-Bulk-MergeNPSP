@@ -38,7 +38,6 @@ public class C501_CTRL_MassMergeAccounts_TEST {
 
         List<C501_Merge_Metric__c> listMergeMetrics = new List<C501_Merge_Metric__c>();
         for (C501_Merge_Metric__c mergeMetric :[SELECT Id FROM C501_Merge_Metric__c WHERE Name LIKE 'TESTDATA%' AND Name LIKE '%Account%']) {
-            mergeMetric.Enable__c = true;
             mergeMetric.AutoMerge_Percentage__c = 0.0;
             mergeMetric.AutoMerge_Objects__c = 'Account;Contacts Within Account;Contacts Across Accounts';
 
@@ -68,7 +67,6 @@ public class C501_CTRL_MassMergeAccounts_TEST {
 
         List<C501_Merge_Metric__c> listMergeMetrics = new List<C501_Merge_Metric__c>();
         for (C501_Merge_Metric__c mergeMetric :[SELECT Id FROM C501_Merge_Metric__c WHERE Name LIKE 'TESTDATA%' AND Name LIKE '%Account%']) {
-            mergeMetric.Enable__c = true;
             mergeMetric.AutoMerge_Percentage__c = 90.0;
             mergeMetric.AutoMerge_Objects__c = 'Account;Contacts Within Account;Contacts Across Accounts';
 
@@ -97,7 +95,6 @@ public class C501_CTRL_MassMergeAccounts_TEST {
 
         List<C501_Merge_Metric__c> listMergeMetrics = new List<C501_Merge_Metric__c>();
         for (C501_Merge_Metric__c mergeMetric :[SELECT Id FROM C501_Merge_Metric__c WHERE Name LIKE 'TESTDATA%' AND Name LIKE '%Account%']) {
-            mergeMetric.Enable__c = true;
             mergeMetric.AutoMerge_Percentage__c = 90.0;
             mergeMetric.AutoMerge_Objects__c = 'Account;Contacts Within Account;Contacts Across Accounts';
 
@@ -126,7 +123,6 @@ public class C501_CTRL_MassMergeAccounts_TEST {
 
         List<C501_Merge_Metric__c> listMergeMetrics = new List<C501_Merge_Metric__c>();
         for (C501_Merge_Metric__c mergeMetric :[SELECT Id FROM C501_Merge_Metric__c WHERE Name LIKE 'TESTDATA%' AND Name LIKE '%Account%']) {
-            mergeMetric.Enable__c = true;
             mergeMetric.AutoMerge_Percentage__c = 90.0;
             mergeMetric.AutoMerge_Objects__c = 'Account;Contacts Within Account;Contacts Across Accounts';
 
@@ -155,7 +151,6 @@ public class C501_CTRL_MassMergeAccounts_TEST {
 
         List<C501_Merge_Metric__c> listMergeMetrics = new List<C501_Merge_Metric__c>();
         for (C501_Merge_Metric__c mergeMetric :[SELECT Id FROM C501_Merge_Metric__c WHERE Name LIKE 'TESTDATA%' AND Name LIKE '%Account%']) {
-            mergeMetric.Enable__c = true;
             mergeMetric.AutoMerge_Percentage__c = 90.0;
             mergeMetric.AutoMerge_Objects__c = 'Account;Contacts Within Account;Contacts Across Accounts';
 
@@ -184,7 +179,6 @@ public class C501_CTRL_MassMergeAccounts_TEST {
 
         List<C501_Merge_Metric__c> listMergeMetrics = new List<C501_Merge_Metric__c>();
         for (C501_Merge_Metric__c mergeMetric :[SELECT Id FROM C501_Merge_Metric__c WHERE Name LIKE 'TESTDATA%' AND Name LIKE '%Account%']) {
-            mergeMetric.Enable__c = true;
             mergeMetric.AutoMerge_Percentage__c = 90.0;
             mergeMetric.AutoMerge_Objects__c = 'Account;Contacts Within Account;Contacts Across Accounts';
 

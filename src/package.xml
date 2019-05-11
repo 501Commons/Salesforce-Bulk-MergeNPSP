@@ -5,6 +5,7 @@
         <members>C501_CTRL_MassMergeAccounts_TEST</members>
         <members>C501_CTRL_MassMergeContacts</members>
         <members>C501_CTRL_MassMergeContacts_TEST</members>
+        <members>C501_MM_MergeMetric_Trigger</members>
         <members>C501_MM_Rule_Discover</members>
         <members>C501_MM_Rule_Merge</members>
         <members>C501_MassMerge_Batch</members>
@@ -27,6 +28,7 @@
     <types>
         <members>C501_MassMergeAccounts</members>
         <members>C501_MassMergeContacts</members>
+        <members>C501_MassMergeDiscover</members>
         <name>ApexPage</name>
     </types>
     <types>

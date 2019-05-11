@@ -38,7 +38,6 @@ public with sharing class C501_CTRL_MassMergeContacts_TEST {
 
         List<C501_Merge_Metric__c> listMergeMetrics = new List<C501_Merge_Metric__c>();
         for (C501_Merge_Metric__c mergeMetric :[SELECT Id FROM C501_Merge_Metric__c WHERE Name LIKE 'TESTDATA%' AND Name LIKE '%Contact%']) {
-            mergeMetric.Enable__c = true;
             mergeMetric.AutoMerge_Percentage__c = 0.0;
             mergeMetric.AutoMerge_Objects__c = 'Account;Contacts Within Account;Contacts Across Accounts';
 

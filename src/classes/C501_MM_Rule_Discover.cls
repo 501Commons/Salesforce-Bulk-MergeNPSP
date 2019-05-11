@@ -55,18 +55,17 @@ global class C501_MM_Rule_Discover implements Schedulable {
 		// Perform all SOQL Queries outside of loop to avoid Salesforce Governor Limits: https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/apex_gov_limits.htm
 		//
 
-        // Make sure mass merge metric instances exist for Mass Merge reports
         C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
-
         String reportFolder = 'Mass Merge Rules';
         if (Test.isRunningTest()) {
             reportFolder = 'Mass Merge Tests';
         }
+        
         c501MassMerge_SharedCode.InitializeMassMergeInstances(reportFolder);
         c501MassMerge_SharedCode.ScheduleJobs();
 
         String strSoql = 'SELECT';
-        strSoql += ' Id, Name, Confidence__c, Enable__c,';
+        strSoql += ' Id, Name, Confidence__c,';
         strSoql += ' Total_Unassigned_Accounts__c, Total_Unassigned_Contacts__c,';
         strSoql += ' Source_Report__c, Source_Report_LastModifiedDate__c, Source_Object__c, Source_Aggregate__c,';
         strSoql += ' AutoMerge_Percentage__c, AutoMerge_Objects__c,';
@@ -97,10 +96,6 @@ global class C501_MM_Rule_Discover implements Schedulable {
         Set<Id> mergeMetricDeleteChildren = new Set<Id>();
 
         for (C501_Merge_Metric__c mergeMetric : mergeMetrics) {
-
-            if (!mergeMetric.Enable__c) {
-                continue;
-            }
 
             String reportId;
             for (Report report :reports) {
