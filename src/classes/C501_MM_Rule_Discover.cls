@@ -1,3 +1,33 @@
+/*
+    Copyright (c) 2019, 501Commons.org
+    All rights reserved.
+    
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
+    
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of 501Commons.org nor the names of
+      its contributors may be used to endorse or promote products derived
+      from this software without specific prior written permission.
+ 
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+    "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT 
+    LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS 
+    FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE 
+    COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, 
+    INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
+    BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; 
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER 
+    CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT 
+    LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
+    ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
+    POSSIBILITY OF SUCH DAMAGE.
+*/
+
 //
 // Run Code FROM Developer Console
 //  1) Debug -> Open Execute Anonymous Window
@@ -205,6 +235,7 @@ global class C501_MM_Rule_Discover implements Schedulable {
             }
 
             String checkColumn = CheckReportColumnName(mergeMetric, foriegnKey, column, false);
+            System.Debug('***** 1 column: ' + column + ' checkColumn: ' + checkColumn);
             if (String.isNotBlank(checkColumn)) {
                 detailColumnsChecked.add(checkColumn);
             }
@@ -279,9 +310,18 @@ global class C501_MM_Rule_Discover implements Schedulable {
         for (Reports.ReportFilter reportFilter :reportFilters) {
 
             // Check for full contact match
-            if (reportFilter.getValue().contains('Full Contact Match')) {
+            if (reportFilter.getValue().equals('Full Contact Match')) {
 
+                // Schedule Full Contact Match Processing
+//                C501_MassMerge_Fx_Base fxBase = new C501_MassMerge_Fx_FullContactMatch();
                 fullContactMatch = true;
+                continue;
+            }
+            // Check for Partial Match - part of the field matches; Example Tom and Tomas would be considered a match
+            else if (reportFilter.getValue().equals('Partial Match')) {
+
+                // Schedule Partial Match Processing
+//                C501_MassMerge_Fx_Base fxBase = new C501_MassMerge_Fx_PartialMatch();
                 continue;
             }
 
@@ -291,7 +331,9 @@ global class C501_MM_Rule_Discover implements Schedulable {
                 // Check if value contains a list of Strings
                 if (reportFilter.getValue().contains(',')) {
                     whereInValues = reportFilter.getValue().split(',');
+
                     whereField = CheckReportColumnName(mergeMetric, foriegnKey, reportFilter.getColumn(), true) + ' in :whereInValues';
+                    System.Debug('***** 2 reportFilter.getColumn(): ' + reportFilter.getColumn() + ' whereField: ' + whereField);
                 }
 
                 whereFields.add(whereField);
@@ -365,12 +407,13 @@ global class C501_MM_Rule_Discover implements Schedulable {
             }
 
             // Get Household Sizes
-            Map<Id, Decimal> existingAccountSizes = new Map<Id, Decimal>();
-            for(Account account : [
-                SELECT Id, C501_Number_of_Household_Members__c
-                FROM Account
-                WHERE Id IN :mergeAccountIds AND C501_Number_of_Household_Members__c > 1]) {
-                    existingAccountSizes.put(account.Id, account.C501_Number_of_Household_Members__c);
+            Map<Id, Integer> existingAccountSizes = new Map<Id, Integer>();
+            for (AggregateResult result : [
+                SELECT AccountId, Count(Id) NumberOfMembers FROM Contact WHERE AccountId in :mergeAccountIds group by AccountId HAVING Count(Id) > 1]) {
+
+                String accountId = result.get('AccountId').toString();
+                Integer numberOfMembers = Integer.valueOf(result.get('NumberOfMembers'));
+                existingAccountSizes.put(accountId, numberOfMembers);
             }
 
             Set<Id> mergeAccountIdsMatching = new Set<Id>();
@@ -490,6 +533,7 @@ global class C501_MM_Rule_Discover implements Schedulable {
                 if (reportFilter.getValue().contains(',')) {
                     whereInValues = reportFilter.getValue().split(',');
                     whereField = CheckReportColumnName(mergeMetric, foriegnKey, reportFilter.getColumn(), true) + ' in :whereInValues';
+                    System.Debug('***** 3 reportFilter.getColumn(): ' + reportFilter.getColumn() + ' whereField: ' + whereField);
                 }
 
                 whereFields.add(whereField);
@@ -587,6 +631,19 @@ global class C501_MM_Rule_Discover implements Schedulable {
             return null;
         }
 
+        // Check to add RecordType
+        // TBD - Need to check fields to see if RecordTypeId available before using
+        if (columnFieldName == 'ACCOUNT_RECORDTYPE') {
+            if (mergeMetric.Source_Object__c.equals('Account')) {
+                //return 'Account.RecordTypeId';
+            }
+            else if (mergeMetric.Source_Object__c.equals('Contact')) {
+                //return 'Contact.RecordTypeId';
+            }
+
+            return null;
+        }
+
         // Check for Source Object in Column Name
         else if (columnFieldName.startsWith(mergeMetric.Source_Object__c + '.')) {
             return columnFieldName.replace(mergeMetric.Source_Object__c + '.', '');
@@ -622,9 +679,6 @@ global class C501_MM_Rule_Discover implements Schedulable {
                 return 'AccountId';
             }
         }
-        else if (columnFieldName.equals('ACCOUNT_RECORDTYPE')) {
-            return 'Account.RecordTypeId';
-        }
         else if (columnFieldName.startsWith('ACCOUNT.ADDRESS1_ZIP')) {
             return columnFieldName.replace('ACCOUNT.ADDRESS1_ZIP', 'ACCOUNT.BillingPostalCode');
         }
@@ -647,6 +701,7 @@ global class C501_MM_Rule_Discover implements Schedulable {
     global String CheckReportOperator(C501_Merge_Metric__c mergeMetric, String foriegnKey, String reportColumnName, String operator, String value) {
 
         String columnName = CheckReportColumnName(mergeMetric, foriegnKey, reportColumnName, true);
+        System.Debug('***** 4 reportColumnName: ' + reportColumnName + ' columnName: ' + columnName);
         if (String.isBlank(columnName)) {
             return null;
         }

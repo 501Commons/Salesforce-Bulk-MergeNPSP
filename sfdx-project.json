@@ -1,1 +1,21 @@
-{"sourceApiVersion": "43.0", "packageDirectories": [{"default": true, "path": "force-app"}], "namespace": null}
+{
+    "sfdcLoginUrl": "https://501commons.my.salesforce.com",
+    "sourceApiVersion": "43.0",
+    "packageDirectories": [
+        {
+            "path": "force-app",
+            "package": "501 Commons Duplicate Management",
+            "versionName": "Spring '19",
+            "versionNumber": "0.1.0.NEXT",
+            "default": true
+        }
+    ],
+    "namespace": "",
+    "packageAliases": {
+        "501 Commons Duplicate Management": "0Ho0d0000008OIACA2",
+        "501 Commons Duplicate Management@0.1.0-1": "04t0d000000Lg4zAAC",
+        "501 Commons Duplicate Management@0.1.0-2": "04t0d000000Lg54AAC",
+        "501 Commons Duplicate Management@0.1.0-3": "04t0d000000Lg59AAC",
+        "501 Commons Duplicate Management@0.1.0-4": "04t0d000000Lg5EAAS"
+    }
+}

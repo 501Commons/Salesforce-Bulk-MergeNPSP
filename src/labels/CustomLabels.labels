@@ -1,86 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomLabels xmlns="http://soap.sforce.com/2006/04/metadata">
     <labels>
-        <fullName>Intake_Services_Box_Type</fullName>
-        <language>en_US</language>
-        <protected>false</protected>
-        <shortDescription>Intake Services Box Type</shortDescription>
-        <value>Box Type/Size</value>
-    </labels>
-    <labels>
-        <fullName>LineBreak</fullName>
-        <language>en_US</language>
-        <protected>false</protected>
-        <shortDescription>LineBreak</shortDescription>
-        <value>-
--</value>
-    </labels>
-    <labels>
-        <fullName>PageMessagesConfirm</fullName>
+        <fullName>Merge_PageMessagesConfirm</fullName>
         <categories>PageMessages</categories>
         <language>en_US</language>
         <protected>true</protected>
-        <shortDescription>PageMessagesConfirm</shortDescription>
+        <shortDescription>Merge_PageMessagesConfirm</shortDescription>
         <value>Success</value>
     </labels>
     <labels>
-        <fullName>PageMessagesError</fullName>
+        <fullName>Merge_PageMessagesError</fullName>
         <categories>PageMessages</categories>
         <language>en_US</language>
         <protected>true</protected>
-        <shortDescription>PageMessagesError</shortDescription>
+        <shortDescription>Merge_PageMessagesError</shortDescription>
         <value>Error</value>
     </labels>
     <labels>
-        <fullName>PageMessagesFatal</fullName>
+        <fullName>Merge_PageMessagesFatal</fullName>
         <categories>PageMessages</categories>
         <language>en_US</language>
         <protected>true</protected>
-        <shortDescription>PageMessagesFatal</shortDescription>
+        <shortDescription>Merge_PageMessagesFatal</shortDescription>
         <value>Error</value>
     </labels>
     <labels>
-        <fullName>PageMessagesWarning</fullName>
+        <fullName>Merge_PageMessagesWarning</fullName>
         <categories>PageMessages</categories>
         <language>en_US</language>
         <protected>true</protected>
-        <shortDescription>PageMessagesWarning</shortDescription>
+        <shortDescription>Merge_PageMessagesWarning</shortDescription>
         <value>Warning</value>
     </labels>
     <labels>
-        <fullName>PermissionCreateException</fullName>
-        <categories>CampaignTools,Exceptions</categories>
-        <language>en_US</language>
-        <protected>true</protected>
-        <shortDescription>PermissionCreateException</shortDescription>
-        <value>User does not have permissions to create {0}.</value>
-    </labels>
-    <labels>
-        <fullName>PermissionDeleteException</fullName>
-        <categories>CampaignTools,Exceptions</categories>
-        <language>en_US</language>
-        <protected>true</protected>
-        <shortDescription>PermissionDeleteException</shortDescription>
-        <value>User does not have permissions to delete {0}.</value>
-    </labels>
-    <labels>
-        <fullName>PermissionReadException</fullName>
-        <categories>CampaignTools,Exceptions</categories>
-        <language>en_US</language>
-        <protected>true</protected>
-        <shortDescription>PermissionReadException</shortDescription>
-        <value>User does not have permissions to view {0}.</value>
-    </labels>
-    <labels>
-        <fullName>PermissionUpdateException</fullName>
-        <categories>CampaignTools,Exceptions</categories>
-        <language>en_US</language>
-        <protected>true</protected>
-        <shortDescription>PermissionUpdateException</shortDescription>
-        <value>User does not have permissions to update {0}.</value>
-    </labels>
-    <labels>
-        <fullName>labelButtonCancel</fullName>
+        <fullName>Merge_labelButtonCancel</fullName>
         <categories>MassMergeAccounts</categories>
         <language>en_US</language>
         <protected>false</protected>
@@ -88,7 +41,7 @@
         <value>Cancel</value>
     </labels>
     <labels>
-        <fullName>labelButtonClose</fullName>
+        <fullName>Merge_labelButtonClose</fullName>
         <categories>MassMergeAccounts</categories>
         <language>en_US</language>
         <protected>false</protected>
@@ -96,15 +49,7 @@
         <value>Close</value>
     </labels>
     <labels>
-        <fullName>labelButtonEdit</fullName>
-        <categories>PersonalSiteUserInfo</categories>
-        <language>en_US</language>
-        <protected>true</protected>
-        <shortDescription>label for Update button</shortDescription>
-        <value>Update</value>
-    </labels>
-    <labels>
-        <fullName>labelButtonSave</fullName>
+        <fullName>Merge_labelButtonSave</fullName>
         <categories>MassMergeAccounts</categories>
         <language>en_US</language>
         <protected>false</protected>
@@ -112,7 +57,7 @@
         <value>Save</value>
     </labels>
     <labels>
-        <fullName>labelButtonSaveAndClose</fullName>
+        <fullName>Merge_labelButtonSaveAndClose</fullName>
         <categories>MassMergeAccounts</categories>
         <language>en_US</language>
         <protected>false</protected>
@@ -120,55 +65,7 @@
         <value>Save &amp; Close</value>
     </labels>
     <labels>
-        <fullName>labelLinkAddMoreRows</fullName>
-        <categories>MassMergeAccounts</categories>
-        <language>en_US</language>
-        <protected>false</protected>
-        <shortDescription>label for Add More Rows link in Mass Merge page.</shortDescription>
-        <value>Add new row</value>
-    </labels>
-    <labels>
-        <fullName>labelListViewFirst</fullName>
-        <categories>MassMergeAccounts</categories>
-        <language>en_US</language>
-        <protected>false</protected>
-        <shortDescription>label for First link in list view</shortDescription>
-        <value>First</value>
-    </labels>
-    <labels>
-        <fullName>labelListViewLast</fullName>
-        <categories>MassMergeAccounts</categories>
-        <language>en_US</language>
-        <protected>false</protected>
-        <shortDescription>label for Last link in list view</shortDescription>
-        <value>Last</value>
-    </labels>
-    <labels>
-        <fullName>labelListViewNext</fullName>
-        <categories>MassMergeAccounts</categories>
-        <language>en_US</language>
-        <protected>false</protected>
-        <shortDescription>label for Next link in list view</shortDescription>
-        <value>Next</value>
-    </labels>
-    <labels>
-        <fullName>labelListViewPageInfo</fullName>
-        <categories>MassMergeAccounts</categories>
-        <language>en_US</language>
-        <protected>false</protected>
-        <shortDescription>label for page info in list view</shortDescription>
-        <value>&amp;nbsp;&amp;nbsp;&amp;nbsp;Page {0} of {1} &amp;nbsp;&amp;nbsp;({2} records)</value>
-    </labels>
-    <labels>
-        <fullName>labelListViewPrevious</fullName>
-        <categories>MassMergeAccounts</categories>
-        <language>en_US</language>
-        <protected>false</protected>
-        <shortDescription>label for Previous link in list view</shortDescription>
-        <value>Previous</value>
-    </labels>
-    <labels>
-        <fullName>labelMassMergeContactHelp</fullName>
+        <fullName>Merge_labelMassMergeContactHelp</fullName>
         <categories>MassMergeContacts</categories>
         <language>en_US</language>
         <protected>false</protected>
@@ -176,7 +73,7 @@
         <value>Choose the Contact then the page will display any existing contact merge records.  Update all rows as appropriate, and then click Save.</value>
     </labels>
     <labels>
-        <fullName>labelMassMergeContactTitle</fullName>
+        <fullName>Merge_labelMassMergeContactTitle</fullName>
         <categories>MassMergeContacts</categories>
         <language>en_US</language>
         <protected>false</protected>
@@ -184,7 +81,7 @@
         <value>Mass Merge Contacts</value>
     </labels>
     <labels>
-        <fullName>labelMassMergeErrorOnSave</fullName>
+        <fullName>Merge_labelMassMergeErrorOnSave</fullName>
         <categories>MassMergeAccounts</categories>
         <language>en_US</language>
         <protected>false</protected>
@@ -192,7 +89,7 @@
         <value>Errors were encountered trying to save the Requests.</value>
     </labels>
     <labels>
-        <fullName>labelMassMergeFilterConfidenceFrom</fullName>
+        <fullName>Merge_labelMassMergeFilterConfidenceFrom</fullName>
         <categories>MassMergeAccounts</categories>
         <language>en_US</language>
         <protected>false</protected>
@@ -200,7 +97,7 @@
         <value>Merge Confidence From %</value>
     </labels>
     <labels>
-        <fullName>labelMassMergeFilterConfidenceTo</fullName>
+        <fullName>Merge_labelMassMergeFilterConfidenceTo</fullName>
         <categories>MassMergeAccounts</categories>
         <language>en_US</language>
         <protected>false</protected>
@@ -208,7 +105,7 @@
         <value>To %</value>
     </labels>
     <labels>
-        <fullName>labelMassMergeHelp</fullName>
+        <fullName>Merge_labelMassMergeHelp</fullName>
         <categories>MassMergeAccounts</categories>
         <language>en_US</language>
         <protected>false</protected>
@@ -216,15 +113,7 @@
         <value>Choose the Household then the page will display any existing account merge records.  Update all rows as appropriate, and then click Save.</value>
     </labels>
     <labels>
-        <fullName>labelMassMergeOptional</fullName>
-        <categories>MassMergeAccounts</categories>
-        <language>en_US</language>
-        <protected>false</protected>
-        <shortDescription>label for the optional comment on the label.</shortDescription>
-        <value>(optional)</value>
-    </labels>
-    <labels>
-        <fullName>labelMassMergeSaveSuccess</fullName>
+        <fullName>Merge_labelMassMergeSaveSuccess</fullName>
         <categories>MassMergeAccounts</categories>
         <language>en_US</language>
         <protected>false</protected>
@@ -232,35 +121,11 @@
         <value>Account records have been saved.</value>
     </labels>
     <labels>
-        <fullName>labelMassMergeTitle</fullName>
+        <fullName>Merge_labelMassMergeTitle</fullName>
         <categories>MassMergeAccounts</categories>
         <language>en_US</language>
         <protected>false</protected>
         <shortDescription>title for the Mass Merge page</shortDescription>
         <value>Mass Merge Accounts</value>
-    </labels>
-    <labels>
-        <fullName>labelMessageLoading</fullName>
-        <categories>MassMergeAccounts</categories>
-        <language>en_US</language>
-        <protected>false</protected>
-        <shortDescription>label for the loading... message used in some pages</shortDescription>
-        <value>Loading...</value>
-    </labels>
-    <labels>
-        <fullName>labelMessageSaving</fullName>
-        <categories>MassMergeAccounts</categories>
-        <language>en_US</language>
-        <protected>false</protected>
-        <shortDescription>label for the Saving... message on several pages</shortDescription>
-        <value>Saving...</value>
-    </labels>
-    <labels>
-        <fullName>labelShowMore</fullName>
-        <categories>MassMergeAccounts</categories>
-        <language>en_US</language>
-        <protected>false</protected>
-        <shortDescription>label for Show More on list views</shortDescription>
-        <value>Show more</value>
     </labels>
 </CustomLabels>

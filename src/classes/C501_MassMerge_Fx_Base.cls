@@ -28,10 +28,19 @@
     POSSIBILITY OF SUCH DAMAGE.
 */
 
-@isTest
-public with sharing class C501_MassMerge_SharedCode_TEST {
+public with sharing class C501_MassMerge_Fx_Base {
+    public C501_MassMerge_Fx_Base() {
 
-    //==================== TEST METHOD(s) ======================================
-    private static void CodeCoverageTests() {
     }
+
+    // Save date each time called and if not called in 24 hours then turn off schedule
+    // Update a custom object list; Id, IdType, FieldName, Partial (8).
+    //    Example: For Contact with FirstName equals Partial Match and FirstName is David
+    //    C501_Contact_Match, C501_Account_Match, C501_Merge_Match (list of merge matches - if not updated in 24 hours then remove)
+    //    Master/Detail so if Contact delete the partials are deleted
+    //      00O2g000000JJEq, Partial Match, Contact, FirstName, d
+    //      00O2g000000JJEq, Partial Match, Contact, FirstName, da
+    //      00O2g000000JJEq, Partial Match, Contact, FirstName, dav
+    //      00O2g000000JJEq, Partial Match, Contact, FirstName, davi
+    //      00O2g000000JJEq, Partial Match, Contact, FirstName, david
 }

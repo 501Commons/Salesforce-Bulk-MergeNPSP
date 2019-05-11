@@ -119,15 +119,15 @@ public with sharing class C501_UTIL_PageMessages_CTRL {
          */
         public String getSeverityLabel() {
             if (MessageSeverity.CONFIRM == severity) {
-                return Label.PageMessagesConfirm;
+                return Label.Merge_PageMessagesConfirm;
             } else if (MessageSeverity.ERROR == severity) {
-                return Label.PageMessagesError;
+                return Label.Merge_PageMessagesError;
             } else if (MessageSeverity.FATAL == severity) {
-                return Label.PageMessagesFatal;
+                return Label.Merge_PageMessagesFatal;
             } else if (MessageSeverity.INFO == severity) {
                 return '';
             } else if (MessageSeverity.WARNING == severity) {
-                return Label.PageMessagesWarning;
+                return Label.Merge_PageMessagesWarning;
             } else {
                 return '';
             }

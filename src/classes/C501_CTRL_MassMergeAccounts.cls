@@ -463,10 +463,10 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
                 // Merge based on accounts
                 if (masterAccount.Id <> null && duplicateAccounts.values().size() > 0) {
                     c501MassMerge_SharedCode_Account.ObjectsMerge(masterAccount, duplicateAccounts.values());
-                    strSaveResults = (duplicateAccounts.values().size() + 1) + ' ' + Label.labelMassMergeSaveSuccess;
+                    strSaveResults = (duplicateAccounts.values().size() + 1) + ' ' + Label.Merge_labelMassMergeSaveSuccess;
                 }
                 else {
-                    strSaveResults = '0 ' + Label.labelMassMergeSaveSuccess;
+                    strSaveResults = '0 ' + Label.Merge_labelMassMergeSaveSuccess;
                 }
             }
             else {
@@ -480,7 +480,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
                     c501MassMerge_SharedCode_Account.ProcessObjectMerges(listAccountsMergeCandidates, false);
                 }
 
-                strSaveResults = (listAccountsMergeCandidates.size() * 2) + ' ' + Label.labelMassMergeSaveSuccess;
+                strSaveResults = (listAccountsMergeCandidates.size() * 2) + ' ' + Label.Merge_labelMassMergeSaveSuccess;
             }
 
             ApexPages.addMessage(new ApexPages.message(ApexPages.Severity.CONFIRM, strSaveResults));
@@ -494,7 +494,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
             return null;            
 
         } catch (Exception e) {
-            strSaveResults = Label.labelMassMergeErrorOnSave;
+            strSaveResults = Label.Merge_labelMassMergeErrorOnSave;
             ApexPages.addMessages(e); 
             return null;
         }

@@ -28,10 +28,8 @@
     POSSIBILITY OF SUCH DAMAGE.
 */
 
-@isTest
-public with sharing class C501_MassMerge_SharedCode_TEST {
+public with sharing class C501_MassMerge_Fx_PartialMatch {
+    public C501_MassMerge_Fx_PartialMatch() {
 
-    //==================== TEST METHOD(s) ======================================
-    private static void CodeCoverageTests() {
     }
 }

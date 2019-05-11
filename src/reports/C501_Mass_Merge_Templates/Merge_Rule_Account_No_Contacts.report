@@ -3,23 +3,11 @@
     <columns>
         <field>ACCOUNT.NAME</field>
     </columns>
-    <columns>
-        <field>ACCOUNT_RECORDTYPE</field>
-    </columns>
-    <columns>
-        <field>Account.C501_Number_of_Household_Members__c</field>
-    </columns>
     <filter>
-        <criteriaItems>
-            <column>Account.C501_Number_of_Household_Members__c</column>
-            <isUnlocked>true</isUnlocked>
-            <operator>equals</operator>
-            <value>0</value>
-        </criteriaItems>
         <criteriaItems>
             <column>ACCOUNT.NAME</column>
             <isUnlocked>true</isUnlocked>
-            <operator>notContain</operator>
+            <operator>startsWith</operator>
             <value>Anonymous</value>
         </criteriaItems>
     </filter>

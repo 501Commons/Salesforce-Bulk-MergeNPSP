@@ -379,11 +379,11 @@ public class C501_CTRL_MassMergeAccounts_TEST {
 
         System.assertEquals(5, messages.size(), 'There should be 5 messages on the page.');
 
-        System.assertEquals(Label.PageMessagesWarning, messages[0].getSeverityLabel(), 'The label should be WARNING.');
+        System.assertEquals(Label.Merge_PageMessagesWarning, messages[0].getSeverityLabel(), 'The label should be WARNING.');
         System.assertEquals('', messages[1].getSeverityLabel(), 'The label should be INFO.');
-        System.assertEquals(Label.PageMessagesFatal, messages[2].getSeverityLabel(), 'The label should be FATAL.');
-        System.assertEquals(Label.PageMessagesError, messages[3].getSeverityLabel(), 'The label should be ERROR.');
-        System.assertEquals(Label.PageMessagesConfirm, messages[4].getSeverityLabel(), 'The label should be CONFIRM.');
+        System.assertEquals(Label.Merge_PageMessagesFatal, messages[2].getSeverityLabel(), 'The label should be FATAL.');
+        System.assertEquals(Label.Merge_PageMessagesError, messages[3].getSeverityLabel(), 'The label should be ERROR.');
+        System.assertEquals(Label.Merge_PageMessagesConfirm, messages[4].getSeverityLabel(), 'The label should be CONFIRM.');
 
         System.assertEquals('warning', messages[0].getSeverityTheme(), 'The theme should be warning.');
         System.assertEquals('info', messages[1].getSeverityTheme(), 'The theme should be info.');

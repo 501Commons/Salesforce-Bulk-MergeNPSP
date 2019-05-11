@@ -159,19 +159,6 @@
         <unique>false</unique>
     </fields>
     <fields>
-        <fullName>C501_Number_of_Household_Members__c</fullName>
-        <externalId>false</externalId>
-        <formula>npsp__Number_of_Household_Members__c</formula>
-        <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
-        <label>Number of Household Members</label>
-        <precision>18</precision>
-        <required>false</required>
-        <scale>0</scale>
-        <trackHistory>false</trackHistory>
-        <type>Number</type>
-        <unique>false</unique>
-    </fields>
-    <fields>
         <fullName>C501_Shipping_Address__c</fullName>
         <externalId>false</externalId>
         <formula>ShippingStreet + &apos;, &apos; + ShippingCity + &apos; &apos; + ShippingState + &apos; &apos; + ShippingPostalCode</formula>

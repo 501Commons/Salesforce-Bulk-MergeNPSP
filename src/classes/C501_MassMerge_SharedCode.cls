@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2016, Salesforce.org
+    Copyright (c) 2019, 501Commons.org
     All rights reserved.
     
     Redistribution and use in source and binary forms, with or without
@@ -10,9 +10,9 @@
     * Redistributions in binary form must reproduce the above copyright
       notice, this list of conditions and the following disclaimer in the
       documentation and/or other materials provided with the distribution.
-    * Neither the name of Salesforce.org nor the names of
+    * Neither the name of 501Commons.org nor the names of
       its contributors may be used to endorse or promote products derived
-      FROM this software without specific prior written permission.
+      from this software without specific prior written permission.
  
     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
     "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT 
@@ -29,6 +29,20 @@
 */
 
 global with sharing class C501_MassMerge_SharedCode { 
+
+    // global utility used to detect whether the Non Profit Starter Pack is installed in this instance.
+    private static boolean fCheckedForNPSP = false;
+    global static boolean IsNPSPInstalled {
+        get {
+            if (!fCheckedForNPSP) {
+                Schema.SObjectType token = Schema.getGlobalDescribe().get('npe01__OppPayment__c');
+                IsNPSPInstalled = (token != null);
+                fCheckedForNPSP = true;
+            }
+            return IsNPSPInstalled;
+        }
+        set;
+    }   
 
     /*******************************************************************************************************
     * @description returns whether the field should be treated as an NPSP hidden field, typically one
@@ -151,12 +165,19 @@ global with sharing class C501_MassMerge_SharedCode {
         }
 
         Map<Id, String> contactAccounts = new Map<Id, String>();
-        Map<Id, Decimal> contactAccountMembers = new Map<Id, Decimal>();
         for (Contact contact : [
-            SELECT Id, AccountId, Account.C501_Number_of_Household_Members__c FROM Contact WHERE Id in :contactIds]) {
+            SELECT Id, AccountId FROM Contact WHERE Id in :contactIds]) {
 
             contactAccounts.put(contact.Id, contact.AccountId);
-            contactAccountMembers.put(contact.Id, contact.Account.C501_Number_of_Household_Members__c);
+        }
+
+        Map<Id, Integer> accountMembers = new Map<Id, Integer>();
+        for (AggregateResult result : [
+            SELECT AccountId, Count(Id) NumberOfMembers FROM Contact WHERE AccountId in :contactAccounts.values() group by AccountId]) {
+
+            String accountId = result.get('AccountId').toString();
+            Integer numberOfMembers = Integer.valueOf(result.get('NumberOfMembers'));
+            accountMembers.put(accountId, numberOfMembers);
         }
 
         // Check to add an account merge request - can not Account merge here because might be in a batch call which is not supported for Account merging
@@ -165,7 +186,7 @@ global with sharing class C501_MassMerge_SharedCode {
         for (Contact contact :duplicateContacts) {
 
             String accountId = contactAccounts.get(contact.Id);
-            if (accountId <> masterAccountId && contactAccountMembers.get(contact.Id) <= 1) {
+            if (accountId <> masterAccountId && accountMembers.get(accountId) <= 1) {
 
                 // Create an account merge because the duplicate account now has no children
                 String maxId = (masterAccountId > accountId) ? masterAccountId : accountId;

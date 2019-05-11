@@ -8,6 +8,9 @@
         <members>C501_MM_Rule_Discover</members>
         <members>C501_MM_Rule_Merge</members>
         <members>C501_MassMerge_Batch</members>
+        <members>C501_MassMerge_Fx_Base</members>
+        <members>C501_MassMerge_Fx_FullContactMatch</members>
+        <members>C501_MassMerge_Fx_PartialMatch</members>
         <members>C501_MassMerge_Scheduler_TEST</members>
         <members>C501_MassMerge_SharedCode</members>
         <members>C501_MassMerge_SharedCode_Account</members>
@@ -43,7 +46,6 @@
         <members>Account.C501_Merge_Metric_Name__c</members>
         <members>Account.C501_Merge_Rule__c</members>
         <members>Account.C501_Merge_Target__c</members>
-        <members>Account.C501_Number_of_Household_Members__c</members>
         <members>Account.C501_Shipping_Address__c</members>
         <members>C501_Account_Merge__c.Account__c</members>
         <members>C501_Account_Merge__c.Merge_Action__c</members>
@@ -87,35 +89,23 @@
         <name>CustomField</name>
     </types>
     <types>
-        <members>PageMessagesConfirm</members>
-        <members>PageMessagesError</members>
-        <members>PageMessagesFatal</members>
-        <members>PageMessagesWarning</members>
-        <members>PermissionCreateException</members>
-        <members>PermissionDeleteException</members>
-        <members>PermissionReadException</members>
-        <members>PermissionUpdateException</members>
-        <members>labelButtonCancel</members>
-        <members>labelButtonClose</members>
-        <members>labelButtonEdit</members>
-        <members>labelButtonSave</members>
-        <members>labelButtonSaveAndClose</members>
-        <members>labelLinkAddMoreRows</members>
-        <members>labelListViewFirst</members>
-        <members>labelListViewLast</members>
-        <members>labelListViewNext</members>
-        <members>labelListViewPageInfo</members>
-        <members>labelListViewPrevious</members>
-        <members>labelMassMergeErrorOnSave</members>
-        <members>labelMassMergeFilterConfidenceFrom</members>
-        <members>labelMassMergeFilterConfidenceTo</members>
-        <members>labelMassMergeHelp</members>
-        <members>labelMassMergeOptional</members>
-        <members>labelMassMergeSaveSuccess</members>
-        <members>labelMassMergeTitle</members>
-        <members>labelMessageLoading</members>
-        <members>labelMessageSaving</members>
-        <members>labelShowMore</members>
+        <members>Merge_PageMessagesConfirm</members>
+        <members>Merge_PageMessagesError</members>
+        <members>Merge_PageMessagesFatal</members>
+        <members>Merge_PageMessagesWarning</members>
+        <members>Merge_labelButtonCancel</members>
+        <members>Merge_labelButtonClose</members>
+        <members>Merge_labelButtonSave</members>
+        <members>Merge_labelButtonSaveAndClose</members>
+        <members>Merge_labelButtonSaveAndClose</members>
+        <members>Merge_labelMassMergeContactHelp</members>
+        <members>Merge_labelMassMergeContactTitle</members>
+        <members>Merge_labelMassMergeErrorOnSave</members>
+        <members>Merge_labelMassMergeFilterConfidenceFrom</members>
+        <members>Merge_labelMassMergeFilterConfidenceTo</members>
+        <members>Merge_labelMassMergeHelp</members>
+        <members>Merge_labelMassMergeSaveSuccess</members>
+        <members>Merge_labelMassMergeTitle</members>
         <name>CustomLabel</name>
     </types>
     <types>
@@ -167,13 +157,16 @@
         <name>Report</name>
     </types>
     <types>
+        <members>c501_sfdo213</members>
+        <members>c501_v4sStaticResources</members>
+        <members>c501_wtooltip</members>
         <members>Bootstrap</members>
         <members>Bootstrap4Force</members>
         <members>FullCalendar</members>
         <members>jQueryFiles</members>
         <members>sfdo213</members>
         <members>v4sStaticResources</members>
-        <members>wtooltip</members>
+        <members>wtooltip</members>        
         <name>StaticResource</name>
     </types>
     <version>42.0</version>
