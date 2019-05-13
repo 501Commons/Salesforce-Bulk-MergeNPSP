@@ -47,31 +47,37 @@
     }
 */
 
-global class C501_MM_Rule_Discover implements Schedulable {
+public class C501_MM_Rule_Discover implements Schedulable {
 
-    global void execute(SchedulableContext SC) {
+	// only need one instance of this class per transaction
+	private static C501_MM_Rule_Discover instance;
+	public static C501_MM_Rule_Discover get() {
+		if (instance == null) instance = new C501_MM_Rule_Discover();
+		return instance;
+	}
+
+    public void C501_MM_Rule_Discover() {
+                
+        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
+        c501MassMerge_SharedCode.ScheduleJobs();
+    }
+
+    public void execute(SchedulableContext SC) {
 
  		//
 		// Perform all SOQL Queries outside of loop to avoid Salesforce Governor Limits: https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/apex_gov_limits.htm
 		//
 
-        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
-        String reportFolder = 'Mass Merge Rules';
-        if (Test.isRunningTest()) {
-            reportFolder = 'Mass Merge Tests';
-        }
-        
-        c501MassMerge_SharedCode.InitializeMassMergeInstances(reportFolder);
-        c501MassMerge_SharedCode.ScheduleJobs();
+        this.DiscoverReports();
 
         String strSoql = 'SELECT';
         strSoql += ' Id, Name, Confidence__c,';
         strSoql += ' Total_Unassigned_Accounts__c, Total_Unassigned_Contacts__c,';
-        strSoql += ' Source_Report__c, Source_Report_LastModifiedDate__c, Source_Object__c, Source_Aggregate__c,';
+        strSoql += ' Source_Report__c, Source_Report_LastModifiedDate__c, Source_Object__c, Source_Object_Account_Id__c,';
         strSoql += ' AutoMerge_Percentage__c, AutoMerge_Objects__c,';
         strSoql += ' Last_Discover_Date__c, Last_Merge_Date__c';
         strSoql += ' FROM C501_Merge_Metric__c';
-        strSoql += ' WHERE Source_Aggregate__c <> null AND Source_Object__c <> NULL AND Source_Report__c <> NULL';
+        strSoql += ' WHERE Source_Object_Account_Id__c <> null AND Source_Object__c <> NULL AND Source_Report__c <> NULL';
         if (Test.isRunningTest()) {        
             strSoql += ' AND Name LIKE \'TESTDATA%\'';
         }
@@ -170,7 +176,44 @@ global class C501_MM_Rule_Discover implements Schedulable {
         ProcessReport(reportIdDiscover, mergeMetricDiscover);
     }
 
-    global void ProcessReport(String reportId, C501_Merge_Metric__c mergeMetric) {
+    public void executeMetric(String mergeMetricId) {
+
+        this.DiscoverReports();
+
+        String strSoql = 'SELECT';
+        strSoql += ' Id, Name, Confidence__c,';
+        strSoql += ' Total_Unassigned_Accounts__c, Total_Unassigned_Contacts__c,';
+        strSoql += ' Source_Report__c, Source_Report_LastModifiedDate__c, Source_Object__c, Source_Object_Account_Id__c,';
+        strSoql += ' AutoMerge_Percentage__c, AutoMerge_Objects__c,';
+        strSoql += ' Last_Discover_Date__c, Last_Merge_Date__c';
+        strSoql += ' FROM C501_Merge_Metric__c';
+        strSoql += ' WHERE Source_Object_Account_Id__c <> null AND Source_Object__c <> NULL AND Source_Report__c <> NULL';
+        strSoql += ' AND Id = :requestId';
+        if (Test.isRunningTest()) {        
+            strSoql += ' AND Name LIKE \'TESTDATA%\'';
+        }
+        List<C501_Merge_Metric__c> mergeMetrics = Database.Query(strSoql);
+
+        if (mergeMetrics.isEmpty()) {
+          return;
+        }
+
+        List<Report> reports = [
+            SELECT Id
+            FROM Report
+            WHERE Id = :mergeMetrics[0].Source_Report__c OR DeveloperName = :mergeMetrics[0].Source_Report__c];
+
+        if (reports.isEmpty()) {
+          return;
+        }
+
+        mergeMetrics[0].Last_Discover_Date__c = System.now();
+        update mergeMetrics[0];
+
+        ProcessReport(reports[0].Id, mergeMetrics[0]);
+    }
+
+    public void ProcessReport(String reportId, C501_Merge_Metric__c mergeMetric) {
 
         System.debug('***** C501_MM_Rule_Discover:ProcessReport reportId: ' + reportId + ' mergeMetric: ' + String.valueOf(mergeMetric));
 
@@ -262,7 +305,7 @@ global class C501_MM_Rule_Discover implements Schedulable {
         }
     }
 
-    global void ProcessReportDiscover(C501_Merge_Metric__c mergeMetric, String foriegnKey, List<String> detailColumnsChecked, List<Reports.ReportFilter> reportFilters) {
+    public void ProcessReportDiscover(C501_Merge_Metric__c mergeMetric, String foriegnKey, List<String> detailColumnsChecked, List<Reports.ReportFilter> reportFilters) {
 
         // Process by Accounts to find any potential Account merges
         ProcessReportByAccounts(mergeMetric, foriegnKey, detailColumnsChecked, reportFilters);
@@ -276,11 +319,11 @@ global class C501_MM_Rule_Discover implements Schedulable {
             ProcessReportByContacts(mergeMetric, foriegnKey, detailColumnsChecked, reportFilters, 'AccountId');
         }
     }
-    global void ProcessReportByAccounts(C501_Merge_Metric__c mergeMetric, String foriegnKey, List<String> detailColumnsChecked, List<Reports.ReportFilter> reportFilters) {
+    public void ProcessReportByAccounts(C501_Merge_Metric__c mergeMetric, String foriegnKey, List<String> detailColumnsChecked, List<Reports.ReportFilter> reportFilters) {
 
         // Find Contact matches across Accounts
         //
-        String strSoqlSelect = 'SELECT Count(' + mergeMetric.Source_Aggregate__c + '), MAX(' + mergeMetric.Source_Aggregate__c + ')MaxId, MIN(' + mergeMetric.Source_Aggregate__c + ')MinId ';
+        String strSoqlSelect = 'SELECT Count(' + mergeMetric.Source_Object_Account_Id__c + '), MAX(' + mergeMetric.Source_Object_Account_Id__c + ')MaxId, MIN(' + mergeMetric.Source_Object_Account_Id__c + ')MinId ';
         String strSoqlFrom = ' FROM ' + mergeMetric.Source_Object__c;
 
         // Build WHERE statement
@@ -341,7 +384,7 @@ global class C501_MM_Rule_Discover implements Schedulable {
         List<String> groupByFields = new List<String>();
         for (String column :detailColumnsChecked) {
 
-            if (column.contains(mergeMetric.Source_Aggregate__c)) {
+            if (column.contains(mergeMetric.Source_Object_Account_Id__c)) {
                 continue;
             }
 
@@ -354,8 +397,8 @@ global class C501_MM_Rule_Discover implements Schedulable {
         }
 
         String strSoqlGroupBy = ' GROUP BY ' + String.join(groupByFields, ', ');
-        String strSoqlHaving = ' HAVING Count(' + mergeMetric.Source_Aggregate__c + ') > 1 ';
-        String strSoqlOrderBy = ' ORDER BY Count(' + mergeMetric.Source_Aggregate__c + ') DESC';
+        String strSoqlHaving = ' HAVING Count(' + mergeMetric.Source_Object_Account_Id__c + ') > 1 ';
+        String strSoqlOrderBy = ' ORDER BY Count(' + mergeMetric.Source_Object_Account_Id__c + ') DESC';
 
         System.debug('***** C501_MM_Rule_Discover:ProcessReportByAccounts aggregate SOQL');
         System.debug(strSoqlSelect);
@@ -497,7 +540,7 @@ global class C501_MM_Rule_Discover implements Schedulable {
         c501MassMerge_SharedCode_Account.InsertObjectMergeCandidates(mergeMetric, mergeAccounts.values());
     }
 
-    global void ProcessReportByContacts(C501_Merge_Metric__c mergeMetric, String foriegnKey, List<String> detailColumnsChecked, List<Reports.ReportFilter> reportFilters, String additionalGroupByField) {
+    public void ProcessReportByContacts(C501_Merge_Metric__c mergeMetric, String foriegnKey, List<String> detailColumnsChecked, List<Reports.ReportFilter> reportFilters, String additionalGroupByField) {
         // Find Contact matches across Accounts
         //
         String strSoqlSelect = 'SELECT Count(Id), MAX(Id)MaxId, MIN(Id)MinId ';
@@ -541,7 +584,7 @@ global class C501_MM_Rule_Discover implements Schedulable {
         List<String> groupByFields = new List<String>();
         for (String column :detailColumnsChecked) {
 
-            if (column.contains(mergeMetric.Source_Aggregate__c)) {
+            if (column.contains(mergeMetric.Source_Object_Account_Id__c)) {
                 continue;
             }
 
@@ -592,7 +635,7 @@ global class C501_MM_Rule_Discover implements Schedulable {
     }
 
     // Report Column Field Names don't always match the Object Field Name
-    global String CheckReportColumnName(C501_Merge_Metric__c mergeMetric, String foriegnKey, String columnFieldName, Boolean filterColumn) {
+    public String CheckReportColumnName(C501_Merge_Metric__c mergeMetric, String foriegnKey, String columnFieldName, Boolean filterColumn) {
 
         // Filter columns - some columns not supported except in filters (i.e., Group )
         //
@@ -693,7 +736,7 @@ global class C501_MM_Rule_Discover implements Schedulable {
         return columnFieldName;
     }
 
-    global String CheckReportOperator(C501_Merge_Metric__c mergeMetric, String foriegnKey, String reportColumnName, String operator, String value) {
+    public String CheckReportOperator(C501_Merge_Metric__c mergeMetric, String foriegnKey, String reportColumnName, String operator, String value) {
 
         String columnName = CheckReportColumnName(mergeMetric, foriegnKey, reportColumnName, true);
         System.Debug('***** 4 reportColumnName: ' + reportColumnName + ' columnName: ' + columnName);
@@ -732,5 +775,18 @@ global class C501_MM_Rule_Discover implements Schedulable {
         }
 
         return null;
-    }    
+    }
+
+    public void DiscoverReports() {
+
+        System.debug('***** C501_MM_Rule_Discover:intialize');
+
+        String reportFolder = 'Mass Merge Rules';
+        if (Test.isRunningTest()) {
+            reportFolder = 'Mass Merge Tests';
+        }
+        
+        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
+        c501MassMerge_SharedCode.InitializeMassMergeInstances(reportFolder);
+    }
 }

@@ -1,4 +1,4 @@
-<!-- 
+/*
     Copyright (c) 2019, 501Commons.org
     All rights reserved.
     
@@ -26,7 +26,40 @@
     LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
     ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
     POSSIBILITY OF SUCH DAMAGE.
--->  
+*/
 
-<apex:page standardController="C501_Merge_Metric__c" extensions="C501_MM_Action_Controller" action="{!discoverTrigger}">
-</apex:page>
+public with sharing class C501_MM_Action_Controller {
+
+    public Id Id { get; set; }
+    public C501_Merge_Metric__c mergeMetric { get; set; }
+
+    public C501_MM_Action_Controller(ApexPages.StandardController controller) {
+
+        mergeMetric =  (C501_Merge_Metric__c)controller.getRecord();
+        Id = mergeMetric.Id;
+    }
+
+    //Method that can is called from the Visual Force page action attribute
+    public PageReference discoverTrigger() {
+
+        C501_MM_Rule_Discover.get().executeMetric(Id);
+
+        PageReference pageRef = new PageReference('/' + Id);
+        pageRef.setRedirect(true);
+
+        // Returns to the original page
+        return pageRef;
+    }
+
+    //Method that can is called from the Visual Force page action attribute
+    public PageReference mergeTrigger() {
+
+        C501_MM_Rule_Discover.get().executeMetric(Id);
+
+        PageReference pageRef = new PageReference('/' + Id);
+        pageRef.setRedirect(true);
+
+        // Returns to the original page
+        return pageRef;
+    }
+}

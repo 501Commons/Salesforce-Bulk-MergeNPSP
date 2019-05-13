@@ -6,11 +6,6 @@
         <label>Master</label>
     </customValue>
     <customValue>
-        <fullName>Merge</fullName>
-        <default>false</default>
-        <label>Merge</label>
-    </customValue>
-    <customValue>
         <fullName>Ignore</fullName>
         <default>false</default>
         <label>Ignore</label>

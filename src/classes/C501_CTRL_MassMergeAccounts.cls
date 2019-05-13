@@ -335,6 +335,20 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
         return null;
     }
     
+    global Account getTargetMerge(Account masterObject)
+    {
+        for (Account objectItem :listAccounts) {
+            if (String.isBlank(objectItem.C501_Merge_Id__c) || String.isBlank(objectItem.Id) || String.isBlank(masterObject.Id) || String.isBlank(masterObject.C501_Merge_Id__c)
+                || objectItem.Id == masterObject.Id || objectItem.C501_Merge_Id__c <> masterObject.C501_Merge_Id__c) {
+                continue;
+            }
+
+            return objectItem;
+        }
+
+        return null;
+    }
+
     //save the Accounts created or modified
     global virtual PageReference SaveAccounts() {
         
@@ -351,38 +365,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
 
             for (Account account : listAccounts) {
 
-                if (account.Id != null && account.C501_Merge_Action__c == 'Merge') {
-
-                    System.debug('***** C501_CTRL_MassMergeAccounts::SaveAccounts Merge Check Merge Action - Merge Rule: ' + account.C501_Merge_Metric_Name__c);
-
-                    // we couldn't reliably mark dirty records in all scenarios,
-                    // so we've decided it is better to always update all records.
-                    //if (setAccountsIdDirty.contains(account.Id)) 
-
-                    if (!listAccountsMerges.containsKey(account.C501_Merge_Id__c)) {
-                        listAccountsMerges.put(account.C501_Merge_Id__c, new C501_Account_Merge__c(
-                            Id = account.C501_Merge_Id__c,
-                            Merge_Target_Account__c = account.Id,
-                            Merge_Action__c = 'Merge',
-                            Merge_Confidence__c = account.C501_Merge_Confidence__c
-                        ));
-                    }
-                    else {
-                        C501_Account_Merge__c mergeAccount = listAccountsMerges.remove(account.C501_Merge_Id__c);
-                        mergeAccount.Merge_Target_Account__c = account.Id;
-                        listAccountsMerges.put(account.C501_Merge_Id__c, mergeAccount);
-
-                        if (mergeAccount.Account__c <> null && mergeAccount.Merge_Target_Account__c <> null) {
-                            listAccountsMergeCandidates.add(mergeAccount);
-                            listAccountsMergeUpdate.put(account.C501_Merge_Id__c, new C501_Account_Merge__c(
-                                Id = account.C501_Merge_Id__c,
-                                Merge_Action__c = 'Merge'
-                            ));
-                        }
-                    }
-                }
-
-                else if (account.Id != null && account.C501_Merge_Action__c == 'Master') {
+                if (account.Id != null && account.C501_Merge_Action__c == 'Master') {
 
                     System.debug('***** C501_CTRL_MassMergeAccounts::SaveAccounts Master Check Merge Action - Merge Rule: ' + account.C501_Merge_Metric_Name__c);
 
@@ -391,25 +374,19 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
                     //if (setAccountsIdDirty.contains(account.Id)) 
 
                     if (!listAccountsMerges.containsKey(account.C501_Merge_Id__c)) {
+
+                        Account targetObject = getTargetMerge(account);
+                        if (targetObject == null) {
+                            continue;
+                        }
+
                         listAccountsMerges.put(account.C501_Merge_Id__c, new C501_Account_Merge__c(
                             Id = account.C501_Merge_Id__c,
                             Account__c = account.Id,
-                            Merge_Action__c = 'Merge',
+                            Merge_Target_Account__c = targetObject.Id,
+                            Merge_Action__c = 'Master',
                             Merge_Confidence__c = account.C501_Merge_Confidence__c
                         ));
-                    }
-                    else {
-                        C501_Account_Merge__c mergeAccount = listAccountsMerges.remove(account.C501_Merge_Id__c);
-                        mergeAccount.Account__c = account.Id;
-                        listAccountsMerges.put(account.C501_Merge_Id__c, mergeAccount);
-
-                        if (mergeAccount.Account__c <> null && mergeAccount.Merge_Target_Account__c <> null) {
-                            listAccountsMergeCandidates.add(mergeAccount);
-                            listAccountsMergeUpdate.put(account.C501_Merge_Id__c, new C501_Account_Merge__c(
-                                Id = account.C501_Merge_Id__c,
-                                Merge_Action__c = 'Merge'
-                            ));
-                        }
                     }
                 }
 
@@ -420,10 +397,21 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
                     // we couldn't reliably mark dirty records in all scenarios,
                     // so we've decided it is better to always update all records.
                     //if (setAccountsIdDirty.contains(account.Id)) 
-                    listAccountsMergeUpdate.put(account.C501_Merge_Id__c, new C501_Account_Merge__c(
-                        Id = account.C501_Merge_Id__c,
-                        Merge_Action__c = 'Ignore'
-                    ));
+
+                    if (!listAccountsMerges.containsKey(account.C501_Merge_Id__c)) {
+
+                        Account targetObject = getTargetMerge(account);
+                        if (targetObject == null) {
+                            continue;
+                        }
+
+                        listAccountsMergeUpdate.put(account.C501_Merge_Id__c, new C501_Account_Merge__c(
+                            Id = account.C501_Merge_Id__c,
+                            Account__c = account.Id,
+                            Merge_Target_Account__c = targetObject.Id,
+                            Merge_Action__c = 'Ignore'
+                        ));
+                    }
                 }
             }
 

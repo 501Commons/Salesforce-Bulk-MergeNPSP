@@ -60,7 +60,7 @@ global with sharing class C501_MassMerge_SharedCode_Account {
                 WHERE Merge_Confidence__c >= :fromMergeConfidence
                     and Merge_Confidence__c <= :toMergeConfidence
                     and Merge_Action__c <> 'Ignore' 
-                    and Merge_Action__c <> 'Merge' 
+                    and Merge_Action__c <> 'Master' 
                 GROUP BY Account__c, Account__r.Name
                 LIMIT 999]) {
                     listSO.add(new SelectOption(result.get('Account__c').toString(),
@@ -74,7 +74,7 @@ global with sharing class C501_MassMerge_SharedCode_Account {
                 WHERE Merge_Confidence__c >= :fromMergeConfidence
                     and Merge_Confidence__c <= :toMergeConfidence
                     and Merge_Action__c <> 'Ignore' 
-                    and Merge_Action__c <> 'Merge' 
+                    and Merge_Action__c <> 'Master' 
                     and Merge_Metric__r.Name = :mergeRule
                 GROUP BY Account__c, Account__r.Name
                 LIMIT 999]) {
@@ -220,7 +220,7 @@ global with sharing class C501_MassMerge_SharedCode_Account {
             AccountHouseholdMap.put(mergeObject.Account__c, mergeObject.Account__r.C501_Household_Id__c);
             AccountHouseholdMap.put(mergeObject.Merge_Target_Account__c, mergeObject.Merge_Target_Account__r.C501_Household_Id__c);
 
-            if (mergeObject.Merge_Action__c == 'Merge') {
+            if (mergeObject.Merge_Action__c == 'Master') {
                 pendingMerges.add(mergeObject);
             }
             else if (String.isBlank(mergeObject.Merge_Action__c)) {

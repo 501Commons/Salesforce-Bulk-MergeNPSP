@@ -5,7 +5,9 @@
         <members>C501_CTRL_MassMergeAccounts_TEST</members>
         <members>C501_CTRL_MassMergeContacts</members>
         <members>C501_CTRL_MassMergeContacts_TEST</members>
-        <members>C501_MM_MergeMetric_Trigger</members>
+        <members>C501_MM_Action_Controller</members>
+        <members>C501_MM_Action_Controller_TEST</members>
+        <members>C501_MM_ListView_Controller</members>
         <members>C501_MM_Rule_Discover</members>
         <members>C501_MM_Rule_Merge</members>
         <members>C501_MassMerge_Batch</members>
@@ -29,6 +31,8 @@
         <members>C501_MassMergeAccounts</members>
         <members>C501_MassMergeContacts</members>
         <members>C501_MassMergeDiscover</members>
+        <members>C501_MassMergeListView</members>
+        <members>C501_MassMergeMerge</members>
         <name>ApexPage</name>
     </types>
     <types>
@@ -68,7 +72,7 @@
         <members>C501_Merge_Metric__c.Description__c</members>
         <members>C501_Merge_Metric__c.Last_Discover_Date__c</members>
         <members>C501_Merge_Metric__c.Last_Merge_Date__c</members>
-        <members>C501_Merge_Metric__c.Source_Aggregate__c</members>
+        <members>C501_Merge_Metric__c.Source_Object_Account_Id__c</members>
         <members>C501_Merge_Metric__c.Source_Object__c</members>
         <members>C501_Merge_Metric__c.Source_Report_LastModifiedDate__c</members>
         <members>C501_Merge_Metric__c.Source_Report__c</members>
@@ -142,6 +146,20 @@
         <members>C501_Contact_Merge__c-Contact Merge Layout</members>
         <members>C501_Merge_Metric__c-Merge Metric Layout</members>
         <name>Layout</name>
+    </types>
+    <types>
+        <members>C501_Merge_Metric__c.All</members>
+        <members>C501_Merge_Metric__c.All_NPSP</members>
+        <name>ListView</name>
+    </types>
+    <types>
+        <members>C501_Merge_Metric__c.C501_Action_Discover</members>
+        <members>C501_Merge_Metric__c.C501_Action_Merge</members>
+        <name>QuickAction</name>
+    </types>
+    <types>
+        <members>C501_Merge_Metric__c.C501_ListView_Discover</members>
+        <name>WebLink</name>
     </types>
     <types>
         <members>C501_Mass_Merge_Rules</members>

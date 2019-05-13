@@ -211,7 +211,7 @@ public class C501_CTRL_MassMergeAccounts_TEST {
                 Account__c = listAccounts[0].Id,
                 Merge_Target_Account__c = listAccounts[1].Id,
                 Merge_Confidence__c = 100.0,
-                Merge_Action__c = 'Merge');
+                Merge_Action__c = 'Master');
 
         insert accountMerge;
 
@@ -256,7 +256,7 @@ public class C501_CTRL_MassMergeAccounts_TEST {
                 Account__c = listAccounts[0].Id,
                 Merge_Target_Account__c = listAccounts[1].Id,
                 Merge_Confidence__c = 100.0,
-                Merge_Action__c = 'Merge');
+                Merge_Action__c = 'Master');
 
         insert accountMerge;
 
@@ -282,7 +282,6 @@ public class C501_CTRL_MassMergeAccounts_TEST {
         p.getParameters().put('Id', masterAccountId);
         Test.setCurrentPageReference(p);
         
-        //instantiate the controller for this opp
         C501_CTRL_MassMergeAccounts ctrl = new C501_CTRL_MassMergeAccounts();
         System.AssertEquals(masterAccountId, ctrl.accountFilter.Id);
 
@@ -331,14 +330,8 @@ public class C501_CTRL_MassMergeAccounts_TEST {
         System.AssertEquals(1, ctrl.numberOfRecordsDirty);
 
         // test the save!
-        for (Account accountMerge :ctrl.listAccounts) {
-            System.Debug('*****C501_CTRL_MassMergeAccounts_TEST::CodeCoverageTests accountMerge: ' + String.valueOf(accountMerge));
-            accountMerge.C501_Merge_Action__c = 'Merge';
-        }
         ctrl.listAccounts[0].C501_Merge_Action__c = 'Master';
-
         ctrl.listAccounts[ctrl.listAccounts.size() - 1].C501_Merge_Action__c = 'Ignore';
-        ctrl.listAccounts[ctrl.listAccounts.size() - 2].C501_Merge_Action__c = 'Ignore';
 
         ctrl.SaveAccounts();
 

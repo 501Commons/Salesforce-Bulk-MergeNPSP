@@ -130,7 +130,7 @@
         <type>DateTime</type>
     </fields>
     <fields>
-        <fullName>Source_Aggregate__c</fullName>
+        <fullName>Source_Object_Account_Id__c</fullName>
         <description>Account Id fieldname based on the Source Object.</description>
         <externalId>false</externalId>
         <label>Source Object Account Id</label>
@@ -216,11 +216,6 @@
         <label>All</label>
     </listViews>
     <listViews>
-        <fullName>All1</fullName>
-        <filterScope>Everything</filterScope>
-        <label>All</label>
-    </listViews>
-    <listViews>
         <fullName>All_NPSP</fullName>
         <columns>NAME</columns>
         <columns>Total_Unassigned_Accounts__c</columns>
@@ -236,7 +231,26 @@
         <type>Text</type>
     </nameField>
     <pluralLabel>Merge Metrics</pluralLabel>
-    <searchLayouts/>
+    <searchLayouts>
+        <excludedStandardButtons>New</excludedStandardButtons>
+        <excludedStandardButtons>OpenListInQuip</excludedStandardButtons>
+        <excludedStandardButtons>Accept</excludedStandardButtons>
+        <excludedStandardButtons>ChangeOwner</excludedStandardButtons>
+        <excludedStandardButtons>MassChangeOwner</excludedStandardButtons>
+        <listViewButtons>C501_ListView_Discover</listViewButtons>
+        <searchResultsCustomButtons>C501_ListView_Discover</searchResultsCustomButtons>
+    </searchLayouts>
     <sharingModel>ReadWrite</sharingModel>
     <visibility>Public</visibility>
+    <webLinks>
+        <fullName>C501_ListView_Discover</fullName>
+        <availability>online</availability>
+        <displayType>massActionButton</displayType>
+        <linkType>page</linkType>
+        <masterLabel>Discover</masterLabel>
+        <openType>replace</openType>
+        <page>C501_MassMergeListView</page>
+        <protected>false</protected>
+        <requireRowSelection>true</requireRowSelection>
+    </webLinks>
 </CustomObject>

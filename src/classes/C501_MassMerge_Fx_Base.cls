@@ -34,15 +34,15 @@ public with sharing class C501_MassMerge_Fx_Base {
     }
 
     // Save date each time called and if not called in 24 hours then turn off schedule
-    // Update a custom object list; Id, IdType, FieldName, Partial (8).
-    //    Example: For Contact with FirstName equals Partial Match and FirstName is David
+    // Update a custom object list; Id, IdType, FieldName, Partial (8), ConfidenceFactor.
+    //    Example: For Contact with FirstName equals Partial Match and FirstName is David.  ConfidenceFactor is 0-20% and subtracted from the Default Confidence on the MergeMetric
     //    C501_Contact_Match, C501_Account_Match, C501_Merge_Match (list of merge matches - if not updated in 24 hours then remove)
     //    Master/Detail so if Contact delete the partials are deleted
-    //      00O2g000000JJEq, Partial Match, Contact, FirstName, d
-    //      00O2g000000JJEq, Partial Match, Contact, FirstName, da
-    //      00O2g000000JJEq, Partial Match, Contact, FirstName, dav
-    //      00O2g000000JJEq, Partial Match, Contact, FirstName, davi
-    //      00O2g000000JJEq, Partial Match, Contact, FirstName, david
+    //      00O2g000000JJEq, Partial Match, Contact, FirstName, d, 20.0
+    //      00O2g000000JJEq, Partial Match, Contact, FirstName, da, 15.0
+    //      00O2g000000JJEq, Partial Match, Contact, FirstName, dav, 10.0
+    //      00O2g000000JJEq, Partial Match, Contact, FirstName, davi, 5.0
+    //      00O2g000000JJEq, Partial Match, Contact, FirstName, david, 0.0
 
     // Need a field on the contact and on the account - C501_MassMerge_LastChecked__c - this is what you use to get a DESC list and that a limit of to process on each schedule run
     // during schedule run process each Fx - for instance if Partial Match and Fuzzy Match both enabled for FirstName then loop through both Fx classes per contact for firstname.

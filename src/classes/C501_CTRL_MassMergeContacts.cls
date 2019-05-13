@@ -337,7 +337,21 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
         if (strId != null && strId != '') setContactsIdDirty.add(strId);
         return null;
     }
-    
+
+    global Contact getTargetMerge(Contact masterObject)
+    {
+        for (Contact objectItem :listContacts) {
+            if (String.isBlank(objectItem.C501_Merge_Id__c) || String.isBlank(objectItem.Id) || String.isBlank(masterObject.Id) || String.isBlank(masterObject.C501_Merge_Id__c)
+                || objectItem.Id == masterObject.Id || objectItem.C501_Merge_Id__c <> masterObject.C501_Merge_Id__c) {
+                continue;
+            }
+
+            return objectItem;
+        }
+
+        return null;
+    }
+
     //save the Contacts created or modified
     global virtual PageReference SaveContacts() {
         
@@ -354,38 +368,7 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
 
             for (Contact contact : listContacts) {
 
-                if (contact.Id != null && contact.C501_Merge_Action__c == 'Merge') {
-
-                    System.debug('***** C501_CTRL_MassMergeContacts::SaveContacts Check Merge Action - Merge Rule: ' + contact.C501_Merge_Metric_Name__c);
-
-                    // we couldn't reliably mark dirty records in all scenarios,
-                    // so we've decided it is better to always update all records.
-                    //if (setContactsIdDirty.contains(contact.Id)) 
-
-                    if (!listContactsMerges.containsKey(contact.C501_Merge_Id__c)) {
-                        listContactsMerges.put(contact.C501_Merge_Id__c, new C501_Contact_Merge__c(
-                            Id = contact.C501_Merge_Id__c,
-                            Merge_Target_Contact__c = contact.Id,
-                            Merge_Action__c = 'Merge',
-                            Merge_Confidence__c = contact.C501_Merge_Confidence__c
-                        ));
-                    }
-                    else {
-                        C501_Contact_Merge__c mergeContact = listContactsMerges.remove(contact.C501_Merge_Id__c);
-                        mergeContact.Merge_Target_Contact__c = contact.Id;
-                        listContactsMerges.put(contact.C501_Merge_Id__c, mergeContact);
-
-                        if (mergeContact.Contact__c <> null && mergeContact.Merge_Target_Contact__c <> null) {
-                            listContactsMergeCandidates.add(mergeContact);
-                            listContactsMergeUpdate.put(contact.C501_Merge_Id__c, new C501_Contact_Merge__c(
-                                Id = contact.C501_Merge_Id__c,
-                                Merge_Action__c = 'Merge'
-                            ));
-                        }
-                    }
-                }
-
-                else if (contact.Id != null && contact.C501_Merge_Action__c == 'Master') {
+                if (contact.Id != null && contact.C501_Merge_Action__c == 'Master') {
 
                     System.debug('***** C501_CTRL_MassMergeContacts::SaveContacts Check Master Action - Merge Rule: ' + contact.C501_Merge_Metric_Name__c);
 
@@ -394,25 +377,18 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
                     //if (setContactsIdDirty.contains(contact.Id)) 
 
                     if (!listContactsMerges.containsKey(contact.C501_Merge_Id__c)) {
+
+                        Contact targetObject = getTargetMerge(contact);
+                        if (targetObject == null) {
+                            continue;
+                        }
+
                         listContactsMerges.put(contact.C501_Merge_Id__c, new C501_Contact_Merge__c(
                             Id = contact.C501_Merge_Id__c,
                             Contact__c = contact.Id,
-                            Merge_Action__c = 'Merge',
+                            Merge_Action__c = contact.C501_Merge_Action__c,
                             Merge_Confidence__c = contact.C501_Merge_Confidence__c
                         ));
-                    }
-                    else {
-                        C501_Contact_Merge__c mergeContact = listContactsMerges.remove(contact.C501_Merge_Id__c);
-                        mergeContact.Contact__c = contact.Id;
-                        listContactsMerges.put(contact.C501_Merge_Id__c, mergeContact);
-
-                        if (mergeContact.Contact__c <> null && mergeContact.Merge_Target_Contact__c <> null) {
-                            listContactsMergeCandidates.add(mergeContact);
-                            listContactsMergeUpdate.put(contact.C501_Merge_Id__c, new C501_Contact_Merge__c(
-                                Id = contact.C501_Merge_Id__c,
-                                Merge_Action__c = 'Merge'
-                            ));
-                        }
                     }
                 }
 
@@ -423,10 +399,21 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
                     // we couldn't reliably mark dirty records in all scenarios,
                     // so we've decided it is better to always update all records.
                     //if (setContactsIdDirty.contains(contact.Id)) 
-                    listContactsMergeUpdate.put(contact.C501_Merge_Id__c, new C501_Contact_Merge__c(
-                        Id = contact.C501_Merge_Id__c,
-                        Merge_Action__c = 'Ignore'
-                    ));
+
+                    if (!listContactsMerges.containsKey(contact.C501_Merge_Id__c)) {
+
+                        Contact targetObject = getTargetMerge(contact);
+                        if (targetObject == null) {
+                            continue;
+                        }
+
+                        listContactsMergeUpdate.put(contact.C501_Merge_Id__c, new C501_Contact_Merge__c(
+                            Id = contact.C501_Merge_Id__c,
+                            Contact__c = contact.Id,
+                            Merge_Target_Contact__c = targetObject.Id,
+                            Merge_Action__c = 'Ignore'
+                        ));
+                    }
                 }
             }
 
@@ -463,7 +450,7 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
                     }
                 }
 
-                // Merge based on accounts
+                // Merge based on contacts
                 if (masterContact.Id <> null && duplicateContacts.values().size() > 0) {
                     c501MassMerge_SharedCode_Contact.ObjectsMerge(masterContact, duplicateContacts.values());
                     strSaveResults = (duplicateContacts.values().size() + 1) + ' ' + Label.Merge_labelMassMergeSaveSuccess;

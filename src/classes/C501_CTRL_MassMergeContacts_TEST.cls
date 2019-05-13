@@ -80,7 +80,7 @@ public with sharing class C501_CTRL_MassMergeContacts_TEST {
                 Contact__c = listContacts[2].Id,
                 Merge_Target_Contact__c = listContacts[3].Id,
                 Merge_Confidence__c = 100.0,
-                Merge_Action__c = 'Merge');
+                Merge_Action__c = 'Master');
 
         insert contactMerge2;
 
@@ -131,7 +131,7 @@ public with sharing class C501_CTRL_MassMergeContacts_TEST {
                 Contact__c = listContacts[2].Id,
                 Merge_Target_Contact__c = listContacts[3].Id,
                 Merge_Confidence__c = 100.0,
-                Merge_Action__c = 'Merge');
+                Merge_Action__c = 'Master');
 
         insert contactMerge2;
 
@@ -231,7 +231,6 @@ public with sharing class C501_CTRL_MassMergeContacts_TEST {
         p.getParameters().put('Id', masterContactId);
         Test.setCurrentPageReference(p);
         
-        //instantiate the controller for this opp
         C501_CTRL_MassMergeContacts ctrl = new C501_CTRL_MassMergeContacts();
         System.AssertEquals(masterContactId, ctrl.contactFilter.Id);
         System.Assert(ctrl.listSOContacts.size() > 1);
@@ -280,13 +279,8 @@ public with sharing class C501_CTRL_MassMergeContacts_TEST {
         System.AssertEquals(1, ctrl.numberOfRecordsDirty);
 
         // test the save!
-        for (Contact ContactMerge :ctrl.listContacts) {
-            ContactMerge.C501_Merge_Action__c = 'Merge';
-        }
         ctrl.listContacts[0].C501_Merge_Action__c = 'Master';
-
         ctrl.listContacts[ctrl.listContacts.size() - 1].C501_Merge_Action__c = 'Ignore';
-        ctrl.listContacts[ctrl.listContacts.size() - 2].C501_Merge_Action__c = 'Ignore';
 
         ctrl.SaveContacts();
 

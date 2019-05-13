@@ -28,43 +28,16 @@
     POSSIBILITY OF SUCH DAMAGE.
 */
 
-public with sharing class C501_MM_MergeMetric_Trigger {
+public with sharing class C501_MM_ListView_Controller {
 
-    public Id Id { get; set; }
-    public C501_Merge_Metric__c mergeMetric { get; set; }
-
-    public C501_MM_MergeMetric_Trigger(ApexPages.StandardController controller) {
-
-        mergeMetric =  (C501_Merge_Metric__c)controller.getRecord();
-        Id = mergeMetric.Id;
-        System.debug('*****C501_MM_MergeMetric_Trigger::Constructor Id: ' + mergeMetric);
+    public C501_MM_ListView_Controller(ApexPages.StandardSetController controller) {
     }
 
     //Method that can is called from the Visual Force page action attribute
     public PageReference discoverTrigger() {
 
-        System.debug('*****C501_MM_MergeMetric_Trigger::discoverTrigger Merge Metric Id: ' + Id);
+        C501_MM_Rule_Discover.get().DiscoverReports();
 
-        //build your code logic here
-
-        PageReference pageRef = new PageReference('/' + Id);
-        pageRef.setRedirect(true);
-
-        // Returns to the original page
-        return pageRef;
-    }
-
-    //Method that can is called from the Visual Force page action attribute
-    public PageReference mergeTrigger() {
-
-        System.debug('*****C501_MM_MergeMetric_Trigger::discoverTrigger Merge Metric Id: ' + Id);
-
-        //build your code logic here
-
-        PageReference pageRef = new PageReference('/' + Id);
-        pageRef.setRedirect(true);
-
-        // Returns to the original page
-        return pageRef;
+        return new ApexPages.Action('{!List}').invoke();
     }
 }
