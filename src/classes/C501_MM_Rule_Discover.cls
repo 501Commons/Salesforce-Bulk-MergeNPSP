@@ -188,7 +188,7 @@ public class C501_MM_Rule_Discover implements Schedulable {
         strSoql += ' Last_Discover_Date__c, Last_Merge_Date__c';
         strSoql += ' FROM C501_Merge_Metric__c';
         strSoql += ' WHERE Source_Object_Account_Id__c <> null AND Source_Object__c <> NULL AND Source_Report__c <> NULL';
-        strSoql += ' AND Id = :requestId';
+        strSoql += ' AND Id = :mergeMetricId';
         if (Test.isRunningTest()) {        
             strSoql += ' AND Name LIKE \'TESTDATA%\'';
         }
