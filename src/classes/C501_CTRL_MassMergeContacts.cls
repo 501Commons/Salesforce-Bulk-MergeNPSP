@@ -360,9 +360,8 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
         strSaveResults = null;
         
         try {
-            Map<String, C501_Contact_Merge__c> listContactsMergeUpdate = new Map<String, C501_Contact_Merge__c>();
+            Map<String, C501_Contact_Merge__c> listContactsMergeUpdates = new Map<String, C501_Contact_Merge__c>();
             Map<String, C501_Contact_Merge__c> listContactsMerges = new Map<String, C501_Contact_Merge__c>();
-            List<C501_Contact_Merge__c> listContactsMergeCandidates = new List<C501_Contact_Merge__c>();
 
             System.debug('***** C501_CTRL_MassMergeContacts::SaveContacts listContacts: ' + String.valueOf(listContacts));
 
@@ -386,6 +385,7 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
                         listContactsMerges.put(contact.C501_Merge_Id__c, new C501_Contact_Merge__c(
                             Id = contact.C501_Merge_Id__c,
                             Contact__c = contact.Id,
+                            Merge_Target_Contact__c = targetObject.Id,
                             Merge_Action__c = contact.C501_Merge_Action__c,
                             Merge_Confidence__c = contact.C501_Merge_Confidence__c
                         ));
@@ -400,78 +400,32 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
                     // so we've decided it is better to always update all records.
                     //if (setContactsIdDirty.contains(contact.Id)) 
 
-                    if (!listContactsMerges.containsKey(contact.C501_Merge_Id__c)) {
+                    if (!listContactsMergeUpdates.containsKey(contact.C501_Merge_Id__c)) {
 
                         Contact targetObject = getTargetMerge(contact);
                         if (targetObject == null) {
                             continue;
                         }
 
-                        listContactsMergeUpdate.put(contact.C501_Merge_Id__c, new C501_Contact_Merge__c(
+                        listContactsMergeUpdates.put(contact.C501_Merge_Id__c, new C501_Contact_Merge__c(
                             Id = contact.C501_Merge_Id__c,
                             Contact__c = contact.Id,
                             Merge_Target_Contact__c = targetObject.Id,
-                            Merge_Action__c = 'Ignore'
+                            Merge_Action__c = contact.C501_Merge_Action__c
                         ));
                     }
                 }
             }
 
-            if (contactFilter.Id <> null) {
-
-                Contact masterContact = new Contact();
-                for (C501_Contact_Merge__c mergeContact :listContactsMerges.values()) {
-
-                    if (mergeContact.Contact__c <> null) {
-                        masterContact.Id = mergeContact.Contact__c;
-                        break;
-                    }
-                }
-
-                Map<Id, Contact> duplicateContacts = new Map<Id, Contact>();
-                for (C501_Contact_Merge__c mergeContact :listContactsMerges.values()) {
-
-                    if (mergeContact.Contact__c <> null && mergeContact.Contact__c <> masterContact.Id) {
-                        duplicateContacts.put(mergeContact.Contact__c, new Contact( Id = mergeContact.Contact__c ));
-                    }
-
-                    // Database Merge supports merging up to 2 records into a master record
-                    if (duplicateContacts.values().size() >= 2) {
-                        break;
-                    }
-
-                    if (mergeContact.Merge_Target_Contact__c <> null && mergeContact.Merge_Target_Contact__c <> masterContact.Id) {
-                        duplicateContacts.put(mergeContact.Merge_Target_Contact__c, new Contact( Id = mergeContact.Merge_Target_Contact__c ));
-                    }
-
-                    // Database Merge supports merging up to 2 records into a master record
-                    if (duplicateContacts.values().size() >= 2) {
-                        break;
-                    }
-                }
-
-                // Merge based on contacts
-                if (masterContact.Id <> null && duplicateContacts.values().size() > 0) {
-                    c501MassMerge_SharedCode_Contact.ObjectsMerge(masterContact, duplicateContacts.values());
-                    strSaveResults = (duplicateContacts.values().size() + 1) + ' ' + Label.Merge_labelMassMergeSaveSuccess;
-                }
-                else {
-                    strSaveResults = '0 ' + Label.Merge_labelMassMergeSaveSuccess;
-                }
-            }
-            else {
-
-                if (!listContactsMergeUpdate.values().isEmpty()) {
-                    update listContactsMergeUpdate.values();
-                }
-
-                if (!listContactsMergeCandidates.isEmpty()) {
-                    c501MassMerge_SharedCode_Contact.ProcessObjectMerges(listContactsMergeCandidates, true);
-                }
-
-                strSaveResults = (listContactsMergeCandidates.size() * 2) + ' ' + Label.Merge_labelMassMergeSaveSuccess;
+            if (!listContactsMergeUpdates.values().isEmpty()) {
+                update listContactsMergeUpdates.values();
             }
 
+            if (!listContactsMerges.values().isEmpty()) {
+                c501MassMerge_SharedCode_Contact.ProcessObjectMerges(listContactsMerges.values(), true);
+            }
+
+            strSaveResults = (listContactsMerges.values().size() * 2) + ' ' + Label.Merge_labelMassMergeSaveSuccess;
             ApexPages.addMessage(new ApexPages.message(ApexPages.Severity.CONFIRM, strSaveResults));
 
             // successful save, so clear out dirty list

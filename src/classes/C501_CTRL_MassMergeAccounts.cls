@@ -357,9 +357,8 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
         strSaveResults = null;
         
         try {
-            Map<String, C501_Account_Merge__c> listAccountsMergeUpdate = new Map<String, C501_Account_Merge__c>();
+            Map<String, C501_Account_Merge__c> listAccountsMergeUpdates = new Map<String, C501_Account_Merge__c>();
             Map<String, C501_Account_Merge__c> listAccountsMerges = new Map<String, C501_Account_Merge__c>();
-            List<C501_Account_Merge__c> listAccountsMergeCandidates = new List<C501_Account_Merge__c>();
 
             System.debug('***** C501_CTRL_MassMergeAccounts::SaveAccounts listAccounts: ' + String.valueOf(listAccounts));
 
@@ -384,7 +383,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
                             Id = account.C501_Merge_Id__c,
                             Account__c = account.Id,
                             Merge_Target_Account__c = targetObject.Id,
-                            Merge_Action__c = 'Master',
+                            Merge_Action__c = account.C501_Merge_Action__c,
                             Merge_Confidence__c = account.C501_Merge_Confidence__c
                         ));
                     }
@@ -398,79 +397,32 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
                     // so we've decided it is better to always update all records.
                     //if (setAccountsIdDirty.contains(account.Id)) 
 
-                    if (!listAccountsMerges.containsKey(account.C501_Merge_Id__c)) {
+                    if (!listAccountsMergeUpdates.containsKey(account.C501_Merge_Id__c)) {
 
                         Account targetObject = getTargetMerge(account);
                         if (targetObject == null) {
                             continue;
                         }
 
-                        listAccountsMergeUpdate.put(account.C501_Merge_Id__c, new C501_Account_Merge__c(
+                        listAccountsMergeUpdates.put(account.C501_Merge_Id__c, new C501_Account_Merge__c(
                             Id = account.C501_Merge_Id__c,
                             Account__c = account.Id,
                             Merge_Target_Account__c = targetObject.Id,
-                            Merge_Action__c = 'Ignore'
+                            Merge_Action__c = account.C501_Merge_Action__c
                         ));
                     }
                 }
             }
 
-            if (accountFilter.Id <> null) {
-
-                Account masterAccount = new Account();
-                for (C501_Account_Merge__c mergeAccount :listAccountsMerges.values()) {
-
-                    if (mergeAccount.Account__c <> null) {
-                        masterAccount.Id = mergeAccount.Account__c;
-                        break;
-                    }
-                }
-
-                Map<Id, Account> duplicateAccounts = new Map<Id, Account>();
-                for (C501_Account_Merge__c mergeAccount :listAccountsMerges.values()) {
-
-                    if (mergeAccount.Account__c <> null && mergeAccount.Account__c <> masterAccount.Id) {
-                        duplicateAccounts.put(mergeAccount.Account__c, new Account( Id = mergeAccount.Account__c ));
-                    }
-
-                    // Database Merge supports merging up to 2 records into a master record
-                    if (duplicateAccounts.values().size() >= 2) {
-                        break;
-                    }
-
-                    if (mergeAccount.Merge_Target_Account__c <> null && mergeAccount.Merge_Target_Account__c <> masterAccount.Id) {
-                        duplicateAccounts.put(mergeAccount.Merge_Target_Account__c, new Account( Id = mergeAccount.Merge_Target_Account__c ));
-                    }
-
-                    // Database Merge supports merging up to 2 records into a master record
-                    if (duplicateAccounts.values().size() >= 2) {
-                        break;
-                    }
-                }
-
-                // Merge based on accounts
-                if (masterAccount.Id <> null && duplicateAccounts.values().size() > 0) {
-                    c501MassMerge_SharedCode_Account.ObjectsMerge(masterAccount, duplicateAccounts.values());
-                    strSaveResults = (duplicateAccounts.values().size() + 1) + ' ' + Label.Merge_labelMassMergeSaveSuccess;
-                }
-                else {
-                    strSaveResults = '0 ' + Label.Merge_labelMassMergeSaveSuccess;
-                }
-            }
-            else {
-
-                // Merge based on merge accounts
-                if (!listAccountsMergeUpdate.values().isEmpty()) {
-                    update listAccountsMergeUpdate.values();
-                }
-
-                if (!listAccountsMergeCandidates.isEmpty()) {
-                    c501MassMerge_SharedCode_Account.ProcessObjectMerges(listAccountsMergeCandidates, false);
-                }
-
-                strSaveResults = (listAccountsMergeCandidates.size() * 2) + ' ' + Label.Merge_labelMassMergeSaveSuccess;
+            if (!listAccountsMergeUpdates.values().isEmpty()) {
+                update listAccountsMergeUpdates.values();
             }
 
+            if (!listAccountsMerges.values().isEmpty()) {
+                c501MassMerge_SharedCode_Account.ProcessObjectMerges(listAccountsMerges.values(), false);
+            }
+
+            strSaveResults = (listAccountsMerges.values().size() * 2) + ' ' + Label.Merge_labelMassMergeSaveSuccess;
             ApexPages.addMessage(new ApexPages.message(ApexPages.Severity.CONFIRM, strSaveResults));
 
             // successful save, so clear out dirty list

@@ -158,10 +158,6 @@
         <name>QuickAction</name>
     </types>
     <types>
-        <members>C501_Merge_Metric__c.C501_ListView_Discover</members>
-        <name>WebLink</name>
-    </types>
-    <types>
         <members>C501_Mass_Merge_Rules</members>
         <members>C501_Mass_Merge_Templates</members>
         <members>C501_Mass_Merge_Templates/Merge_Rule_Account_Address</members>
@@ -173,6 +169,12 @@
         <members>C501_Mass_Merge_Templates/Merge_Rule_Contact_Name_Email_Gender</members>
         <members>C501_Mass_Merge_Tests</members>
         <members>C501_Mass_Merge_Tests/Test_Merge_Rule_Account_Address</members>
+        <members>C501_Mass_Merge_Tests/Test_Merge_Rule_Account_All_Address</members>
+        <members>C501_Mass_Merge_Tests/Test_Merge_Rule_Account_All_General</members>
+        <members>C501_Mass_Merge_Tests/Test_Merge_Rule_Account_All_PhFxURL</members>
+        <members>C501_Mass_Merge_Tests/Test_Merge_Rule_Contact_All_Address</members>
+        <members>C501_Mass_Merge_Tests/Test_Merge_Rule_Contact_All_General</members>
+        <members>C501_Mass_Merge_Tests/Test_Merge_Rule_Contact_All_PhFxEmail</members>
         <members>C501_Mass_Merge_Tests/Test_Merge_Rule_Contact_Name_DOB</members>
         <name>Report</name>
     </types>
@@ -188,6 +190,10 @@
         <members>v4sStaticResources</members>
         <members>wtooltip</members>
         <name>StaticResource</name>
+    </types>
+    <types>
+        <members>C501_Merge_Metric__c.C501_ListView_Discover</members>
+        <name>WebLink</name>
     </types>
     <version>42.0</version>
 </Package>
