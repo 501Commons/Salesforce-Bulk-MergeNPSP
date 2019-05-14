@@ -37,14 +37,6 @@
         <field>SIC</field>
     </columns>
     <columns>
-        <aggregateTypes>Sum</aggregateTypes>
-        <field>EMPLOYEES</field>
-    </columns>
-    <columns>
-        <aggregateTypes>Sum</aggregateTypes>
-        <field>SALES</field>
-    </columns>
-    <columns>
         <field>TICKER</field>
     </columns>
     <columns>
@@ -67,12 +59,6 @@
     </columns>
     <columns>
         <field>ACCOUNT.NAME</field>
-    </columns>
-    <columns>
-        <field>ACCOUNT_OWNER_ROLE</field>
-    </columns>
-    <columns>
-        <field>ACCOUNT_OWNER_ROLE_DISPLAY</field>
     </columns>
     <columns>
         <field>ALIAS</field>

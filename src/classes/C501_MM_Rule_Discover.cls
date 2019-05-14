@@ -669,17 +669,34 @@ public class C501_MM_Rule_Discover implements Schedulable {
             return null;
         }
 
-        // Check to add RecordType
-        // TBD - Need to check fields to see if RecordTypeId available before using
-        if (columnFieldName == 'ACCOUNT_RECORDTYPE') {
+        // Check to add RecordTypeId
+        if (columnFieldName.endsWith('_RECORDTYPE')) {
+
+            String fieldName = 'RecordTypeId';
             if (mergeMetric.Source_Object__c.equals('Account')) {
-                //return 'Account.RecordTypeId';
+
+                Map<String, Schema.SObjectField> objectFields = Schema.SObjectType.Account.fields.getMap();
+                if (objectFields.keySet().contains(fieldName)) {
+                    Schema.SObjectField f = objectFields.get(fieldName);
+                    Schema.DescribeFieldResult fResult = f.getDescribe();
+
+                    if (fResult.isAccessible()) {
+                        return 'Account.RecordTypeId';
+                    }
+                }
             }
             else if (mergeMetric.Source_Object__c.equals('Contact')) {
-                //return 'Contact.RecordTypeId';
-            }
 
-            return null;
+                Map<String, Schema.SObjectField> objectFields = Schema.SObjectType.Contact.fields.getMap();
+                if (objectFields.keySet().contains(fieldName)) {
+                    Schema.SObjectField f = objectFields.get(fieldName);
+                    Schema.DescribeFieldResult fResult = f.getDescribe();
+
+                    if (fResult.isAccessible()) {
+                        return 'RecordTypeId';
+                    }
+                }
+            }
         }
 
         // Check for Source Object in Column Name
@@ -687,35 +704,126 @@ public class C501_MM_Rule_Discover implements Schedulable {
             return columnFieldName.replace(mergeMetric.Source_Object__c + '.', '');
         }
 
-        // General Columns
-        else if (columnFieldName == 'LAST_UPDATE') {
-            return 'LastModifiedDate';
-        }
-        else if (columnFieldName == 'CREATED_DATE') {
-            return 'CreatedDate';
-        }
-        
-        // Contact Report Columns
+        // Contact General Columns
         //
+        else if (columnFieldName == 'NAME') {
+            return 'Name';
+        }
         else if (columnFieldName == 'FIRST_NAME') {
             return 'FirstName';
         }
         else if (columnFieldName == 'LAST_NAME') {
             return 'LastName';
         }
-        else if (columnFieldName.equals('CONTACT_ID')) {
-            return 'Id';
+        else if (columnFieldName == 'MIDDLE_NAME') {
+            return 'MiddleName';
+        }
+        else if (columnFieldName == 'BIRTHDATE') {
+            return 'Birthdate';
+        }
+        else if (columnFieldName == 'REPORTS_TO') {
+            return 'ReportsTo.Name';
+        }
+        else if (columnFieldName == 'CONTACT_LAST_UPDATE_BY_ALIAS') {
+            return 'LastModifiedBy.Alias';
+        }
+        else if (columnFieldName == 'CONTACT_LAST_UPDATE_BY') {
+            return 'LastModifiedBy.Name';
+        }
+        else if (columnFieldName == 'CONTACT_CREATED_ALIAS') {
+            return 'CreatedBy.Alias';
+        }
+        else if (columnFieldName == 'CONTACT_CREATED') {
+            return 'CreatedBy.Name';
+        }
+        else if (columnFieldName == 'CONTACT_ALIAS') {
+            return 'Owner.Alias';
+        }
+        else if (columnFieldName == 'CONTACT_OWNER') {
+            return 'Owner.Name';
         }
 
-        // Account Report Columns
+        // Contact Address Columns
+        //
+        else if (columnFieldName.startsWith('ADDRESS1_LINE')) {
+            return null;
+        }
+        else if (columnFieldName.startsWith('ADDRESS2_LINE')) {
+            return null;
+        }
+        else if (columnFieldName.startsWith('ADDRESS1_ZIP')) {
+            return columnFieldName.replace('ADDRESS1_ZIP', 'MailingPostalCode');
+        }
+        else if (columnFieldName.startsWith('ADDRESS2_ZIP')) {
+            return columnFieldName.replace('ADDRESS2_ZIP', 'OtherPostalCode');
+        }
+        else if (columnFieldName.startsWith('ADDRESS1_')) {
+            return columnFieldName.replace('ADDRESS1_', 'Mailing');
+        }
+        else if (columnFieldName.startsWith('ADDRESS2_')) {
+            return columnFieldName.replace('ADDRESS2_', 'Other');
+        }
+
+        // Contact PhFxEmail Columns
+        //
+        else if (columnFieldName.equals('IS_EMAIL_BOUNCED')) {
+            return 'IsEmailBounced';
+        }
+        else if (columnFieldName.equals('FAX_OPT_OUT')) {
+            return 'HasOptedOutOfFax';
+        }
+        else if (columnFieldName.equals('EMAIL_OPT_OUT')) {
+            return 'HasOptedOutOfEmail';
+        }
+        else if (columnFieldName.equals('PHONE1')) {
+            return 'Phone';
+        }
+        else if (columnFieldName.startsWith('ASSISTANT_NAME')) {
+            return 'AssistantName';
+        }
+        else if (columnFieldName.startsWith('LEAD_SOURCE')) {
+            return 'LeadSource';
+        }
+
+        // Account General Columns
         //
         else if (columnFieldName.equals('ACCOUNT_ID')) {
-            if (mergeMetric.Source_Object__c.equals('Account')) {
-                return 'Id';
-            }
-            else {
+            if (mergeMetric.Source_Object__c.equals('Contact')) {
                 return 'AccountId';
             }
+        }
+        else if (columnFieldName.equals('ACCOUNT.NAME')) {
+            return 'Account.Name';
+        }
+        else if (columnFieldName.equals('ACCOUNT_NUMBER')) {
+            return 'Account.AccountNumber';
+        }
+        else if (columnFieldName.equals('ACCOUNT_SOURCE')) {
+            return 'Account.AccountSource';
+        }
+        else if (columnFieldName.equals('SIC_DESC')) {
+            return 'Account.SicDesc';
+        }        
+        else if (columnFieldName.equals('TICKER')) {
+            return 'Account.TickerSymbol';
+        }        
+        else if (columnFieldName.equals('PARENT_ID')) {
+            return 'Account.ParentId';
+        }
+        else if (columnFieldName.equals('OWNER_FULL_NAME')) {
+            return 'Account.Owner.Name';
+        }
+        else if (columnFieldName.equals('ALIAS')) {
+            return 'Account.Owner.Alias';
+        }
+
+        // Account Address Columns
+        //
+        else if (columnFieldName.startsWith('ACCOUNT.ADDRESS1_LINE')) {
+            return null;
+        }
+        else if (columnFieldName.startsWith('ACCOUNT.ADDRESS2_LINE')) {
+            return null;
         }
         else if (columnFieldName.startsWith('ACCOUNT.ADDRESS1_ZIP')) {
             return columnFieldName.replace('ACCOUNT.ADDRESS1_ZIP', 'ACCOUNT.BillingPostalCode');
@@ -729,11 +837,22 @@ public class C501_MM_Rule_Discover implements Schedulable {
         else if (columnFieldName.startsWith('ACCOUNT.ADDRESS2_')) {
             return columnFieldName.replace('ACCOUNT.ADDRESS2_', 'ACCOUNT.Shipping');
         }
+
+        // Account PhFxURL Columns
+        //
         else if (columnFieldName.equals('URL')) {
             return 'Account.Website';
         }
+        else if (columnFieldName.equals('ACCOUNT.PHONE1')) {
+            return 'Account.Phone';
+        }
 
-        return columnFieldName;
+        // Check for Custom Field
+        else if (columnFieldName.endsWith('__c')) {
+            return columnFieldName;
+        }
+
+        return null;
     }
 
     public String CheckReportOperator(C501_Merge_Metric__c mergeMetric, String foriegnKey, String reportColumnName, String operator, String value) {

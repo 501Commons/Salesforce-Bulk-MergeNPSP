@@ -4,12 +4,6 @@
         <field>JIGSAW_KEY</field>
     </columns>
     <columns>
-        <field>LAST_SIT_UPDATE</field>
-    </columns>
-    <columns>
-        <field>LAST_SIT_REQUEST</field>
-    </columns>
-    <columns>
         <field>REPORTS_TO</field>
     </columns>
     <columns>
@@ -26,12 +20,6 @@
     </columns>
     <columns>
         <field>LAST_ACTIVITY</field>
-    </columns>
-    <columns>
-        <field>OWNER_ROLE</field>
-    </columns>
-    <columns>
-        <field>OWNER_ROLE_DISPLAY</field>
     </columns>
     <columns>
         <field>PHONE6</field>

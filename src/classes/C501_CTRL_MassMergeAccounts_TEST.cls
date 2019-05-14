@@ -46,8 +46,9 @@ public class C501_CTRL_MassMergeAccounts_TEST {
 
         update listMergeMetrics;
 
-        C501_MM_Rule_Discover scheduleDiscover = new C501_MM_Rule_Discover();
-        scheduleDiscover.execute(null);
+        for (C501_Merge_Metric__c mergeMetric :listMergeMetrics) {
+            C501_MM_Rule_Discover.get().executeMetric(mergeMetric.Id);
+        }
 
         C501_MM_Rule_Merge scheduleMerge = new C501_MM_Rule_Merge();
         scheduleMerge.execute(null);
