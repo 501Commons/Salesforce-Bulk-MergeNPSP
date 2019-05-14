@@ -52,14 +52,12 @@ public class C501_MM_Rule_Discover implements Schedulable {
 	// only need one instance of this class per transaction
 	private static C501_MM_Rule_Discover instance;
 	public static C501_MM_Rule_Discover get() {
+
 		if (instance == null) instance = new C501_MM_Rule_Discover();
 		return instance;
 	}
 
     public void C501_MM_Rule_Discover() {
-                
-        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
-        c501MassMerge_SharedCode.ScheduleJobs();
     }
 
     public void execute(SchedulableContext SC) {
@@ -370,7 +368,6 @@ public class C501_MM_Rule_Discover implements Schedulable {
                     whereInValues = reportFilter.getValue().split(',');
 
                     whereField = CheckReportColumnName(mergeMetric, foriegnKey, reportFilter.getColumn(), true) + ' in :whereInValues';
-                    System.Debug('***** 2 reportFilter.getColumn(): ' + reportFilter.getColumn() + ' whereField: ' + whereField);
                 }
 
                 whereFields.add(whereField);
@@ -424,8 +421,6 @@ public class C501_MM_Rule_Discover implements Schedulable {
         Map<Id,String> accountContacts = new Map<Id,String>();
         if (fullContactMatch) {
 
-            System.debug('***** C501_MM_Rule_Discover:ProcessReportByAccounts fullContactMatch');
-
             Set<Id> mergeAccountIds = new Set<Id>();
             String minId, maxId;
             for (AggregateResult result : allAggregatedByAccounts)  {
@@ -444,8 +439,6 @@ public class C501_MM_Rule_Discover implements Schedulable {
                 mergeAccountIds.add(maxId);
                 mergeAccountIds.add(minId);
             }
-
-            System.debug('***** C501_MM_Rule_Discover:ProcessReportByAccounts fullContactMatch mergeAccountIds: ' + mergeAccountIds);
 
             // Get Household Sizes
             Map<Id, Integer> existingAccountSizes = new Map<Id, Integer>();
@@ -466,8 +459,6 @@ public class C501_MM_Rule_Discover implements Schedulable {
                 if (!existingAccountSizes.containsKey(maxId) || !existingAccountSizes.containsKey(minId)) {
                     continue;
                 }
-
-                System.debug('***** C501_MM_Rule_Discover:ProcessReportByAccounts fullContactMatch existingAccountSizes.get(maxId): ' + String.valueOf(existingAccountSizes.get(maxId)) + ' existingAccountSizes.get(minId): ' + String.valueOf(existingAccountSizes.get(minId)));
 
                 // Make sure household contact count equal
                 if (existingAccountSizes.get(maxId) <> existingAccountSizes.get(minId)) {
@@ -918,12 +909,14 @@ public class C501_MM_Rule_Discover implements Schedulable {
 
     public void DiscoverReports() {
 
+        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
+        c501MassMerge_SharedCode.ScheduleJobs();
+
         String reportFolder = 'Mass Merge Rules';
         if (Test.isRunningTest()) {
             reportFolder = 'Mass Merge Tests';
         }
         
-        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
         c501MassMerge_SharedCode.InitializeMassMergeInstances(reportFolder);
     }
 }
