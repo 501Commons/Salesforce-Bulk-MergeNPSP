@@ -175,10 +175,15 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
 
         if (accountFilter.Id <> null) {
         
+            System.debug('***** C501_CTRL_MassMergeAccounts::FillListAccounts accountFilter.Id: ' + accountFilter.Id);
+
             for(C501_Account_Merge__c accountMerge : [
                 SELECT Id, Account__c, Merge_Target_Account__c, Merge_Confidence__c, Merge_Action__c, Merge_Metric__c, Merge_Metric__r.Name
                 FROM C501_Account_Merge__c
-                WHERE (Account__c = :accountFilter.Id OR Merge_Target_Account__c = :accountFilter.Id) AND isDeleted = false]) {
+                WHERE (Account__c = :accountFilter.Id OR Merge_Target_Account__c = :accountFilter.Id) AND isDeleted = false
+                LIMIT 1]) {
+
+                    System.debug('***** C501_CTRL_MassMergeAccounts::FillListAccounts accountMerge: ' + accountMerge);
 
                     accountsMerge.put(
                         accountMerge.Account__c,
@@ -192,11 +197,6 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
                             Merge_Metric_Name__c = 'Merge ' + accountMerge.Merge_Metric__r.Name
                     ));
 
-                    // Limit when using filter to 3 because merge limit is 1 master and up to 2 duplicates
-                    if (accountsMerge.keySet().size() >= 3) {
-                        break;
-                    }
-
                     accountsMerge.put(
                         accountMerge.Merge_Target_Account__c,
                         new C501_Account_Merge__c(
@@ -208,11 +208,6 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
                             Merge_Metric__c = accountMerge.Merge_Metric__c,
                             Merge_Metric_Name__c = 'Merge ' + accountMerge.Merge_Metric__r.Name
                     ));
-
-                    // Limit when using filter to 3 because merge limit is 1 master and up to 2 duplicates
-                    if (accountsMerge.keySet().size() >= 3) {
-                        break;
-                    }
             }
         }
         else {
@@ -287,6 +282,8 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
         strSoql += ' order by C501_Merge_Metric_Name__c ASC NULLS FIRST';
         
         listAccounts = Database.Query(strSoql);
+
+        System.debug('***** C501_CTRL_MassMergeAccounts::FillListAccounts strSoql: ' + strSoql);
 
         for ( Account account :listAccounts ) {
             if (accountsMerge.containsKey(account.Id)) {

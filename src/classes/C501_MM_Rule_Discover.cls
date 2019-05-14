@@ -273,7 +273,6 @@ public class C501_MM_Rule_Discover implements Schedulable {
             }
 
             String checkColumn = CheckReportColumnName(mergeMetric, foriegnKey, column, false);
-            System.Debug('***** 1 column: ' + column + ' checkColumn: ' + checkColumn);
             if (String.isNotBlank(checkColumn)) {
                 detailColumnsChecked.add(checkColumn);
             }
@@ -323,7 +322,7 @@ public class C501_MM_Rule_Discover implements Schedulable {
 
         // Find Contact matches across Accounts
         //
-        String strSoqlSelect = 'SELECT Count(' + mergeMetric.Source_Object_Account_Id__c + '), MAX(' + mergeMetric.Source_Object_Account_Id__c + ')MaxId, MIN(' + mergeMetric.Source_Object_Account_Id__c + ')MinId ';
+        String strSoqlSelect = 'SELECT Count(' + mergeMetric.Source_Object_Account_Id__c + ')Matches, MAX(' + mergeMetric.Source_Object_Account_Id__c + ')MaxId, MIN(' + mergeMetric.Source_Object_Account_Id__c + ')MinId ';
         String strSoqlFrom = ' FROM ' + mergeMetric.Source_Object__c;
 
         // Build WHERE statement
@@ -425,6 +424,8 @@ public class C501_MM_Rule_Discover implements Schedulable {
         Map<Id,String> accountContacts = new Map<Id,String>();
         if (fullContactMatch) {
 
+            System.debug('***** C501_MM_Rule_Discover:ProcessReportByAccounts fullContactMatch');
+
             Set<Id> mergeAccountIds = new Set<Id>();
             String minId, maxId;
             for (AggregateResult result : allAggregatedByAccounts)  {
@@ -443,6 +444,8 @@ public class C501_MM_Rule_Discover implements Schedulable {
                 mergeAccountIds.add(maxId);
                 mergeAccountIds.add(minId);
             }
+
+            System.debug('***** C501_MM_Rule_Discover:ProcessReportByAccounts fullContactMatch mergeAccountIds: ' + mergeAccountIds);
 
             // Get Household Sizes
             Map<Id, Integer> existingAccountSizes = new Map<Id, Integer>();
@@ -463,6 +466,8 @@ public class C501_MM_Rule_Discover implements Schedulable {
                 if (!existingAccountSizes.containsKey(maxId) || !existingAccountSizes.containsKey(minId)) {
                     continue;
                 }
+
+                System.debug('***** C501_MM_Rule_Discover:ProcessReportByAccounts fullContactMatch existingAccountSizes.get(maxId): ' + String.valueOf(existingAccountSizes.get(maxId)) + ' existingAccountSizes.get(minId): ' + String.valueOf(existingAccountSizes.get(minId)));
 
                 // Make sure household contact count equal
                 if (existingAccountSizes.get(maxId) <> existingAccountSizes.get(minId)) {
@@ -534,6 +539,15 @@ public class C501_MM_Rule_Discover implements Schedulable {
                 Merge_Target_Account__c = maxId,
                 Merge_Metric__c = mergeMetric.Id
             ));
+
+            // Check to schedule additional processing if Matches > 2
+            Integer matches = Integer.valueOf(result.get('Matches'));
+
+            if (matches > 2) {
+                System.debug('***** C501_MM_Rule_Discover:ProcessReportByAccounts queue additional process - matches: ' + matches);
+                // TBG - batch schedule - figure out how to get through all even if more than 100 by using a custom checked date or something to send some each time Discover call
+                //  Process - attempt to match every 2 Ids and if Odd size then at the end match the first and last together.
+            }
         }
 
         C501_MassMerge_SharedCode_Account c501MassMerge_SharedCode_Account = new C501_MassMerge_SharedCode_Account();
@@ -543,7 +557,7 @@ public class C501_MM_Rule_Discover implements Schedulable {
     public void ProcessReportByContacts(C501_Merge_Metric__c mergeMetric, String foriegnKey, List<String> detailColumnsChecked, List<Reports.ReportFilter> reportFilters, String additionalGroupByField) {
         // Find Contact matches across Accounts
         //
-        String strSoqlSelect = 'SELECT Count(Id), MAX(Id)MaxId, MIN(Id)MinId ';
+        String strSoqlSelect = 'SELECT Count(Id)Matches, MAX(Id)MaxId, MIN(Id)MinId ';
         String strSoqlFrom = ' FROM ' + mergeMetric.Source_Object__c;
 
         // Build WHERE statement
@@ -628,6 +642,13 @@ public class C501_MM_Rule_Discover implements Schedulable {
                 Merge_Target_Contact__c = maxId,
                 Merge_Metric__c = mergeMetric.Id
             ));
+
+            // Check to schedule additional processing if Matches > 2
+            Integer matches = Integer.valueOf(result.get('Matches'));
+            if (matches > 2) {
+                // TBG - batch schedule - figure out how to get through all even if more than 100 by using a custom checked date or something to send some each time Discover call
+                //  Process - attempt to match every 2 Ids and if Odd size then at the end match the first and last together.
+            }
         }
 
         C501_MassMerge_SharedCode_Contact c501MassMerge_SharedCode_Contact = new C501_MassMerge_SharedCode_Contact();
@@ -858,7 +879,6 @@ public class C501_MM_Rule_Discover implements Schedulable {
     public String CheckReportOperator(C501_Merge_Metric__c mergeMetric, String foriegnKey, String reportColumnName, String operator, String value) {
 
         String columnName = CheckReportColumnName(mergeMetric, foriegnKey, reportColumnName, true);
-        System.Debug('***** 4 reportColumnName: ' + reportColumnName + ' columnName: ' + columnName);
         if (String.isBlank(columnName)) {
             return null;
         }
@@ -897,8 +917,6 @@ public class C501_MM_Rule_Discover implements Schedulable {
     }
 
     public void DiscoverReports() {
-
-        System.debug('***** C501_MM_Rule_Discover:intialize');
 
         String reportFolder = 'Mass Merge Rules';
         if (Test.isRunningTest()) {

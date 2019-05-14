@@ -50,13 +50,44 @@ public with sharing class C501_CTRL_MassMergeContacts_TEST {
             C501_MM_Rule_Discover.get().executeMetric(mergeMetric.Id);
         }
 
-        C501_MM_Rule_Merge scheduleMerge = new C501_MM_Rule_Merge();
-        scheduleMerge.execute(null);
-
         c501MassMerge_SharedCode.PrintSalesforceStructure();
     }
 
     //==================== TEST METHOD(s) ======================================
+
+    @isTest(SeeAllData='true')
+    public static void Merge_Test() {
+
+        setupTest();
+
+        Test.StartTest();
+
+        C501_MM_Rule_Merge scheduleMerge = new C501_MM_Rule_Merge();
+
+        List<C501_Merge_Metric__c> listMergeMetrics = new List<C501_Merge_Metric__c>();
+        for (C501_Merge_Metric__c mergeMetric :[SELECT Id FROM C501_Merge_Metric__c WHERE Name LIKE 'TESTDATA%' AND Name LIKE '%Contact Name%']) {
+
+            mergeMetric.AutoMerge_Percentage__c = 90.0;
+            mergeMetric.AutoMerge_Objects__c = 'Account;Contacts Within Account;Contacts Across Accounts';
+
+            listMergeMetrics.add(mergeMetric);
+
+            // Reset updated report
+            scheduleMerge.execute(null);
+
+            C501_MM_Rule_Discover.get().executeMetric(mergeMetric.Id);
+        }
+
+        update listMergeMetrics;
+
+        for (C501_Merge_Metric__c mergeMetric: listMergeMetrics) {
+
+            // Process a merge
+            scheduleMerge.execute(null);
+        }
+
+        Test.StopTest();
+    }
 
     @isTest(SeeAllData='true')
     public static void ProcessContactMerges_BatchTest() {

@@ -99,11 +99,8 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
         String mergeMetricName = mergeMetric.Name;
         Decimal mergeMetricAutoPercentage = mergeMetric.AutoMerge_Percentage__c;
 
-        Set<Id> objectIds = new Set<Id>();
         Set<String> mergeObjectsExisting = new Set<String>();
-        Map<Id, C501_Contact_Merge__c> objectMergeMap = new Map<Id, C501_Contact_Merge__c>();
         List<C501_Contact_Merge__c> invalidMerges = new List<C501_Contact_Merge__c>();
-        Set<Id> objectIdsValid = new Set<Id>();
 
         Boolean isSandbox = false;
         List<Organization> organizations = [SELECT IsSandbox FROM Organization LIMIT 1];
@@ -117,46 +114,37 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
             WHERE Merge_Metric__r.Name = :mergeMetricName]) {
 
             if (mergeObject.Contact__c == null || mergeObject.Merge_Target_Contact__c == null) {
-                invalidMerges.add(mergeObject);
 
+                invalidMerges.add(mergeObject);
                 continue;
             }
 
-            if (!mergeObject.Contact__r.IsDeleted) {
-                objectIdsValid.add(mergeObject.Contact__c);
+            if (mergeObject.Contact__r.IsDeleted) {
+
+                invalidMerges.add(mergeObject);
+                continue;
             }
 
-            if (!mergeObject.Merge_Target_Contact__r.IsDeleted) {
-                objectIdsValid.add(mergeObject.Merge_Target_Contact__c);
+            if (mergeObject.Merge_Target_Contact__r.IsDeleted) {
+
+                invalidMerges.add(mergeObject);
+                continue;
             }
 
             mergeObjectsExisting.add(mergeObject.Unique_Id__c);
-            objectIds.add(mergeObject.Contact__c);
-            objectIds.add(mergeObject.Merge_Target_Contact__c);
-            objectMergeMap.put(mergeObject.Contact__c, mergeObject);
-            objectMergeMap.put(mergeObject.Merge_Target_Contact__c, mergeObject);
         }
 
         if (!invalidMerges.isEmpty()) {
             delete invalidMerges;
         }
 
-        Map<Id, C501_Contact_Merge__c> deleteMerges = new Map<Id, C501_Contact_Merge__c>();
-        for (Id objectId :objectMergeMap.keyset()) {
-            if (!objectIdsValid.contains(objectId)) {
-                deleteMerges.put(objectMergeMap.get(objectId).Id, objectMergeMap.get(objectId));
-            }
-        }
-
-        if (!deleteMerges.values().isEmpty()) {
-            delete deleteMerges.values();
-        }
-
 		if (mergeObjects <> null && !mergeObjects.isEmpty()) {
 
             List<C501_Contact_Merge__c> mergeObjectsInsert = new List<C501_Contact_Merge__c>();
             for (C501_Contact_Merge__c mergeObject :mergeObjects) {
+
                 if (!mergeObjectsExisting.contains(mergeObject.Unique_Id__c)) {
+
                     mergeObjectsInsert.add(mergeObject);
                     mergeObjectsExisting.add(mergeObject.Unique_Id__c);
                 }
@@ -173,9 +161,9 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
                             String statusCode = String.valueOf(resultError.getStatusCode());
 
                             // Sandbox ignore the INVALID_CROSS_REFERENCE_KEY expection because there is partial data in Sandbox
-                            if (isSandbox && statusCode.contains('INVALID_CROSS_REFERENCE_KEY')) {
-                                continue;
-                            }
+//                            if (isSandbox && statusCode.contains('INVALID_CROSS_REFERENCE_KEY')) {
+//                                continue;
+//                            }
 
                             System.debug('***** C501_MassMerge_SharedCode_Contact::InsertObjectMergeCandidates Database.SaveResult');
                             System.debug(statusCode + ': ' + resultError.getMessage());
@@ -196,13 +184,11 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
         String mergeMetricName = mergeMetric.Name;
         Decimal mergeMetricAutoPercentage = mergeMetric.AutoMerge_Percentage__c;
 
-        System.debug('***** C501_MassMerge_SharedCode_Contact::ProcessContactMergeCandidates mergeMetricName: ' + mergeMetricName);
-
         List<C501_Contact_Merge__c> invalidMerges = new List<C501_Contact_Merge__c>();
         List<C501_Contact_Merge__c> pendingMerges = new List<C501_Contact_Merge__c>();
         List<C501_Contact_Merge__c> pendingAutoMerges = new List<C501_Contact_Merge__c>();
 
-        Map<Id, Id> contactHouseholdMap = new Map<Id, Id>();
+        Map<Id, Id> ContactHouseholdMap = new Map<Id, Id>();
         String strSoql = 'SELECT Id, Unique_Id__c, Contact__c, Contact__r.C501_Household_Id__c, Contact__r.IsDeleted, Merge_Target_Contact__c, Merge_Target_Contact__r.C501_Household_Id__c, Merge_Target_Contact__r.IsDeleted, Merge_Confidence__c, Merge_Action__c';
         strSoql += ' FROM C501_Contact_Merge__c';
         strSoql += ' WHERE Merge_Metric__r.Name = :mergeMetricName AND Merge_Action__c <> \'Ignore\'';
@@ -217,8 +203,8 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
                 continue;
             }
 
-            contactHouseholdMap.put(mergeObject.Contact__c, mergeObject.Contact__r.C501_Household_Id__c);
-            contactHouseholdMap.put(mergeObject.Merge_Target_Contact__c, mergeObject.Merge_Target_Contact__r.C501_Household_Id__c);
+            ContactHouseholdMap.put(mergeObject.Contact__c, mergeObject.Contact__r.C501_Household_Id__c);
+            ContactHouseholdMap.put(mergeObject.Merge_Target_Contact__c, mergeObject.Merge_Target_Contact__r.C501_Household_Id__c);
 
             if (mergeObject.Merge_Action__c == 'Master') {
                 pendingMerges.add(mergeObject);
@@ -243,7 +229,7 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
         }
 
         C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
-        c501MassMerge_SharedCode.ProcessObjectMergeCandidates_Contact(mergeMetric, pendingAutoMerges, contactHouseholdMap);
+        c501MassMerge_SharedCode.ProcessObjectMergeCandidates_Contact(mergeMetric, pendingAutoMerges, ContactHouseholdMap);
     }
 
     global void ProcessObjectMerges(List<C501_Contact_Merge__c> objectMerges, Boolean batchMerge)
@@ -368,7 +354,7 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
         }
 
         query += 'Id from Contact where Id IN :mergeCandidates';
-        //System.debug('***** C501_MassMerge_SharedCode::ObjectsFieldMerge - The contact query is: ' + query);
+        //System.debug('***** C501_MassMerge_SharedCode::ObjectsFieldMerge - The Contact query is: ' + query);
         
         List<Contact> objectList;
         try {
@@ -419,7 +405,7 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
             Database.SaveResult updateResult = Database.update((Contact)masterRecord, false);
             if (!updateResult.isSuccess()) {
                 for (Database.Error err : updateResult.getErrors()) {
-                    System.debug('***** C501_MassMerge_SharedCode::ObjectsMerge Account Merge Exception: ' + err.getMessage());
+                    System.debug('***** C501_MassMerge_SharedCode::ObjectsMerge Contact Merge Exception: ' + err.getMessage());
                 }
             }
 

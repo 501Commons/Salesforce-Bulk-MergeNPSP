@@ -195,11 +195,6 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
                             Merge_Metric_Name__c = 'Merge ' + contactMerge.Merge_Metric__r.Name
                     ));
 
-                    // Limit when using filter to 3 because merge limit is 1 master and up to 2 duplicates
-                    if (contactsMerge.keySet().size() >= 3) {
-                        break;
-                    }
-
                     contactsMerge.put(
                         contactMerge.Merge_Target_Contact__c,
                         new C501_Contact_Merge__c(
@@ -211,11 +206,6 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
                             Merge_Metric__c = contactMerge.Merge_Metric__c,
                             Merge_Metric_Name__c = 'Merge ' + contactMerge.Merge_Metric__r.Name
                     ));
-
-                    // Limit when using filter to 3 because merge limit is 1 master and up to 2 duplicates
-                    if (contactsMerge.keySet().size() >= 3) {
-                        break;
-                    }
             }
         }
         else {

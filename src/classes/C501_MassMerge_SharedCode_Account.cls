@@ -99,11 +99,8 @@ global with sharing class C501_MassMerge_SharedCode_Account {
         String mergeMetricName = mergeMetric.Name;
         Decimal mergeMetricAutoPercentage = mergeMetric.AutoMerge_Percentage__c;
 
-        Set<Id> objectIds = new Set<Id>();
         Set<String> mergeObjectsExisting = new Set<String>();
-        Map<Id, C501_Account_Merge__c> objectMergeMap = new Map<Id, C501_Account_Merge__c>();
         List<C501_Account_Merge__c> invalidMerges = new List<C501_Account_Merge__c>();
-        Set<Id> objectIdsValid = new Set<Id>();
 
         Boolean isSandbox = false;
         List<Organization> organizations = [SELECT IsSandbox FROM Organization LIMIT 1];
@@ -117,46 +114,37 @@ global with sharing class C501_MassMerge_SharedCode_Account {
             WHERE Merge_Metric__r.Name = :mergeMetricName]) {
 
             if (mergeObject.Account__c == null || mergeObject.Merge_Target_Account__c == null) {
-                invalidMerges.add(mergeObject);
 
+                invalidMerges.add(mergeObject);
                 continue;
             }
 
-            if (!mergeObject.Account__r.IsDeleted) {
-                objectIdsValid.add(mergeObject.Account__c);
+            if (mergeObject.Account__r.IsDeleted) {
+
+                invalidMerges.add(mergeObject);
+                continue;
             }
 
-            if (!mergeObject.Merge_Target_Account__r.IsDeleted) {
-                objectIdsValid.add(mergeObject.Merge_Target_Account__c);
+            if (mergeObject.Merge_Target_Account__r.IsDeleted) {
+
+                invalidMerges.add(mergeObject);
+                continue;
             }
 
             mergeObjectsExisting.add(mergeObject.Unique_Id__c);
-            objectIds.add(mergeObject.Account__c);
-            objectIds.add(mergeObject.Merge_Target_Account__c);
-            objectMergeMap.put(mergeObject.Account__c, mergeObject);
-            objectMergeMap.put(mergeObject.Merge_Target_Account__c, mergeObject);
         }
 
         if (!invalidMerges.isEmpty()) {
             delete invalidMerges;
         }
 
-        Map<Id, C501_Account_Merge__c> deleteMerges = new Map<Id, C501_Account_Merge__c>();
-        for (Id objectId :objectMergeMap.keyset()) {
-            if (!objectIdsValid.contains(objectId)) {
-                deleteMerges.put(objectMergeMap.get(objectId).Id, objectMergeMap.get(objectId));
-            }
-        }
-
-        if (!deleteMerges.values().isEmpty()) {
-            delete deleteMerges.values();
-        }
-
 		if (mergeObjects <> null && !mergeObjects.isEmpty()) {
 
             List<C501_Account_Merge__c> mergeObjectsInsert = new List<C501_Account_Merge__c>();
             for (C501_Account_Merge__c mergeObject :mergeObjects) {
+
                 if (!mergeObjectsExisting.contains(mergeObject.Unique_Id__c)) {
+
                     mergeObjectsInsert.add(mergeObject);
                     mergeObjectsExisting.add(mergeObject.Unique_Id__c);
                 }
@@ -173,9 +161,9 @@ global with sharing class C501_MassMerge_SharedCode_Account {
                             String statusCode = String.valueOf(resultError.getStatusCode());
 
                             // Sandbox ignore the INVALID_CROSS_REFERENCE_KEY expection because there is partial data in Sandbox
-                            if (isSandbox && statusCode.contains('INVALID_CROSS_REFERENCE_KEY')) {
-                                continue;
-                            }
+//                            if (isSandbox && statusCode.contains('INVALID_CROSS_REFERENCE_KEY')) {
+//                                continue;
+//                            }
 
                             System.debug('***** C501_MassMerge_SharedCode_Account::InsertObjectMergeCandidates Database.SaveResult');
                             System.debug(statusCode + ': ' + resultError.getMessage());
@@ -195,8 +183,6 @@ global with sharing class C501_MassMerge_SharedCode_Account {
 
         String mergeMetricName = mergeMetric.Name;
         Decimal mergeMetricAutoPercentage = mergeMetric.AutoMerge_Percentage__c;
-
-        System.debug('***** C501_MassMerge_SharedCode_Account::ProcessAccountMergeCandidates mergeMetricName: ' + mergeMetricName);
 
         List<C501_Account_Merge__c> invalidMerges = new List<C501_Account_Merge__c>();
         List<C501_Account_Merge__c> pendingMerges = new List<C501_Account_Merge__c>();

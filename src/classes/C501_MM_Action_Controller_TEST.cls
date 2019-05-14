@@ -46,8 +46,9 @@ public class C501_MM_Action_Controller_TEST {
 
         update listMergeMetrics;
 
-        C501_MM_Rule_Discover scheduleDiscover = new C501_MM_Rule_Discover();
-        scheduleDiscover.execute(null);
+        for (C501_Merge_Metric__c mergeMetric :listMergeMetrics) {
+            C501_MM_Rule_Discover.get().executeMetric(mergeMetric.Id);
+        }
 
         C501_MM_Rule_Merge scheduleMerge = new C501_MM_Rule_Merge();
         scheduleMerge.execute(null);
@@ -62,7 +63,7 @@ public class C501_MM_Action_Controller_TEST {
 
         setupTest();
 
-        C501_Merge_Metric__c mergeMetric = [SELECT Name FROM C501_Merge_Metric__c WHERE Name LIKE 'TESTDATA%'];
+        C501_Merge_Metric__c mergeMetric = [SELECT Name FROM C501_Merge_Metric__c WHERE Name LIKE 'TESTDATA%' LIMIT 1];
 
         Test.StartTest();
 
@@ -80,7 +81,7 @@ public class C501_MM_Action_Controller_TEST {
 
         setupTest();
 
-        C501_Merge_Metric__c mergeMetric = [SELECT Name FROM C501_Merge_Metric__c WHERE Name LIKE 'TESTDATA%'];
+        C501_Merge_Metric__c mergeMetric = [SELECT Name FROM C501_Merge_Metric__c WHERE Name LIKE 'TESTDATA%' LIMIT 1];
 
         Test.StartTest();
 

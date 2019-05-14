@@ -96,8 +96,6 @@ global with sharing class C501_MassMerge_SharedCode {
             WHERE
                 FolderName = :reportFolder]) {
 
-                System.debug('***** C501_MassMerge_SharedCode::InitializeMassMergeInstances report - Name: ' + report.Name);
-
                 Boolean foundMergeMetric = false;
                 for (C501_Merge_Metric__c mergeMetric :mergeMetrics) {
                     if (mergeMetric.Source_Report__c == (String)report.Id || mergeMetric.Source_Report__c == report.DeveloperName) {
@@ -409,18 +407,20 @@ global with sharing class C501_MassMerge_SharedCode {
     global void PrintSalesforceStructure() {
 
         System.debug('***** C501_MassMerge_SharedCode::PrintSalesforceStructure');
-
+/*
         for (Account account :[select Id, Name, Website, BillingStreet from Account WHERE Name LIKE 'TESTDATA%']) {
             System.debug('***** C501_MassMerge_SharedCode::PrintSalesforceStructure - ' + String.valueOf(account));
         }
-/*        for (Contact contact :[select Id, Account.Name, LastName, FirstName, Birthdate, Email from Contact WHERE LastName LIKE 'TESTDATA%']) {
+        for (Contact contact :[select Id, Account.Name, LastName, FirstName, Birthdate, Email from Contact WHERE LastName LIKE 'TESTDATA%']) {
             System.debug('***** C501_MassMerge_SharedCode::PrintSalesforceStructure - ' + String.valueOf(contact));
         }
         for (Opportunity opportunity :[select Id, Name from Opportunity WHERE Name LIKE 'TESTDATA%']) {
             System.debug('***** C501_MassMerge_SharedCode::PrintSalesforceStructure - ' + String.valueOf(opportunity));
         }
 */       
-        for (C501_Merge_Metric__c mergeMetric :[SELECT Id FROM C501_Merge_Metric__c WHERE Name LIKE 'TESTDATA%']) {
+        for (C501_Merge_Metric__c mergeMetric :[SELECT Id, Name FROM C501_Merge_Metric__c WHERE Name LIKE 'TESTDATA%']) {
+
+            System.debug('***** C501_MassMerge_SharedCode::PrintSalesforceStructure - Merge Metric: ' + mergeMetric.Name);
 
             for (C501_Account_Merge__c mergeAccount :[select Id, Merge_Metric__r.Name, Merge_Confidence__c, Merge_Action__c from C501_Account_Merge__c WHERE Merge_Metric__c = :mergeMetric.Id]) {
                 System.debug('***** C501_MassMerge_SharedCode::PrintSalesforceStructure - ' + String.valueOf(mergeAccount));
