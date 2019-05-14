@@ -40,13 +40,7 @@
         <field>TITLE</field>
     </columns>
     <columns>
-        <field>CONTACT_RECORDTYPE</field>
-    </columns>
-    <columns>
         <field>LAST_NAME</field>
-    </columns>
-    <columns>
-        <field>MIDDLE_NAME</field>
     </columns>
     <columns>
         <field>FIRST_NAME</field>
