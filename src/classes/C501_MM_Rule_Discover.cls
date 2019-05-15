@@ -721,6 +721,9 @@ public class C501_MM_Rule_Discover implements Schedulable {
         else if (columnFieldName == 'NAME') {
             return 'Name';
         }
+        else if (columnFieldName == 'EMAIL') {
+            return 'Email';
+        }
         else if (columnFieldName == 'FIRST_NAME') {
             return 'FirstName';
         }

@@ -28,5 +28,8 @@
     POSSIBILITY OF SUCH DAMAGE.
 -->  
 
-<apex:page standardController="C501_Merge_Metric__c" extensions="C501_MM_Action_Controller" action="{!discoverTrigger}">
+<apex:page standardController="C501_Merge_Metric__c" extensions="C501_MM_Action_Controller">
+  <apex:form>
+    <apex:commandButton action="{!discoverTrigger}" value="Discover" id="discoverButton" />
+  </apex:form>  
 </apex:page>

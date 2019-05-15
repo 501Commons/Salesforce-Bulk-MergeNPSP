@@ -38,6 +38,8 @@ public with sharing class C501_MM_ListView_Controller {
 
         C501_MM_Rule_Discover.get().DiscoverReports();
 
+        C501_MM_Rule_Discover.get().execute(null);
+
         return new ApexPages.Action('{!List}').invoke();
     }
 }

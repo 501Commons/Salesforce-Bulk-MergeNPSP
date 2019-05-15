@@ -40,9 +40,6 @@
         <field>TICKER</field>
     </columns>
     <columns>
-        <field>ACCOUNT_RECORDTYPE</field>
-    </columns>
-    <columns>
         <field>TYPE</field>
     </columns>
     <columns>

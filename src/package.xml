@@ -73,6 +73,7 @@
         <members>C501_Merge_Metric__c.Last_Discover_Date__c</members>
         <members>C501_Merge_Metric__c.Last_Merge_Date__c</members>
         <members>C501_Merge_Metric__c.Source_Object_Account_Id__c</members>
+        <members>C501_Merge_Metric__c.Source_Object_Contact_Id__c</members>
         <members>C501_Merge_Metric__c.Source_Object__c</members>
         <members>C501_Merge_Metric__c.Source_Report_LastModifiedDate__c</members>
         <members>C501_Merge_Metric__c.Source_Report__c</members>
