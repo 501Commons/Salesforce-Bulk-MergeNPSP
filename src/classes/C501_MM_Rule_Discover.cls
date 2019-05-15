@@ -71,11 +71,11 @@ public class C501_MM_Rule_Discover implements Schedulable {
         String strSoql = 'SELECT';
         strSoql += ' Id, Name, Confidence__c,';
         strSoql += ' Total_Unassigned_Accounts__c, Total_Unassigned_Contacts__c,';
-        strSoql += ' Source_Report__c, Source_Report_LastModifiedDate__c, Source_Object__c, Source_Object_Account_Id__c,';
+        strSoql += ' Source_Report__c, Source_Report_LastModifiedDate__c, Source_Object__c, Source_Object_Account_Id__c, Source_Object_Contact_Id__c,';
         strSoql += ' AutoMerge_Percentage__c, AutoMerge_Objects__c,';
         strSoql += ' Last_Discover_Date__c, Last_Merge_Date__c';
         strSoql += ' FROM C501_Merge_Metric__c';
-        strSoql += ' WHERE Source_Object_Account_Id__c <> null AND Source_Object__c <> NULL AND Source_Report__c <> NULL';
+        strSoql += ' WHERE Source_Object_Account_Id__c <> null AND Source_Object_Contact_Id__c <> NULL AND Source_Object__c <> NULL AND Source_Report__c <> NULL';
         if (Test.isRunningTest()) {        
             strSoql += ' AND Name LIKE \'TESTDATA%\'';
         }
@@ -181,11 +181,11 @@ public class C501_MM_Rule_Discover implements Schedulable {
         String strSoql = 'SELECT';
         strSoql += ' Id, Name, Confidence__c,';
         strSoql += ' Total_Unassigned_Accounts__c, Total_Unassigned_Contacts__c,';
-        strSoql += ' Source_Report__c, Source_Report_LastModifiedDate__c, Source_Object__c, Source_Object_Account_Id__c,';
+        strSoql += ' Source_Report__c, Source_Report_LastModifiedDate__c, Source_Object__c, Source_Object_Account_Id__c, Source_Object_Contact_Id__c,';
         strSoql += ' AutoMerge_Percentage__c, AutoMerge_Objects__c,';
         strSoql += ' Last_Discover_Date__c, Last_Merge_Date__c';
         strSoql += ' FROM C501_Merge_Metric__c';
-        strSoql += ' WHERE Source_Object_Account_Id__c <> null AND Source_Object__c <> NULL AND Source_Report__c <> NULL';
+        strSoql += ' WHERE Source_Object_Account_Id__c <> null AND Source_Object_Contact_Id__c <> NULL AND Source_Object__c <> NULL AND Source_Report__c <> NULL';
         strSoql += ' AND Id = :mergeMetricId';
         if (Test.isRunningTest()) {        
             strSoql += ' AND Name LIKE \'TESTDATA%\'';
@@ -548,7 +548,7 @@ public class C501_MM_Rule_Discover implements Schedulable {
     public void ProcessReportByContacts(C501_Merge_Metric__c mergeMetric, String foriegnKey, List<String> detailColumnsChecked, List<Reports.ReportFilter> reportFilters, String additionalGroupByField) {
         // Find Contact matches across Accounts
         //
-        String strSoqlSelect = 'SELECT Count(Id)Matches, MAX(Id)MaxId, MIN(Id)MinId ';
+        String strSoqlSelect = 'SELECT Count(' + mergeMetric.Source_Object_Contact_Id__c + ')Matches, MAX(' + mergeMetric.Source_Object_Contact_Id__c + ')MaxId, MIN(' + mergeMetric.Source_Object_Contact_Id__c + ')MinId ';
         String strSoqlFrom = ' FROM ' + mergeMetric.Source_Object__c;
 
         // Build WHERE statement
@@ -589,7 +589,7 @@ public class C501_MM_Rule_Discover implements Schedulable {
         List<String> groupByFields = new List<String>();
         for (String column :detailColumnsChecked) {
 
-            if (column.contains(mergeMetric.Source_Object_Account_Id__c)) {
+            if (column.contains(mergeMetric.Source_Object_Contact_Id__c)) {
                 continue;
             }
 
@@ -602,8 +602,8 @@ public class C501_MM_Rule_Discover implements Schedulable {
         }
 
         String strSoqlGroupBy = ' GROUP BY ' + String.join(groupByFields, ', ');
-        String strSoqlHaving = ' HAVING Count(Id) > 1 ';
-        String strSoqlOrderBy = ' ORDER BY Count(Id) DESC';
+        String strSoqlHaving = ' HAVING Count(' + mergeMetric.Source_Object_Contact_Id__c + ') > 1 ';
+        String strSoqlOrderBy = ' ORDER BY Count(' + mergeMetric.Source_Object_Contact_Id__c + ') DESC';
 
         System.debug('***** C501_MM_Rule_Discover:ProcessReportByContacts aggregate SOQL');
         System.debug(strSoqlSelect);

@@ -77,7 +77,7 @@ global with sharing class C501_MassMerge_SharedCode {
         String strSoql = 'SELECT';
         strSoql += ' Id, Name, Confidence__c,';
         strSoql += ' Total_Unassigned_Accounts__c, Total_Unassigned_Contacts__c,';
-        strSoql += ' Source_Report__c, Source_Report_LastModifiedDate__c, Source_Object__c, Source_Object_Account_Id__c,';
+        strSoql += ' Source_Report__c, Source_Report_LastModifiedDate__c, Source_Object__c, Source_Object_Account_Id__c, Source_Object_Contact_Id__c';
         strSoql += ' AutoMerge_Percentage__c, AutoMerge_Objects__c,';
         strSoql += ' Last_Discover_Date__c, Last_Merge_Date__c';
         strSoql += ' FROM C501_Merge_Metric__c';
@@ -111,6 +111,7 @@ global with sharing class C501_MassMerge_SharedCode {
                         Source_Report__c = report.DeveloperName,
                         Source_Object__c = (report.DeveloperName.contains('Account') ? 'Account' : 'Contact'),
                         Source_Object_Account_Id__c = (report.DeveloperName.contains('Account') ? 'Id' : 'AccountId'),
+                        Source_Object_Contact_Id__c = (report.DeveloperName.contains('Contact') ? 'Id' : 'Id'),
                         AutoMerge_Percentage__c = 0.0
                     ));
                 }
@@ -149,6 +150,7 @@ global with sharing class C501_MassMerge_SharedCode {
                 Source_Report__c = 'User_Merge_Rule_Account_No_Contacts',
                 Source_Object__c = 'Account',
                 Source_Object_Account_Id__c = 'Id',
+                Source_Object_Contact_Id__c = 'Id',
                 Description__c = mergeMetricName
             ));
 
