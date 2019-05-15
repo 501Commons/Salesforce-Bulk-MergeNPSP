@@ -37,30 +37,36 @@
     </fieldSets>
     <fields>
         <fullName>C501_Household_Id__c</fullName>
+        <deprecated>false</deprecated>
         <externalId>false</externalId>
         <formula>AccountId</formula>
         <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
         <label>Household Id</label>
         <required>false</required>
+        <trackHistory>false</trackHistory>
         <type>Text</type>
         <unique>false</unique>
     </fields>
     <fields>
         <fullName>C501_Mailing_Address__c</fullName>
+        <deprecated>false</deprecated>
         <externalId>false</externalId>
         <formula>MailingStreet + &apos;, &apos; + MailingCity + &apos; &apos; + MailingState + &apos; &apos; + MailingPostalCode</formula>
         <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
         <label>Mailing Address</label>
         <required>false</required>
+        <trackHistory>false</trackHistory>
         <type>Text</type>
         <unique>false</unique>
     </fields>
     <fields>
         <fullName>C501_Merge_Action__c</fullName>
+        <deprecated>false</deprecated>
         <externalId>false</externalId>
         <label>Merge Action</label>
         <required>false</required>
         <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
         <type>Picklist</type>
         <valueSet>
             <restricted>true</restricted>
@@ -69,100 +75,120 @@
     </fields>
     <fields>
         <fullName>C501_Merge_Confidence_From__c</fullName>
+        <deprecated>false</deprecated>
         <externalId>false</externalId>
         <label>Merge Confidence From</label>
         <precision>18</precision>
         <required>false</required>
         <scale>0</scale>
         <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
         <type>Percent</type>
     </fields>
     <fields>
         <fullName>C501_Merge_Confidence_To__c</fullName>
+        <deprecated>false</deprecated>
         <externalId>false</externalId>
         <label>Merge Confidence To</label>
         <precision>18</precision>
         <required>false</required>
         <scale>0</scale>
         <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
         <type>Percent</type>
     </fields>
     <fields>
         <fullName>C501_Merge_Confidence__c</fullName>
+        <deprecated>false</deprecated>
         <externalId>false</externalId>
         <label>Confidence</label>
         <precision>4</precision>
         <required>false</required>
         <scale>0</scale>
         <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
         <type>Percent</type>
     </fields>
     <fields>
         <fullName>C501_Merge_Contact__c</fullName>
+        <deprecated>false</deprecated>
         <externalId>false</externalId>
         <label>Merge Contact</label>
         <length>18</length>
         <required>false</required>
         <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
         <type>Text</type>
         <unique>false</unique>
     </fields>
     <fields>
         <fullName>C501_Merge_Id__c</fullName>
+        <deprecated>false</deprecated>
         <externalId>false</externalId>
         <label>Merge Id</label>
         <length>18</length>
         <required>false</required>
         <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
         <type>Text</type>
         <unique>false</unique>
     </fields>
     <fields>
         <fullName>C501_Merge_Metric_Name__c</fullName>
+        <deprecated>false</deprecated>
         <externalId>false</externalId>
         <label>Rule</label>
         <length>80</length>
         <required>false</required>
         <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
         <type>Text</type>
         <unique>false</unique>
     </fields>
     <fields>
         <fullName>C501_Merge_Rule__c</fullName>
+        <deprecated>false</deprecated>
         <externalId>false</externalId>
         <label>Merge Rule</label>
         <length>64</length>
         <required>false</required>
         <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
         <type>Text</type>
         <unique>false</unique>
     </fields>
     <fields>
         <fullName>C501_Merge_Target__c</fullName>
+        <deprecated>false</deprecated>
         <externalId>false</externalId>
         <label>Merge Target</label>
         <length>18</length>
         <required>false</required>
         <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
         <type>Text</type>
         <unique>false</unique>
     </fields>
     <fields>
         <fullName>C501_Other_Address__c</fullName>
+        <deprecated>false</deprecated>
         <externalId>false</externalId>
         <formula>OtherStreet + &apos;, &apos; + OtherCity + &apos; &apos; + OtherState + &apos; &apos; + OtherPostalCode</formula>
         <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
         <label>Other Address</label>
         <required>false</required>
+        <trackHistory>false</trackHistory>
         <type>Text</type>
         <unique>false</unique>
     </fields>
     <fields>
         <fullName>Gender__c</fullName>
+        <deprecated>false</deprecated>
         <externalId>false</externalId>
         <label>Gender</label>
         <required>false</required>
         <trackFeedHistory>false</trackFeedHistory>
+        <trackHistory>false</trackHistory>
         <type>Picklist</type>
         <valueSet>
             <valueSetDefinition>

@@ -43,6 +43,7 @@
     <allowInChatterGroups>false</allowInChatterGroups>
     <compactLayoutAssignment>SYSTEM</compactLayoutAssignment>
     <deploymentStatus>Deployed</deploymentStatus>
+    <deprecated>false</deprecated>
     <enableActivities>false</enableActivities>
     <enableBulkApi>true</enableBulkApi>
     <enableChangeDataCapture>false</enableChangeDataCapture>
@@ -54,6 +55,7 @@
     <enableStreamingApi>true</enableStreamingApi>
     <fields>
         <fullName>AutoMerge_Objects__c</fullName>
+        <deprecated>false</deprecated>
         <externalId>false</externalId>
         <label>AutoMerge Objects</label>
         <required>false</required>
@@ -84,6 +86,7 @@
     </fields>
     <fields>
         <fullName>AutoMerge_Percentage__c</fullName>
+        <deprecated>false</deprecated>
         <externalId>false</externalId>
         <label>AutoMerge Percentage</label>
         <precision>18</precision>
@@ -95,6 +98,7 @@
     <fields>
         <fullName>Confidence__c</fullName>
         <defaultValue>90.0</defaultValue>
+        <deprecated>false</deprecated>
         <description>Confidence percentage for potential merge candidates found by this rule.</description>
         <externalId>false</externalId>
         <label>Confidence</label>
@@ -106,6 +110,7 @@
     </fields>
     <fields>
         <fullName>Description__c</fullName>
+        <deprecated>false</deprecated>
         <externalId>false</externalId>
         <label>Description</label>
         <length>1024</length>
@@ -115,6 +120,7 @@
     </fields>
     <fields>
         <fullName>Last_Discover_Date__c</fullName>
+        <deprecated>false</deprecated>
         <externalId>false</externalId>
         <label>Last Discover Date</label>
         <required>false</required>
@@ -123,6 +129,7 @@
     </fields>
     <fields>
         <fullName>Last_Merge_Date__c</fullName>
+        <deprecated>false</deprecated>
         <externalId>false</externalId>
         <label>Last Merge Date</label>
         <required>false</required>
@@ -141,7 +148,18 @@
         <unique>false</unique>
     </fields>
     <fields>
+        <fullName>Source_Object_Contact_Id__c</fullName>
+        <externalId>false</externalId>
+        <label>Source Object Contact Id</label>
+        <length>128</length>
+        <required>true</required>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
         <fullName>Source_Object__c</fullName>
+        <deprecated>false</deprecated>
         <description>Name of the source object to query when trying to find potential merge candidates (e.g., Contact, Account)</description>
         <externalId>false</externalId>
         <label>Source Object</label>
@@ -153,6 +171,7 @@
     </fields>
     <fields>
         <fullName>Source_Report_LastModifiedDate__c</fullName>
+        <deprecated>false</deprecated>
         <externalId>false</externalId>
         <label>Source Report LastModifiedDate</label>
         <required>false</required>
@@ -161,6 +180,7 @@
     </fields>
     <fields>
         <fullName>Source_Report__c</fullName>
+        <deprecated>false</deprecated>
         <externalId>false</externalId>
         <label>Source Report</label>
         <length>80</length>
@@ -171,6 +191,7 @@
     </fields>
     <fields>
         <fullName>Total_Ignore__c</fullName>
+        <deprecated>false</deprecated>
         <externalId>false</externalId>
         <label>Total Ignore</label>
         <summaryFilterItems>
@@ -185,6 +206,7 @@
     </fields>
     <fields>
         <fullName>Total_Unassigned_Accounts__c</fullName>
+        <deprecated>false</deprecated>
         <externalId>false</externalId>
         <label>Total Unassigned Accounts</label>
         <summaryFilterItems>
@@ -199,6 +221,7 @@
     </fields>
     <fields>
         <fullName>Total_Unassigned_Contacts__c</fullName>
+        <deprecated>false</deprecated>
         <externalId>false</externalId>
         <label>Total Unassigned Contacts</label>
         <summaryForeignKey>C501_Contact_Merge__c.Merge_Metric__c</summaryForeignKey>
@@ -212,6 +235,11 @@
         <columns>NAME</columns>
         <columns>Confidence__c</columns>
         <columns>AutoMerge_Percentage__c</columns>
+        <filterScope>Everything</filterScope>
+        <label>All</label>
+    </listViews>
+    <listViews>
+        <fullName>All1</fullName>
         <filterScope>Everything</filterScope>
         <label>All</label>
     </listViews>

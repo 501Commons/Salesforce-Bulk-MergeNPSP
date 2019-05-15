@@ -43,6 +43,7 @@
     <allowInChatterGroups>false</allowInChatterGroups>
     <compactLayoutAssignment>SYSTEM</compactLayoutAssignment>
     <deploymentStatus>Deployed</deploymentStatus>
+    <deprecated>false</deprecated>
     <enableActivities>false</enableActivities>
     <enableBulkApi>true</enableBulkApi>
     <enableChangeDataCapture>false</enableChangeDataCapture>
@@ -54,6 +55,7 @@
     <enableStreamingApi>true</enableStreamingApi>
     <fields>
         <fullName>Contact__c</fullName>
+        <deprecated>false</deprecated>
         <externalId>false</externalId>
         <label>Contact</label>
         <referenceTo>Contact</referenceTo>
@@ -67,6 +69,7 @@
     </fields>
     <fields>
         <fullName>Merge_Action__c</fullName>
+        <deprecated>false</deprecated>
         <externalId>false</externalId>
         <label>Merge Action</label>
         <required>false</required>
@@ -79,6 +82,7 @@
     </fields>
     <fields>
         <fullName>Merge_Confidence__c</fullName>
+        <deprecated>false</deprecated>
         <externalId>false</externalId>
         <label>Merge Confidence</label>
         <precision>18</precision>
@@ -89,6 +93,7 @@
     </fields>
     <fields>
         <fullName>Merge_Metric_Name__c</fullName>
+        <deprecated>false</deprecated>
         <externalId>false</externalId>
         <label>Merge Metric Name</label>
         <length>255</length>
@@ -99,6 +104,7 @@
     </fields>
     <fields>
         <fullName>Merge_Metric__c</fullName>
+        <deprecated>false</deprecated>
         <externalId>false</externalId>
         <label>Merge Metric</label>
         <referenceTo>C501_Merge_Metric__c</referenceTo>
@@ -113,6 +119,7 @@
     <fields>
         <fullName>Merge_Target_Contact__c</fullName>
         <deleteConstraint>SetNull</deleteConstraint>
+        <deprecated>false</deprecated>
         <externalId>false</externalId>
         <label>Merge Target Contact</label>
         <referenceTo>Contact</referenceTo>
@@ -125,6 +132,7 @@
     <fields>
         <fullName>Unique_Id__c</fullName>
         <caseSensitive>false</caseSensitive>
+        <deprecated>false</deprecated>
         <externalId>false</externalId>
         <label>Unique Id</label>
         <length>128</length>
