@@ -199,6 +199,7 @@
     </types>
     <types>
         <members>C501_Merge_Metric__c.C501_ListView_Discover</members>
+        <members>C501_Merge_Metric__c.C501_ListView_Merge</members>
         <name>WebLink</name>
     </types>
     <version>45.0</version>

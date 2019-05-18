@@ -43,19 +43,17 @@
     <allowInChatterGroups>false</allowInChatterGroups>
     <compactLayoutAssignment>SYSTEM</compactLayoutAssignment>
     <deploymentStatus>Deployed</deploymentStatus>
-    <deprecated>false</deprecated>
     <enableActivities>false</enableActivities>
     <enableBulkApi>true</enableBulkApi>
-    <enableChangeDataCapture>false</enableChangeDataCapture>
     <enableFeeds>false</enableFeeds>
     <enableHistory>false</enableHistory>
+    <enableLicensing>false</enableLicensing>
     <enableReports>false</enableReports>
     <enableSearch>true</enableSearch>
     <enableSharing>true</enableSharing>
     <enableStreamingApi>true</enableStreamingApi>
     <fields>
         <fullName>Account__c</fullName>
-        <deprecated>false</deprecated>
         <externalId>false</externalId>
         <label>Account</label>
         <referenceTo>Account</referenceTo>
@@ -69,7 +67,6 @@
     </fields>
     <fields>
         <fullName>Merge_Action__c</fullName>
-        <deprecated>false</deprecated>
         <externalId>false</externalId>
         <label>Merge Action</label>
         <required>false</required>
@@ -82,7 +79,6 @@
     </fields>
     <fields>
         <fullName>Merge_Confidence__c</fullName>
-        <deprecated>false</deprecated>
         <externalId>false</externalId>
         <label>Merge Confidence</label>
         <precision>18</precision>
@@ -93,7 +89,6 @@
     </fields>
     <fields>
         <fullName>Merge_Metric_Name__c</fullName>
-        <deprecated>false</deprecated>
         <externalId>false</externalId>
         <label>Merge Metric Name</label>
         <length>255</length>
@@ -104,7 +99,6 @@
     </fields>
     <fields>
         <fullName>Merge_Metric__c</fullName>
-        <deprecated>false</deprecated>
         <externalId>false</externalId>
         <label>Merge Metric</label>
         <referenceTo>C501_Merge_Metric__c</referenceTo>
@@ -119,7 +113,6 @@
     <fields>
         <fullName>Merge_Target_Account__c</fullName>
         <deleteConstraint>SetNull</deleteConstraint>
-        <deprecated>false</deprecated>
         <externalId>false</externalId>
         <label>Merge Target Account</label>
         <referenceTo>Account</referenceTo>
@@ -132,7 +125,6 @@
     <fields>
         <fullName>Unique_Id__c</fullName>
         <caseSensitive>false</caseSensitive>
-        <deprecated>false</deprecated>
         <externalId>false</externalId>
         <label>Unique Id</label>
         <length>128</length>

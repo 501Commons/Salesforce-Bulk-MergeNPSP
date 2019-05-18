@@ -5,6 +5,8 @@
         <shouldOverrideOrgTheme>false</shouldOverrideOrgTheme>
     </brand>
     <formFactors>Large</formFactors>
+    <isNavAutoTempTabsDisabled>false</isNavAutoTempTabsDisabled>
+    <isNavPersonalizationDisabled>false</isNavPersonalizationDisabled>
     <label>Mass Merge</label>
     <navType>Standard</navType>
     <tabs>Mass_Merge_Accounts</tabs>
