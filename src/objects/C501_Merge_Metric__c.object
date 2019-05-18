@@ -174,7 +174,7 @@
         <externalId>false</externalId>
         <label>Source Report</label>
         <length>80</length>
-        <required>false</required>
+        <required>true</required>
         <trackTrending>false</trackTrending>
         <type>Text</type>
         <unique>false</unique>

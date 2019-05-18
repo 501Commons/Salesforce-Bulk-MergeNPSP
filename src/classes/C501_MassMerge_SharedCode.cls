@@ -81,7 +81,7 @@ global with sharing class C501_MassMerge_SharedCode {
         strSoql += ' AutoMerge_Percentage__c, AutoMerge_Objects__c,';
         strSoql += ' Last_Discover_Date__c, Last_Merge_Date__c';
         strSoql += ' FROM C501_Merge_Metric__c';
-        strSoql += ' WHERE Source_Object_Account_Id__c <> null AND Source_Object_Contact_Id__c <> NULL AND Source_Object__c <> NULL AND Source_Report__c <> NULL';
+        strSoql += ' WHERE Source_Object__c <> NULL AND Source_Report__c <> NULL';
 
         if (Test.isRunningTest()) {        
             strSoql += ' AND Name LIKE \'TESTDATA%\'';
@@ -109,18 +109,28 @@ global with sharing class C501_MassMerge_SharedCode {
         for (Report report :[
             SELECT Id, DeveloperName, FolderName, Name
             FROM Report
-            WHERE
-                FolderName = :reportFolder]) {
+            WHERE FolderName = :reportFolder]) {
+
+                System.debug('***** C501_MassMerge_SharedCode::InitializeMassMergeInstances Report DeveloperName: ' + report.DeveloperName);
 
                 Boolean foundMergeMetric = false;
                 for (C501_Merge_Metric__c mergeMetric :mergeMetrics) {
+
+                    System.debug('***** C501_MassMerge_SharedCode::InitializeMassMergeInstances Merge Metric Name: ' + mergeMetric.Name + ' Source Report: ' + mergeMetric.Source_Report__c);
+
                     if (mergeMetric.Source_Report__c == (String)report.Id || mergeMetric.Source_Report__c == report.DeveloperName) {
+
+                        System.debug('***** C501_MassMerge_SharedCode::InitializeMassMergeInstances foundMergeMetric');
+
                         foundMergeMetric = true;
                         break;
                     }
                 }
 
                 if (!foundMergeMetric) {
+
+                    System.debug('***** C501_MassMerge_SharedCode::InitializeMassMergeInstances !foundMergeMetric');
+
                     mergeMetricsInsert.add( new C501_Merge_Metric__c (
                         Name = (Test.isRunningTest() ? ('TESTDATA ' + report.Name) : report.Name),
                         Confidence__c = 90.0,
