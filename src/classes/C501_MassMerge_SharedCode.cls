@@ -72,7 +72,6 @@ global with sharing class C501_MassMerge_SharedCode {
         return String.join(iterableFields, ',');
     }
 
-
     global String GetC501MergeMetricQuery() {
 
         String strSoql = 'SELECT';
@@ -100,16 +99,7 @@ global with sharing class C501_MassMerge_SharedCode {
             reportFolder = 'Mass Merge Tests';
         }
         
-        String strSoql = 'SELECT';
-        strSoql += ' Id, Name, Confidence__c,';
-        strSoql += ' Total_Unassigned_Accounts__c, Total_Unassigned_Contacts__c,';
-        strSoql += ' Source_Report__c, Source_Report_LastModifiedDate__c, Source_Object__c, Source_Object_Account_Id__c, Source_Object_Contact_Id__c, ';
-        strSoql += ' AutoMerge_Percentage__c, AutoMerge_Objects__c,';
-        strSoql += ' Last_Discover_Date__c, Last_Merge_Date__c';
-        strSoql += ' FROM C501_Merge_Metric__c';
-        if (Test.isRunningTest()) {        
-            strSoql += ' WHERE Name LIKE \'TESTDATA%\'';
-        }
+        String strSoql = this.GetC501MergeMetricQuery();
         List<C501_Merge_Metric__c> mergeMetrics = Database.Query(strSoql);
 
         System.debug('***** C501_MassMerge_SharedCode::InitializeMassMergeInstances Check for merge reports - Folder: ' + reportFolder);
@@ -439,6 +429,25 @@ global with sharing class C501_MassMerge_SharedCode {
         insert listContacts;
 
         //PrintSalesforceStructure();
+    }
+
+    global void TestDiscoverHelper(String queryNameCriteria) {
+
+        this.TestSetupMerge();
+
+        String strSoql = 'SELECT Id FROM C501_Merge_Metric__c WHERE Name LIKE \'TESTDATA%\' AND Name LIKE \'%' + queryNameCriteria + '%\'';
+        List<C501_Merge_Metric__c> mergeMetrics = Database.Query(strSoql);
+        for (C501_Merge_Metric__c mergeMetric :mergeMetrics) {
+
+            mergeMetric.AutoMerge_Percentage__c = 90.0;
+            mergeMetric.AutoMerge_Objects__c = 'Account;Contacts Within Account;Contacts Across Accounts';
+
+            C501_MM_Rule_Discover.get().executeMetric(mergeMetric.Id);
+        }
+
+        update mergeMetrics;
+
+        //this.PrintSalesforceStructure();
     }
 
     global void PrintSalesforceStructure() {

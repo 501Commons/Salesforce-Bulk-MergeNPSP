@@ -9,6 +9,7 @@
         <members>C501_MM_Action_Controller</members>
         <members>C501_MM_Action_Controller_TEST</members>
         <members>C501_MM_ListView_Controller</members>
+        <members>C501_MM_ListView_Controller_TEST</members>
         <members>C501_MM_Rule_Discover</members>
         <members>C501_MM_Rule_Merge</members>
         <members>C501_MassMerge_Batch</members>
@@ -31,10 +32,8 @@
     <types>
         <members>C501_MassMergeAccounts</members>
         <members>C501_MassMergeContacts</members>
-        <members>C501_MassMergeDiscover</members>
         <members>C501_MassMergeListView</members>
         <members>C501_MassMergeListViewMerge</members>
-        <members>C501_MassMergeMerge</members>
         <name>ApexPage</name>
     </types>
     <types>
@@ -157,11 +156,6 @@
         <members>C501_Merge_Metric__c.All1</members>
         <members>C501_Merge_Metric__c.All_NPSP</members>
         <name>ListView</name>
-    </types>
-    <types>
-        <members>C501_Merge_Metric__c.C501_Action_Discover</members>
-        <members>C501_Merge_Metric__c.C501_Action_Merge</members>
-        <name>QuickAction</name>
     </types>
     <types>
         <members>C501_Mass_Merge_Rules</members>

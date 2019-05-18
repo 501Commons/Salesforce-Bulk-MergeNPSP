@@ -76,7 +76,7 @@ public class C501_MM_Rule_Discover implements Schedulable {
         String strSoql = c501MassMerge_SharedCode.GetC501MergeMetricQuery();
 
         // Add in specific Id query
-        strSoql += ' AND Id = :mergeMetricId';
+        strSoql += ' AND Id = \'' + mergeMetricId + '\'';
 
         this.ProcessMergeMetrics(strSoql);
     }

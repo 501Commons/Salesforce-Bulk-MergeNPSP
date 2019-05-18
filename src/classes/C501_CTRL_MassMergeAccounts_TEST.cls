@@ -31,92 +31,53 @@
 @isTest
 public class C501_CTRL_MassMergeAccounts_TEST {
     
-    private static void setupTest() {
-
-        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
-        c501MassMerge_SharedCode.TestSetupMerge();
-
-        List<C501_Merge_Metric__c> listMergeMetrics = new List<C501_Merge_Metric__c>();
-        for (C501_Merge_Metric__c mergeMetric :[SELECT Id FROM C501_Merge_Metric__c WHERE Name LIKE 'TESTDATA%' AND Name LIKE '%Account%']) {
-
-            mergeMetric.AutoMerge_Percentage__c = 0.0;
-            mergeMetric.AutoMerge_Objects__c = 'Account;Contacts Within Account;Contacts Across Accounts';
-
-            listMergeMetrics.add(mergeMetric);
-        }
-
-        update listMergeMetrics;
-
-        for (C501_Merge_Metric__c mergeMetric :listMergeMetrics) {
-            C501_MM_Rule_Discover.get().executeMetric(mergeMetric.Id);
-        }
-
-        c501MassMerge_SharedCode.PrintSalesforceStructure();
-    }
-
     //==================== TEST METHOD(s) ======================================
 
     @isTest(SeeAllData='true')
-    public static void Merge_Test() {
+    public static void AllFields_General_DiscoverTest() {
 
-        setupTest();
-
-        List<C501_Merge_Metric__c> listMergeMetrics = new List<C501_Merge_Metric__c>();
-        for (C501_Merge_Metric__c mergeMetric :[SELECT Id FROM C501_Merge_Metric__c WHERE Name LIKE 'TESTDATA%' AND Name LIKE '%Account Address%']) {
-
-            mergeMetric.AutoMerge_Percentage__c = 90.0;
-            mergeMetric.AutoMerge_Objects__c = 'Account;Contacts Within Account;Contacts Across Accounts';
-
-            listMergeMetrics.add(mergeMetric);
-
-            // Reset updated report
-            C501_MM_Rule_Merge.get().execute(null);
-
-            C501_MM_Rule_Discover.get().executeMetric(mergeMetric.Id);
-        }
-
-        update listMergeMetrics;
+        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
 
         Test.StartTest();
-
-        for (C501_Merge_Metric__c mergeMetric: listMergeMetrics) {
-
-            // Process a merge
-            C501_MM_Rule_Merge.get().execute(null);
-        }
-
+        c501MassMerge_SharedCode.TestDiscoverHelper('Account All General');
         Test.StopTest();
     }
 
     @isTest(SeeAllData='true')
-    public static void Account_Address_Test() {
+    public static void AllFields_Address_DiscoverTest() {
 
-        setupTest();
-
-        List<C501_Merge_Metric__c> listMergeMetrics = new List<C501_Merge_Metric__c>();
-        for (C501_Merge_Metric__c mergeMetric :[SELECT Id FROM C501_Merge_Metric__c WHERE Name LIKE 'TESTDATA%' AND Name LIKE '%Account Address%']) {
-            mergeMetric.AutoMerge_Percentage__c = 90.0;
-            mergeMetric.AutoMerge_Objects__c = 'Account;Contacts Within Account;Contacts Across Accounts';
-
-            listMergeMetrics.add(mergeMetric);
-        }
-
-        update listMergeMetrics;
+        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
 
         Test.StartTest();
+        c501MassMerge_SharedCode.TestDiscoverHelper('Account All Address');
+        Test.StopTest();
+    }
 
-        // Run discover for each merge metric
-        for (C501_Merge_Metric__c mergeMetric :listMergeMetrics) {
-            C501_MM_Rule_Discover.get().executeMetric(mergeMetric.Id);
-        }
+    @isTest(SeeAllData='true')
+    public static void AllFields_PhFxURL_DiscoverTest() {
 
+        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
+
+        Test.StartTest();
+        c501MassMerge_SharedCode.TestDiscoverHelper('Account All PhFxURL');
+        Test.StopTest();
+    }
+
+    @isTest(SeeAllData='true')
+    public static void Account_Address_DiscoverTest() {
+
+        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
+
+        Test.StartTest();
+        c501MassMerge_SharedCode.TestDiscoverHelper('Account Address');
         Test.StopTest();
     }
 
     @isTest(SeeAllData='true')
     public static void ProcessObjectMerges_BatchTest() {
 
-        setupTest();
+        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
+        c501MassMerge_SharedCode.TestDiscoverHelper('Account Address');
 
         List<C501_Merge_Metric__c> listMergeMetrics = [SELECT Id FROM C501_Merge_Metric__c WHERE Name LIKE 'TESTDATA%' AND Name LIKE '%Account%'];
         List<Account> listAccounts = [SELECT Id FROM Account WHERE Name LIKE 'TESTDATA%'];
@@ -161,7 +122,8 @@ public class C501_CTRL_MassMergeAccounts_TEST {
     @isTest(SeeAllData='true')
     public static void ProcessObjectMerges_SyncTest() {
 
-        setupTest();
+        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
+        c501MassMerge_SharedCode.TestDiscoverHelper('Account Address');
 
         List<C501_Merge_Metric__c> listMergeMetrics = [SELECT Id FROM C501_Merge_Metric__c WHERE Name LIKE 'TESTDATA%' AND Name LIKE '%Account%'];
         List<Account> listAccounts = [SELECT Id FROM Account WHERE Name LIKE 'TESTDATA%'];
@@ -187,7 +149,8 @@ public class C501_CTRL_MassMergeAccounts_TEST {
     @isTest(SeeAllData='true')
     public static void CodeCoverageTests() {
 
-        setupTest();
+        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
+        c501MassMerge_SharedCode.TestDiscoverHelper('Account Address');
 
         Id masterAccountId = [SELECT Id FROM Account WHERE Name LIKE 'TESTDATA%' ORDER BY Id ASC LIMIT 1].Id;
 
@@ -268,7 +231,8 @@ public class C501_CTRL_MassMergeAccounts_TEST {
     @isTest(SeeAllData='true')
     public static void testPageMessagesController() {
 
-        setupTest();
+        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
+        c501MassMerge_SharedCode.TestDiscoverHelper('Account Address');
 
         Test.StartTest();
 

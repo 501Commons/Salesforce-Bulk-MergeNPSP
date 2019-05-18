@@ -63,7 +63,17 @@ global with sharing class C501_MassMerge_SharedCode_Account {
                     and Merge_Action__c <> 'Master' 
                 GROUP BY Account__c, Account__r.Name
                 LIMIT 999]) {
-                    listSO.add(new SelectOption(result.get('c501dm__Account__c').toString(),
+
+                    // Attempt to get based on Namespace
+                    String objectFieldValue;
+                    try {
+                        objectFieldValue = result.get('c501dm__Account__c').toString();
+                    }
+                    catch (System.SObjectException objectException) {
+                        objectFieldValue = result.get('Account__c').toString();
+                    }
+
+                    listSO.add(new SelectOption(objectFieldValue,
                         result.get('Name').toString()));
             }
         }
@@ -78,7 +88,17 @@ global with sharing class C501_MassMerge_SharedCode_Account {
                     and Merge_Metric__r.Name = :mergeRule
                 GROUP BY Account__c, Account__r.Name
                 LIMIT 999]) {
-                    listSO.add(new SelectOption(result.get('c501dm__Account__c').toString(),
+
+                    // Attempt to get based on Namespace
+                    String objectFieldValue;
+                    try {
+                        objectFieldValue = result.get('c501dm__Account__c').toString();
+                    }
+                    catch (System.SObjectException objectException) {
+                        objectFieldValue = result.get('Account__c').toString();
+                    }
+
+                    listSO.add(new SelectOption(objectFieldValue,
                         result.get('Name').toString()));
             }
         }

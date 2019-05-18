@@ -63,7 +63,17 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
                     and Merge_Action__c <> 'Master' 
                 GROUP BY Contact__c, Contact__r.Name
                 LIMIT 999]) {
-                    listSO.add(new SelectOption(result.get('c501dm__Contact__c').toString(),
+
+                    // Attempt to get based on Namespace
+                    String objectFieldValue;
+                    try {
+                        objectFieldValue = result.get('c501dm__Contact__c').toString();
+                    }
+                    catch (System.SObjectException objectException) {
+                        objectFieldValue = result.get('Contact__c').toString();
+                    }
+
+                    listSO.add(new SelectOption(objectFieldValue,
                         result.get('Name').toString()));
             }
         }
@@ -78,7 +88,17 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
                     and Merge_Metric__r.Name = :mergeRule
                 GROUP BY Contact__c, Contact__r.Name
                 LIMIT 999]) {
-                    listSO.add(new SelectOption(result.get('c501dm__Contact__c').toString(),
+
+                    // Attempt to get based on Namespace
+                    String objectFieldValue;
+                    try {
+                        objectFieldValue = result.get('c501dm__Contact__c').toString();
+                    }
+                    catch (System.SObjectException objectException) {
+                        objectFieldValue = result.get('Contact__c').toString();
+                    }
+
+                    listSO.add(new SelectOption(objectFieldValue,
                         result.get('Name').toString()));
             }
         }

@@ -68,7 +68,7 @@ public class C501_MM_Rule_Merge implements Schedulable {
         String strSoql = c501MassMerge_SharedCode.GetC501MergeMetricQuery();
 
         // Add in specific Id query
-        strSoql += ' AND Id = :mergeMetricId';
+        strSoql += ' AND Id = \'' + mergeMetricId + '\'';
 
         this.ProcessMergeMetrics(strSoql);
     }
@@ -99,7 +99,9 @@ public class C501_MM_Rule_Merge implements Schedulable {
         List<C501_Merge_Metric__c> mergeMetricsUpdate = new List<C501_Merge_Metric__c>();
         Set<Id> mergeMetricDeleteChildren = new Set<Id>();
 
-        for (Integer mergeMetricIndex = 0; mergeMetricIndex < mergeMetrics.size(); mergeMetricIndex++) {
+        // Limit iterations to 5 to avoid SOQL 101 limit exception
+        Integer maxIterations = (mergeMetrics.size() > 5 ? 5 : mergeMetrics.size());
+        for (Integer mergeMetricIndex = 0; mergeMetricIndex < maxIterations; mergeMetricIndex++) {
             for (C501_Merge_Metric__c mergeMetric :mergeMetrics) {
 
                 String reportId;

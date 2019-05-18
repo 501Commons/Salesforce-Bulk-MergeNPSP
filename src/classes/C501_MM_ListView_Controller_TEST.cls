@@ -1,4 +1,4 @@
-<!-- 
+/*
     Copyright (c) 2019, 501Commons.org
     All rights reserved.
     
@@ -26,7 +26,44 @@
     LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
     ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
     POSSIBILITY OF SUCH DAMAGE.
--->  
+*/
 
-<apex:page standardController="C501_Merge_Metric__c" extensions="C501_MM_Action_Controller" action="{!discoverTrigger}">
-</apex:page>
+@isTest
+public class C501_MM_ListView_Controller_TEST {
+    
+    //==================== TEST METHOD(s) ======================================
+
+    @isTest(SeeAllData='true')
+    public static void DiscoverTests() {
+
+        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
+        String strSoql = c501MassMerge_SharedCode.GetC501MergeMetricQuery();
+        List<C501_Merge_Metric__c> mergeMetrics = Database.Query(strSoql);
+
+        Test.StartTest();
+
+        ApexPages.StandardSetController standardController = new ApexPages.StandardSetController(mergeMetrics);
+        C501_MM_ListView_Controller controller = new C501_MM_ListView_Controller(standardController);
+
+        controller.discoverTrigger();   
+
+        Test.StopTest();
+    }
+
+    @isTest(SeeAllData='true')
+    public static void MergeTests() {
+
+        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
+        String strSoql = c501MassMerge_SharedCode.GetC501MergeMetricQuery();
+        List<C501_Merge_Metric__c> mergeMetrics = Database.Query(strSoql);
+
+        Test.StartTest();
+
+        ApexPages.StandardSetController standardController = new ApexPages.StandardSetController(mergeMetrics);
+        C501_MM_ListView_Controller controller = new C501_MM_ListView_Controller(standardController);
+
+        controller.mergeTrigger();   
+
+        Test.StopTest();
+    }
+}

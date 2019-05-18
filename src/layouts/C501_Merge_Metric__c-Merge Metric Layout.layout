@@ -146,14 +146,6 @@
             <sortOrder>9</sortOrder>
         </platformActionListItems>
     </platformActionList>
-    <quickActionList>
-        <quickActionListItems>
-            <quickActionName>C501_Merge_Metric__c.C501_Action_Discover</quickActionName>
-        </quickActionListItems>
-        <quickActionListItems>
-            <quickActionName>C501_Merge_Metric__c.C501_Action_Merge</quickActionName>
-        </quickActionListItems>
-    </quickActionList>
     <relatedLists>
         <fields>NAME</fields>
         <fields>Merge_Target_Account__c</fields>
