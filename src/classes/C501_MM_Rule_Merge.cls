@@ -33,40 +33,52 @@
 //  1) Debug -> Open Execute Anonymous Window
 //  2) paste code
 /*
-      C501_MM_Rule_Merge mergeRule = new C501_MM_Rule_Merge();
-      mergeRule.execute(null);
+      C501_MM_Rule_Merge.get().execute(null);
 */
 //  3) click Execute
 //
 
-global class C501_MM_Rule_Merge implements Schedulable {
+public class C501_MM_Rule_Merge implements Schedulable {
 
-    global void execute(SchedulableContext SC) {
+	// only need one instance of this class per transaction
+	private static C501_MM_Rule_Merge instance;
+	public static C501_MM_Rule_Merge get() {
+
+		if (instance == null) instance = new C501_MM_Rule_Merge();
+		return instance;
+	}
+
+    public void C501_MM_Rule_Merge() {
+    }
+
+    public void execute(SchedulableContext SC) {
+
+        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
+        c501MassMerge_SharedCode.InitializeMassMergeInstances();
+
+        String strSoql = c501MassMerge_SharedCode.GetC501MergeMetricQuery();
+        this.ProcessMergeMetrics(strSoql);
+    }
+
+    public void executeMetric(String mergeMetricId) {
+
+        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
+        c501MassMerge_SharedCode.InitializeMassMergeInstances();
+
+        String strSoql = c501MassMerge_SharedCode.GetC501MergeMetricQuery();
+
+        // Add in specific Id query
+        strSoql += ' AND Id = :mergeMetricId';
+
+        this.ProcessMergeMetrics(strSoql);
+    }
+
+    public void ProcessMergeMetrics(String strSoql) {
 
  		//
 		// Perform all SOQL Queries outside of loop to avoid Salesforce Governor Limits: https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/apex_gov_limits.htm
 		//
 
-        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
-        String reportFolder = 'Mass Merge Rules';
-        if (Test.isRunningTest()) {
-            reportFolder = 'Mass Merge Tests';
-        }
-        
-        c501MassMerge_SharedCode.InitializeMassMergeInstances(reportFolder);
-        c501MassMerge_SharedCode.ScheduleJobs();
-
-        String strSoql = 'SELECT';
-        strSoql += ' Id, Name, Confidence__c,';
-        strSoql += ' Total_Unassigned_Accounts__c, Total_Unassigned_Contacts__c,';
-        strSoql += ' Source_Report__c, Source_Report_LastModifiedDate__c, Source_Object__c, Source_Object_Account_Id__c, Source_Object_Contact_Id__c,';
-        strSoql += ' AutoMerge_Percentage__c, AutoMerge_Objects__c,';
-        strSoql += ' Last_Discover_Date__c, Last_Merge_Date__c';
-        strSoql += ' FROM C501_Merge_Metric__c';
-        strSoql += ' WHERE Source_Object_Account_Id__c <> null AND Source_Object_Contact_Id__c <> NULL AND Source_Object__c <> NULL AND Source_Report__c <> NULL';
-        if (Test.isRunningTest()) {        
-            strSoql += ' AND Name LIKE \'TESTDATA%\'';
-        }
         List<C501_Merge_Metric__c> mergeMetrics = Database.Query(strSoql);
 
         Set<String> sourceReportIds = new Set<String>();
@@ -87,85 +99,91 @@ global class C501_MM_Rule_Merge implements Schedulable {
         List<C501_Merge_Metric__c> mergeMetricsUpdate = new List<C501_Merge_Metric__c>();
         Set<Id> mergeMetricDeleteChildren = new Set<Id>();
 
-        for (C501_Merge_Metric__c mergeMetric :mergeMetrics) {
+        for (Integer mergeMetricIndex = 0; mergeMetricIndex < mergeMetrics.size(); mergeMetricIndex++) {
+            for (C501_Merge_Metric__c mergeMetric :mergeMetrics) {
 
-            String reportId;
-            for (Report report :reports) {
+                String reportId;
+                for (Report report :reports) {
 
-                if ((String)report.Id == mergeMetric.Source_Report__c || report.DeveloperName == mergeMetric.Source_Report__c) {
+                    if ((String)report.Id == mergeMetric.Source_Report__c || report.DeveloperName == mergeMetric.Source_Report__c) {
 
-                    System.debug('***** C501_MM_Rule_Merge:execute - Report Found - Merge Metric: ' + String.valueOf(mergeMetric.Name) + ' Report: ' + report.DeveloperName);
+                        // Check for report change
+                        if (mergeMetric.Source_Report_LastModifiedDate__c == null || mergeMetric.Source_Report_LastModifiedDate__c <> report.LastModifiedDate) {
 
-                    // Check for report change
-                    if (mergeMetric.Source_Report_LastModifiedDate__c == null || mergeMetric.Source_Report_LastModifiedDate__c <> report.LastModifiedDate) {
+                            mergeMetric.Source_Report_LastModifiedDate__c = report.LastModifiedDate;
+                            mergeMetricsUpdate.add(mergeMetric);
 
-                        mergeMetric.Source_Report_LastModifiedDate__c = report.LastModifiedDate;
-                        mergeMetricsUpdate.add(mergeMetric);
+                            // Queue merge metric to delete children since report changed
+                            mergeMetricDeleteChildren.add(mergeMetric.Id);
 
-                        // Queue merge metric to delete children since report changed
-                        mergeMetricDeleteChildren.add(mergeMetric.Id);
+                            System.debug('***** C501_MM_Rule_Merge:execute - Report Change Detected: ' + String.valueOf(mergeMetric.Name) + ' Report: ' + report.DeveloperName);
+                        }
 
-                        System.debug('***** C501_MM_Rule_Merge:execute - Report Change Detected: ' + String.valueOf(mergeMetric.Name) + ' Report: ' + report.DeveloperName);
+                        reportId = (String)report.Id;
+
+                        break;
                     }
+                }
 
-                    reportId = (String)report.Id;
+                if (String.isBlank(reportId)) {
+                    continue;
+                }
+
+                if (mergeMetric.Last_Merge_Date__c == null) {
+
+                    reportIdMerge = reportId;
+
+                    // Shallow Copy
+                    mergeMetricMerge = mergeMetric;
 
                     break;
                 }
+                else if (mergeMetricMerge.Id == null || (mergeMetric.Last_Merge_Date__c <> null && mergeMetric.Last_Merge_Date__c < mergeMetricMerge.Last_Merge_Date__c)) {
+
+                    reportIdMerge = reportId;
+
+                    // Shallow Copy
+                    mergeMetricMerge = mergeMetric;
+                }
             }
 
-            if (String.isBlank(reportId)) {
-                continue;
+            if (!mergeMetricsUpdate.isEmpty()) {
+                update mergeMetricsUpdate;
             }
 
-            if (mergeMetric.Last_Merge_Date__c == null) {
+            if (!mergeMetricDeleteChildren.isEmpty()) {
 
-                reportIdMerge = reportId;
+                List<C501_Account_Merge__c> accountMergesDelete = [SELECT Id FROM C501_Account_Merge__c WHERE Merge_Metric__c in :mergeMetricDeleteChildren];
+                if (!accountMergesDelete.isEmpty()) {
+                    delete accountMergesDelete;
+                }
 
-                // Shallow Copy
-                mergeMetricMerge = mergeMetric;
+                List<C501_Contact_Merge__c> contactMergesDelete = [SELECT Id FROM C501_Contact_Merge__c WHERE Merge_Metric__c in :mergeMetricDeleteChildren];
+                if (!contactMergesDelete.isEmpty()) {
+                    delete contactMergesDelete;
+                }
+            }
 
+            if (mergeMetricMerge.Id == null) {
+                return;
+            }
+
+            mergeMetricMerge.Last_Merge_Date__c = System.now();
+            update mergeMetricMerge;
+
+            C501_MassMerge_SharedCode_Account c501MassMerge_SharedCode_Account = new C501_MassMerge_SharedCode_Account();
+            Integer potentialAccountMerges = c501MassMerge_SharedCode_Account.ProcessObjectMergeCandidates(mergeMetricMerge);
+
+            C501_MassMerge_SharedCode_Contact c501MassMerge_SharedCode_Contact = new C501_MassMerge_SharedCode_Contact();
+            Integer potentialContactMerges = c501MassMerge_SharedCode_Contact.ProcessObjectMergeCandidates(mergeMetricMerge);
+
+            if (potentialAccountMerges > 0 || potentialContactMerges > 0) {
+
+                System.debug('***** C501_MM_Rule_Merge:execute - Merge Metric Name: ' + mergeMetricMerge.Name);
                 break;
             }
-            else if (mergeMetricMerge.Id == null || (mergeMetric.Last_Merge_Date__c <> null && mergeMetric.Last_Merge_Date__c < mergeMetricMerge.Last_Merge_Date__c)) {
-
-                reportIdMerge = reportId;
-
-                // Shallow Copy
-                mergeMetricMerge = mergeMetric;
-            }
         }
-
-        if (!mergeMetricsUpdate.isEmpty()) {
-            update mergeMetricsUpdate;
-        }
-
-        if (!mergeMetricDeleteChildren.isEmpty()) {
-
-            List<C501_Account_Merge__c> accountMergesDelete = [SELECT Id FROM C501_Account_Merge__c WHERE Merge_Metric__c in :mergeMetricDeleteChildren];
-            if (!accountMergesDelete.isEmpty()) {
-                delete accountMergesDelete;
-            }
-
-            List<C501_Contact_Merge__c> contactMergesDelete = [SELECT Id FROM C501_Contact_Merge__c WHERE Merge_Metric__c in :mergeMetricDeleteChildren];
-            if (!contactMergesDelete.isEmpty()) {
-                delete contactMergesDelete;
-            }
-        }
-
-        if (mergeMetricMerge.Id == null) {
-            return;
-        }
-
-        System.debug('***** C501_MM_Rule_Merge:execute - Merge Metric: ' + String.valueOf(mergeMetricMerge));
-
-        mergeMetricMerge.Last_Merge_Date__c = System.now();
-        update mergeMetricMerge;
-
-        C501_MassMerge_SharedCode_Account c501MassMerge_SharedCode_Account = new C501_MassMerge_SharedCode_Account();
-        c501MassMerge_SharedCode_Account.ProcessObjectMergeCandidates(mergeMetricMerge);
-
-        C501_MassMerge_SharedCode_Contact c501MassMerge_SharedCode_Contact = new C501_MassMerge_SharedCode_Contact();
-        c501MassMerge_SharedCode_Contact.ProcessObjectMergeCandidates(mergeMetricMerge);
     }
+
+
 }

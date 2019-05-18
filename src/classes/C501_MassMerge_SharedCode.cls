@@ -72,8 +72,34 @@ global with sharing class C501_MassMerge_SharedCode {
         return String.join(iterableFields, ',');
     }
 
-    global void InitializeMassMergeInstances(String reportFolder) {
 
+    global String GetC501MergeMetricQuery() {
+
+        String strSoql = 'SELECT';
+        strSoql += ' Id, Name, Confidence__c,';
+        strSoql += ' Total_Unassigned_Accounts__c, Total_Unassigned_Contacts__c,';
+        strSoql += ' Source_Report__c, Source_Report_LastModifiedDate__c, Source_Object__c, Source_Object_Account_Id__c, Source_Object_Contact_Id__c,';
+        strSoql += ' AutoMerge_Percentage__c, AutoMerge_Objects__c,';
+        strSoql += ' Last_Discover_Date__c, Last_Merge_Date__c';
+        strSoql += ' FROM C501_Merge_Metric__c';
+        strSoql += ' WHERE Source_Object_Account_Id__c <> null AND Source_Object_Contact_Id__c <> NULL AND Source_Object__c <> NULL AND Source_Report__c <> NULL';
+
+        if (Test.isRunningTest()) {        
+            strSoql += ' AND Name LIKE \'TESTDATA%\'';
+        }
+
+        return strSoql;
+    }
+
+    global void InitializeMassMergeInstances() {
+
+        this.ScheduleJobs();
+
+        String reportFolder = 'Mass Merge Rules';
+        if (Test.isRunningTest()) {
+            reportFolder = 'Mass Merge Tests';
+        }
+        
         String strSoql = 'SELECT';
         strSoql += ' Id, Name, Confidence__c,';
         strSoql += ' Total_Unassigned_Accounts__c, Total_Unassigned_Contacts__c,';
@@ -246,22 +272,27 @@ global with sharing class C501_MassMerge_SharedCode {
         c501MassMerge_SharedCode_Account.ProcessObjectMergeCandidates(mergeMetric);
     }
 
-    global void ProcessObjectMergeCandidates_Account(C501_Merge_Metric__c mergeMetric, List<C501_Account_Merge__c> pendingAutoMerges, Map<Id, Id> contactHouseholdMap) {
+    global Integer ProcessObjectMergeCandidates_Account(C501_Merge_Metric__c mergeMetric, List<C501_Account_Merge__c> pendingAutoMerges, Map<Id, Id> contactHouseholdMap) {
 
         List<String> automergeObjects = new List<String> { mergeMetric.AutoMerge_Objects__c };
         if (mergeMetric.AutoMerge_Objects__c.contains(';')) {
             mergeMetric.AutoMerge_Objects__c.split(';');
         }
+
         if (automergeObjects.contains('Account')) {
 
             if (!pendingAutoMerges.isEmpty()) {
                 C501_MassMerge_SharedCode_Account c501MassMerge_SharedCode_Account = new C501_MassMerge_SharedCode_Account();
                 c501MassMerge_SharedCode_Account.ProcessObjectMerges(pendingAutoMerges, false);
+
+                return pendingAutoMerges.size();
             }
         }
+
+        return 0;
     }
 
-    global void ProcessObjectMergeCandidates_Contact(C501_Merge_Metric__c mergeMetric, List<C501_Contact_Merge__c> pendingAutoMerges, Map<Id, Id> contactHouseholdMap) {
+    global Integer ProcessObjectMergeCandidates_Contact(C501_Merge_Metric__c mergeMetric, List<C501_Contact_Merge__c> pendingAutoMerges, Map<Id, Id> contactHouseholdMap) {
 
         List<String> automergeObjects = new List<String> { mergeMetric.AutoMerge_Objects__c };
         if (mergeMetric.AutoMerge_Objects__c.contains(';')) {
@@ -289,8 +320,12 @@ global with sharing class C501_MassMerge_SharedCode {
             if (!pendingAutoMergeCandidates.isEmpty()) {
                 C501_MassMerge_SharedCode_Contact c501MassMerge_SharedCode_Contact = new C501_MassMerge_SharedCode_Contact();
                 c501MassMerge_SharedCode_Contact.ProcessObjectMerges(pendingAutoMergeCandidates, true);
+
+                return pendingAutoMergeCandidates.size();
             }
         }
+
+        return 0;
     }
 
     global void ScheduleJobs() {
@@ -333,7 +368,7 @@ global with sharing class C501_MassMerge_SharedCode {
 
     global void TestSetupMerge() {
 
-        InitializeMassMergeInstances('Mass Merge Tests');
+        InitializeMassMergeInstances();
 
         List<Account> listAccounts = new List<Account>();   
         Integer cAccounts = 10;     

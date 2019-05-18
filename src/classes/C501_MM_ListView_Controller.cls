@@ -33,12 +33,16 @@ public with sharing class C501_MM_ListView_Controller {
     public C501_MM_ListView_Controller(ApexPages.StandardSetController controller) {
     }
 
-    //Method that can is called from the Visual Force page action attribute
     public PageReference discoverTrigger() {
 
-        C501_MM_Rule_Discover.get().DiscoverReports();
-
         C501_MM_Rule_Discover.get().execute(null);
+
+        return new ApexPages.Action('{!List}').invoke();
+    }
+
+    public PageReference mergeTrigger() {
+
+        C501_MM_Rule_Merge.get().execute(null);
 
         return new ApexPages.Action('{!List}').invoke();
     }

@@ -175,7 +175,7 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
 		}
     }
 
-    global void ProcessObjectMergeCandidates(C501_Merge_Metric__c mergeMetric) {
+    global Integer ProcessObjectMergeCandidates(C501_Merge_Metric__c mergeMetric) {
 
         //
 		// Perform all DML (Data Manipulation Language) calls (insert, update, merge, delete, restore) outside of loop to avoid Salesforce Governor Limits: https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/apex_gov_limits.htm
@@ -220,16 +220,18 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
 
         // Check for batch queued merges
         if (!pendingMerges.isEmpty()) {
+            
             ProcessObjectMerges(pendingMerges, false);
+            return pendingMerges.size();
         }
 
         // Check if AutoMerge Enabled
         if (mergeMetric.AutoMerge_Percentage__c == null || mergeMetric.AutoMerge_Percentage__c <= 0.0) {
-            return;
+            return 0;
         }
 
         C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
-        c501MassMerge_SharedCode.ProcessObjectMergeCandidates_Contact(mergeMetric, pendingAutoMerges, ContactHouseholdMap);
+        return c501MassMerge_SharedCode.ProcessObjectMergeCandidates_Contact(mergeMetric, pendingAutoMerges, ContactHouseholdMap);
     }
 
     global void ProcessObjectMerges(List<C501_Contact_Merge__c> objectMerges, Boolean batchMerge)

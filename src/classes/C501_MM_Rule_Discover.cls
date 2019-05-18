@@ -33,8 +33,7 @@
 //  1) Debug -> Open Execute Anonymous Window
 //  2) paste code
 /*
-      C501_MM_Rule_Discover discoverRule = new C501_MM_Rule_Discover();
-      discoverRule.execute(null);
+      C501_MM_Rule_Discover.get().execute(null);
 */
 //  3) click Execute
 //
@@ -62,23 +61,32 @@ public class C501_MM_Rule_Discover implements Schedulable {
 
     public void execute(SchedulableContext SC) {
 
+        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
+        c501MassMerge_SharedCode.InitializeMassMergeInstances();
+
+        String strSoql = c501MassMerge_SharedCode.GetC501MergeMetricQuery();
+        this.ProcessMergeMetrics(strSoql);
+    }
+
+    public void executeMetric(String mergeMetricId) {
+
+        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
+        c501MassMerge_SharedCode.InitializeMassMergeInstances();
+
+        String strSoql = c501MassMerge_SharedCode.GetC501MergeMetricQuery();
+
+        // Add in specific Id query
+        strSoql += ' AND Id = :mergeMetricId';
+
+        this.ProcessMergeMetrics(strSoql);
+    }
+
+    public void ProcessMergeMetrics(String strSoql) {
+
  		//
 		// Perform all SOQL Queries outside of loop to avoid Salesforce Governor Limits: https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/apex_gov_limits.htm
 		//
 
-        this.DiscoverReports();
-
-        String strSoql = 'SELECT';
-        strSoql += ' Id, Name, Confidence__c,';
-        strSoql += ' Total_Unassigned_Accounts__c, Total_Unassigned_Contacts__c,';
-        strSoql += ' Source_Report__c, Source_Report_LastModifiedDate__c, Source_Object__c, Source_Object_Account_Id__c, Source_Object_Contact_Id__c,';
-        strSoql += ' AutoMerge_Percentage__c, AutoMerge_Objects__c,';
-        strSoql += ' Last_Discover_Date__c, Last_Merge_Date__c';
-        strSoql += ' FROM C501_Merge_Metric__c';
-        strSoql += ' WHERE Source_Object_Account_Id__c <> null AND Source_Object_Contact_Id__c <> NULL AND Source_Object__c <> NULL AND Source_Report__c <> NULL';
-        if (Test.isRunningTest()) {        
-            strSoql += ' AND Name LIKE \'TESTDATA%\'';
-        }
         List<C501_Merge_Metric__c> mergeMetrics = Database.Query(strSoql);
 
         Set<String> sourceReportIds = new Set<String>();
@@ -171,44 +179,7 @@ public class C501_MM_Rule_Discover implements Schedulable {
         update mergeMetricDiscover;
 
         // NOTE: Calling Reports.ReportManager within this loop context get compile error ReportManager variable does not exist.  Future task - investigate why
-        ProcessReport(reportIdDiscover, mergeMetricDiscover);
-    }
-
-    public void executeMetric(String mergeMetricId) {
-
-        this.DiscoverReports();
-
-        String strSoql = 'SELECT';
-        strSoql += ' Id, Name, Confidence__c,';
-        strSoql += ' Total_Unassigned_Accounts__c, Total_Unassigned_Contacts__c,';
-        strSoql += ' Source_Report__c, Source_Report_LastModifiedDate__c, Source_Object__c, Source_Object_Account_Id__c, Source_Object_Contact_Id__c,';
-        strSoql += ' AutoMerge_Percentage__c, AutoMerge_Objects__c,';
-        strSoql += ' Last_Discover_Date__c, Last_Merge_Date__c';
-        strSoql += ' FROM C501_Merge_Metric__c';
-        strSoql += ' WHERE Source_Object_Account_Id__c <> null AND Source_Object_Contact_Id__c <> NULL AND Source_Object__c <> NULL AND Source_Report__c <> NULL';
-        strSoql += ' AND Id = :mergeMetricId';
-        if (Test.isRunningTest()) {        
-            strSoql += ' AND Name LIKE \'TESTDATA%\'';
-        }
-        List<C501_Merge_Metric__c> mergeMetrics = Database.Query(strSoql);
-
-        if (mergeMetrics.isEmpty()) {
-          return;
-        }
-
-        List<Report> reports = [
-            SELECT Id
-            FROM Report
-            WHERE Id = :mergeMetrics[0].Source_Report__c OR DeveloperName = :mergeMetrics[0].Source_Report__c];
-
-        if (reports.isEmpty()) {
-          return;
-        }
-
-        mergeMetrics[0].Last_Discover_Date__c = System.now();
-        update mergeMetrics[0];
-
-        ProcessReport(reports[0].Id, mergeMetrics[0]);
+        this.ProcessReport(reportIdDiscover, mergeMetricDiscover);
     }
 
     public void ProcessReport(String reportId, C501_Merge_Metric__c mergeMetric) {
@@ -270,14 +241,14 @@ public class C501_MM_Rule_Discover implements Schedulable {
                 usingAddressColumns = true;
             }
 
-            String checkColumn = CheckReportColumnName(mergeMetric, foriegnKey, column, false);
+            String checkColumn = this.CheckReportColumnName(mergeMetric, foriegnKey, column, false);
             if (String.isNotBlank(checkColumn)) {
                 detailColumnsChecked.add(checkColumn);
             }
         }
 
         // Discover merge candidates
-        ProcessReportDiscover(mergeMetric, foriegnKey, detailColumnsChecked, reportFilters);
+        this.ProcessReportDiscover(mergeMetric, foriegnKey, detailColumnsChecked, reportFilters);
 
         // Check for Address columns
         //  When using address columns need to query both the Billing and Shipping address because regardless of
@@ -298,22 +269,22 @@ public class C501_MM_Rule_Discover implements Schedulable {
             }
 
             // Discover merge candidates
-            ProcessReportDiscover(mergeMetric, foriegnKey, detailColumnsChecked, reportFilters);
+            this.ProcessReportDiscover(mergeMetric, foriegnKey, detailColumnsChecked, reportFilters);
         }
     }
 
     public void ProcessReportDiscover(C501_Merge_Metric__c mergeMetric, String foriegnKey, List<String> detailColumnsChecked, List<Reports.ReportFilter> reportFilters) {
 
         // Process by Accounts to find any potential Account merges
-        ProcessReportByAccounts(mergeMetric, foriegnKey, detailColumnsChecked, reportFilters);
+        this.ProcessReportByAccounts(mergeMetric, foriegnKey, detailColumnsChecked, reportFilters);
 
         if (mergeMetric.Source_Object__c.equals('Contact')) {
 
             // Process by Contacts different Accounts to find any potential contact merges across different accounts
-            ProcessReportByContacts(mergeMetric, foriegnKey, detailColumnsChecked, reportFilters, null);
+            this.ProcessReportByContacts(mergeMetric, foriegnKey, detailColumnsChecked, reportFilters, null);
 
             // Process by Contacts same Account to find any potential contacts merges within same account
-            ProcessReportByContacts(mergeMetric, foriegnKey, detailColumnsChecked, reportFilters, 'AccountId');
+            this.ProcessReportByContacts(mergeMetric, foriegnKey, detailColumnsChecked, reportFilters, 'AccountId');
         }
     }
     public void ProcessReportByAccounts(C501_Merge_Metric__c mergeMetric, String foriegnKey, List<String> detailColumnsChecked, List<Reports.ReportFilter> reportFilters) {
@@ -360,14 +331,14 @@ public class C501_MM_Rule_Discover implements Schedulable {
                 continue;
             }
 
-            String whereField = CheckReportOperator(mergeMetric, foriegnKey, reportFilter.getColumn(), reportFilter.getOperator(), reportFilter.getValue());
+            String whereField = this.CheckReportOperator(mergeMetric, foriegnKey, reportFilter.getColumn(), reportFilter.getOperator(), reportFilter.getValue());
             if (String.isNotBlank(whereField)) {
 
                 // Check if value contains a list of Strings
                 if (reportFilter.getValue().contains(',')) {
                     whereInValues = reportFilter.getValue().split(',');
 
-                    whereField = CheckReportColumnName(mergeMetric, foriegnKey, reportFilter.getColumn(), true) + ' in :whereInValues';
+                    whereField = this.CheckReportColumnName(mergeMetric, foriegnKey, reportFilter.getColumn(), true) + ' in :whereInValues';
                 }
 
                 whereFields.add(whereField);
@@ -569,13 +540,13 @@ public class C501_MM_Rule_Discover implements Schedulable {
 
         // Add filters
         for (Reports.ReportFilter reportFilter :reportFilters) {
-            String whereField = CheckReportOperator(mergeMetric, foriegnKey, reportFilter.getColumn(), reportFilter.getOperator(), reportFilter.getValue());
+            String whereField = this.CheckReportOperator(mergeMetric, foriegnKey, reportFilter.getColumn(), reportFilter.getOperator(), reportFilter.getValue());
             if (!String.isBlank(whereField)) {
 
                 // Check if value contains a list of Strings
                 if (reportFilter.getValue().contains(',')) {
                     whereInValues = reportFilter.getValue().split(',');
-                    whereField = CheckReportColumnName(mergeMetric, foriegnKey, reportFilter.getColumn(), true) + ' in :whereInValues';
+                    whereField = this.CheckReportColumnName(mergeMetric, foriegnKey, reportFilter.getColumn(), true) + ' in :whereInValues';
                     System.Debug('***** 3 reportFilter.getColumn(): ' + reportFilter.getColumn() + ' whereField: ' + whereField);
                 }
 
@@ -872,7 +843,7 @@ public class C501_MM_Rule_Discover implements Schedulable {
 
     public String CheckReportOperator(C501_Merge_Metric__c mergeMetric, String foriegnKey, String reportColumnName, String operator, String value) {
 
-        String columnName = CheckReportColumnName(mergeMetric, foriegnKey, reportColumnName, true);
+        String columnName = this.CheckReportColumnName(mergeMetric, foriegnKey, reportColumnName, true);
         if (String.isBlank(columnName)) {
             return null;
         }
@@ -908,18 +879,5 @@ public class C501_MM_Rule_Discover implements Schedulable {
         }
 
         return null;
-    }
-
-    public void DiscoverReports() {
-
-        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
-        c501MassMerge_SharedCode.ScheduleJobs();
-
-        String reportFolder = 'Mass Merge Rules';
-        if (Test.isRunningTest()) {
-            reportFolder = 'Mass Merge Tests';
-        }
-        
-        c501MassMerge_SharedCode.InitializeMassMergeInstances(reportFolder);
     }
 }

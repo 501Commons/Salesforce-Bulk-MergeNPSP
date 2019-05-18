@@ -61,8 +61,6 @@ public class C501_CTRL_MassMergeAccounts_TEST {
 
         setupTest();
 
-        C501_MM_Rule_Merge scheduleMerge = new C501_MM_Rule_Merge();
-
         List<C501_Merge_Metric__c> listMergeMetrics = new List<C501_Merge_Metric__c>();
         for (C501_Merge_Metric__c mergeMetric :[SELECT Id FROM C501_Merge_Metric__c WHERE Name LIKE 'TESTDATA%' AND Name LIKE '%Account Address%']) {
 
@@ -72,7 +70,7 @@ public class C501_CTRL_MassMergeAccounts_TEST {
             listMergeMetrics.add(mergeMetric);
 
             // Reset updated report
-            scheduleMerge.execute(null);
+            C501_MM_Rule_Merge.get().execute(null);
 
             C501_MM_Rule_Discover.get().executeMetric(mergeMetric.Id);
         }
@@ -84,7 +82,7 @@ public class C501_CTRL_MassMergeAccounts_TEST {
         for (C501_Merge_Metric__c mergeMetric: listMergeMetrics) {
 
             // Process a merge
-            scheduleMerge.execute(null);
+            C501_MM_Rule_Merge.get().execute(null);
         }
 
         Test.StopTest();

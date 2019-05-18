@@ -50,8 +50,7 @@ public class C501_MM_Action_Controller_TEST {
             C501_MM_Rule_Discover.get().executeMetric(mergeMetric.Id);
         }
 
-        C501_MM_Rule_Merge scheduleMerge = new C501_MM_Rule_Merge();
-        scheduleMerge.execute(null);
+        C501_MM_Rule_Merge.get().execute(null);
 
         c501MassMerge_SharedCode.PrintSalesforceStructure();
     }

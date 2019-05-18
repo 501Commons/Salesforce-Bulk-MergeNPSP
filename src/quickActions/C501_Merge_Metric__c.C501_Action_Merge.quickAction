@@ -3,7 +3,7 @@
     <height>0</height>
     <label>Merge</label>
     <optionsCreateFeedItem>false</optionsCreateFeedItem>
-    <page>C501_MassMergeDiscover</page>
+    <page>C501_MassMergeMerge</page>
     <type>VisualforcePage</type>
     <width>-100</width>
 </QuickAction>

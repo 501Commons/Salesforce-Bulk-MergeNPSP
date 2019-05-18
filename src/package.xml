@@ -33,6 +33,7 @@
         <members>C501_MassMergeContacts</members>
         <members>C501_MassMergeDiscover</members>
         <members>C501_MassMergeListView</members>
+        <members>C501_MassMergeListViewMerge</members>
         <members>C501_MassMergeMerge</members>
         <name>ApexPage</name>
     </types>

@@ -62,8 +62,6 @@ public with sharing class C501_CTRL_MassMergeContacts_TEST {
 
         Test.StartTest();
 
-        C501_MM_Rule_Merge scheduleMerge = new C501_MM_Rule_Merge();
-
         List<C501_Merge_Metric__c> listMergeMetrics = new List<C501_Merge_Metric__c>();
         for (C501_Merge_Metric__c mergeMetric :[SELECT Id FROM C501_Merge_Metric__c WHERE Name LIKE 'TESTDATA%' AND Name LIKE '%Contact Name%']) {
 
@@ -73,7 +71,7 @@ public with sharing class C501_CTRL_MassMergeContacts_TEST {
             listMergeMetrics.add(mergeMetric);
 
             // Reset updated report
-            scheduleMerge.execute(null);
+            C501_MM_Rule_Merge.get().execute(null);
 
             C501_MM_Rule_Discover.get().executeMetric(mergeMetric.Id);
         }
@@ -83,7 +81,7 @@ public with sharing class C501_CTRL_MassMergeContacts_TEST {
         for (C501_Merge_Metric__c mergeMetric: listMergeMetrics) {
 
             // Process a merge
-            scheduleMerge.execute(null);
+            C501_MM_Rule_Merge.get().execute(null);
         }
 
         Test.StopTest();
