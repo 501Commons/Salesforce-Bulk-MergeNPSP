@@ -4,19 +4,13 @@
     "packageDirectories": [
         {
             "path": "force-app",
-            "package": "501 Commons Duplicate Management",
+            "package": "501 Commons Mass Merge Automation",
             "versionName": "Spring '19",
             "versionNumber": "0.1.0.NEXT",
             "default": true
         }
     ],
-    "namespace": "c501dm",
+    "namespace": "c501mma",
     "packageAliases": {
-        "501 Commons Duplicate Management": "0Ho0d0000008OIACA2",
-        "501 Commons Duplicate Management@0.1.0-1": "04t0d000000Lg4zAAC",
-        "501 Commons Duplicate Management@0.1.0-2": "04t0d000000Lg54AAC",
-        "501 Commons Duplicate Management@0.1.0-3": "04t0d000000Lg59AAC",
-        "501 Commons Duplicate Management@0.1.0-4": "04t0d000000Lg5EAAS",
-        "501 Commons Duplicate Management@0.1.0-5": "04t0d000000Lg5OAAS"
     }
 }

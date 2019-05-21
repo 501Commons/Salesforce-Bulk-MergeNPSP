@@ -67,7 +67,7 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
                     // Attempt to get based on Namespace
                     String objectFieldValue;
                     try {
-                        objectFieldValue = result.get('c501dm__Contact__c').toString();
+                        objectFieldValue = result.get(C501_MassMerge_SharedCode.CurrentNamespace + 'Contact__c').toString();
                     }
                     catch (System.SObjectException objectException) {
                         objectFieldValue = result.get('Contact__c').toString();
@@ -92,7 +92,7 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
                     // Attempt to get based on Namespace
                     String objectFieldValue;
                     try {
-                        objectFieldValue = result.get('c501dm__Contact__c').toString();
+                        objectFieldValue = result.get(C501_MassMerge_SharedCode.CurrentNamespace + 'Contact__c').toString();
                     }
                     catch (System.SObjectException objectException) {
                         objectFieldValue = result.get('Contact__c').toString();

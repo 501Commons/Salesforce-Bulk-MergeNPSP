@@ -44,6 +44,22 @@ global with sharing class C501_MassMerge_SharedCode {
         set;
     }   
 
+    // global utility used to get current namespace
+    private static boolean fCheckedForCurrentNamespace = false;
+    global static String CurrentNamespace {
+        get {
+            if (!fCheckedForCurrentNamespace) {
+                String thisClassName = C501_MassMerge_SharedCode.class.getName();
+                if (thisClassName.contains('.')) {
+                    CurrentNamespace = thisClassName.split('\\.')[0] + '__';
+                }
+                fCheckedForCurrentNamespace = true;
+            }
+            return CurrentNamespace;
+        }
+        set;
+    }   
+
     /*******************************************************************************************************
     * @description returns whether the field should be treated as an NPSP hidden field, typically one
     * of our deprecated or system fields
@@ -276,7 +292,7 @@ global with sharing class C501_MassMerge_SharedCode {
 
         List<String> automergeObjects = new List<String> { mergeMetric.AutoMerge_Objects__c };
         if (mergeMetric.AutoMerge_Objects__c.contains(';')) {
-            mergeMetric.AutoMerge_Objects__c.split(';');
+            automergeObjects = mergeMetric.AutoMerge_Objects__c.split(';');
         }
 
         if (automergeObjects.contains('Account')) {

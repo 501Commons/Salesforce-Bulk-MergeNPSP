@@ -1,8 +1,8 @@
 project:
     name: Salesforce-Bulk-MergeNPSP
     package:
-        name:  Duplicate Management
-        namespace: c501dm
+        name:  Mass Merge Automation
+        namespace: c501mma
         api_version: '45.0'
 
 
