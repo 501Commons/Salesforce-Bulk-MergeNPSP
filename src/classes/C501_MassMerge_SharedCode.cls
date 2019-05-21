@@ -127,16 +127,10 @@ global with sharing class C501_MassMerge_SharedCode {
             FROM Report
             WHERE FolderName = :reportFolder]) {
 
-                System.debug('***** C501_MassMerge_SharedCode::InitializeMassMergeInstances Report DeveloperName: ' + report.DeveloperName);
-
                 Boolean foundMergeMetric = false;
                 for (C501_Merge_Metric__c mergeMetric :mergeMetrics) {
 
-                    System.debug('***** C501_MassMerge_SharedCode::InitializeMassMergeInstances Merge Metric Name: ' + mergeMetric.Name + ' Source Report: ' + mergeMetric.Source_Report__c);
-
                     if (mergeMetric.Source_Report__c == (String)report.Id || mergeMetric.Source_Report__c == report.DeveloperName) {
-
-                        System.debug('***** C501_MassMerge_SharedCode::InitializeMassMergeInstances foundMergeMetric');
 
                         foundMergeMetric = true;
                         break;
@@ -144,8 +138,6 @@ global with sharing class C501_MassMerge_SharedCode {
                 }
 
                 if (!foundMergeMetric) {
-
-                    System.debug('***** C501_MassMerge_SharedCode::InitializeMassMergeInstances !foundMergeMetric');
 
                     mergeMetricsInsert.add( new C501_Merge_Metric__c (
                         Name = (Test.isRunningTest() ? ('TESTDATA ' + report.Name) : report.Name),
