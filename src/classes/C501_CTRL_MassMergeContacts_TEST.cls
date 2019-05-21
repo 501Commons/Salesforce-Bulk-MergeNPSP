@@ -248,11 +248,11 @@ public with sharing class C501_CTRL_MassMergeContacts_TEST {
         Test.setCurrentPageReference(p);
         
         C501_CTRL_MassMergeContacts ctrl = new C501_CTRL_MassMergeContacts();
-        System.AssertEquals(masterContactId, ctrl.contactFilter.Id);
+        System.AssertEquals(masterContactId, ctrl.objectFilter.Id);
         System.Assert(ctrl.listSOContacts.size() > 1);
         System.Assert(ctrl.listContacts.size() > 0);
 
-        ctrl.contactFilter.Id = null;
+        ctrl.objectFilter.Id = null;
 
         System.Assert(ctrl.listSOContacts.size() > 1);
         System.Assert(ctrl.listContacts.size() > 0);
@@ -265,21 +265,21 @@ public with sharing class C501_CTRL_MassMergeContacts_TEST {
         System.Assert(ctrl.listSORules.size() > 0);
 
         // Check filter by Rule
-        ctrl.contactFilter.Id = masterContactId;
+        ctrl.objectFilter.Id = masterContactId;
 
         List<C501_Merge_Metric__c> listMergeMetrics = [SELECT Name FROM C501_Merge_Metric__c WHERE Name LIKE 'TESTDATA%' AND Name LIKE '%Contact%'];
-        ctrl.contactFilter.C501_Merge_Rule__c = listMergeMetrics[0].Name;
+        ctrl.objectFilter.C501_Merge_Rule__c = listMergeMetrics[0].Name;
         System.Assert(ctrl.listContacts.size() > 0);
 
         // Check filter by Confidence
-        ctrl.contactFilter.Id = masterContactId;
-        ctrl.contactFilter.C501_Merge_Confidence_From__c = 0.0;
-        ctrl.contactFilter.C501_Merge_Confidence_To__c = 100.0;
+        ctrl.objectFilter.Id = masterContactId;
+        ctrl.objectFilter.C501_Merge_Confidence_From__c = 0.0;
+        ctrl.objectFilter.C501_Merge_Confidence_To__c = 100.0;
         System.Assert(ctrl.listContacts.size() > 0);
 
         // Clear filter
         ctrl.ChangeRule();
-        ctrl.contactFilter.Id = masterContactId;
+        ctrl.objectFilter.Id = masterContactId;
         System.Assert(ctrl.listContacts.size() > 0);
         System.AssertEquals(0, ctrl.numberOfRecordsDirty);
         
@@ -307,7 +307,7 @@ public with sharing class C501_CTRL_MassMergeContacts_TEST {
         //System.AssertEquals(0, ctrl.numberOfRecordsDirty);  
 
         // Clear out household filter
-        ctrl.contactFilter.Id = null;
+        ctrl.objectFilter.Id = null;
         ctrl.SaveAndCloseContacts();
 
         Test.StopTest();

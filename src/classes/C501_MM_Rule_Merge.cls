@@ -99,9 +99,20 @@ public class C501_MM_Rule_Merge implements Schedulable {
         List<C501_Merge_Metric__c> mergeMetricsUpdate = new List<C501_Merge_Metric__c>();
         Set<Id> mergeMetricDeleteChildren = new Set<Id>();
 
-        // Limit iterations to 5 to avoid SOQL 101 limit exception
-        Integer maxIterations = (mergeMetrics.size() > 5 ? 5 : mergeMetrics.size());
+        Integer maxIterations = mergeMetrics.size() > 6 ? 6 : mergeMetrics.size();
+        if (Test.isRunningTest()) {
+            // Limit iterations to 5 to avoid SOQL 101 limit exception during test execution.
+            maxIterations = 5;
+        }
+
+        Integer batchMergesScheduled = 0;
+        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
         for (Integer mergeMetricIndex = 0; mergeMetricIndex < maxIterations; mergeMetricIndex++) {
+
+            if (Test.isRunningTest()) {
+                c501MassMerge_SharedCode.PrintSalesforceLimits();
+            }
+
             for (C501_Merge_Metric__c mergeMetric :mergeMetrics) {
 
                 String reportId;
@@ -174,14 +185,17 @@ public class C501_MM_Rule_Merge implements Schedulable {
             update mergeMetricMerge;
 
             C501_MassMerge_SharedCode_Account c501MassMerge_SharedCode_Account = new C501_MassMerge_SharedCode_Account();
-            Integer potentialAccountMerges = c501MassMerge_SharedCode_Account.ProcessObjectMergeCandidates(mergeMetricMerge);
+            Boolean sequentialMergeRun = c501MassMerge_SharedCode_Account.ProcessObjectMergeCandidates(mergeMetricMerge) > 0 ? true : false;
 
             C501_MassMerge_SharedCode_Contact c501MassMerge_SharedCode_Contact = new C501_MassMerge_SharedCode_Contact();
-            Integer potentialContactMerges = c501MassMerge_SharedCode_Contact.ProcessObjectMergeCandidates(mergeMetricMerge);
+            batchMergesScheduled += c501MassMerge_SharedCode_Contact.ProcessObjectMergeCandidates(mergeMetricMerge);
 
-            if (potentialAccountMerges > 0 || potentialContactMerges > 0) {
+            if (Test.isRunningTest()) {
+                c501MassMerge_SharedCode.PrintSalesforceLimits();
+            }
 
-                System.debug('***** C501_MM_Rule_Merge:execute - Merge Metric Name: ' + mergeMetricMerge.Name);
+            // Check for any account merges which are currently sequential due to a Future call when merging.  Contact merges use Batch so are nonsequential
+            if (sequentialMergeRun) {
                 break;
             }
         }

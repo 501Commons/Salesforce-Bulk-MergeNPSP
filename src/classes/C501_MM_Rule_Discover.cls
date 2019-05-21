@@ -517,6 +517,7 @@ public class C501_MM_Rule_Discover implements Schedulable {
     }
 
     public void ProcessReportByContacts(C501_Merge_Metric__c mergeMetric, String foriegnKey, List<String> detailColumnsChecked, List<Reports.ReportFilter> reportFilters, String additionalGroupByField) {
+
         // Find Contact matches across Accounts
         //
         String strSoqlSelect = 'SELECT Count(' + mergeMetric.Source_Object_Contact_Id__c + ')Matches, MAX(' + mergeMetric.Source_Object_Contact_Id__c + ')MaxId, MIN(' + mergeMetric.Source_Object_Contact_Id__c + ')MinId ';

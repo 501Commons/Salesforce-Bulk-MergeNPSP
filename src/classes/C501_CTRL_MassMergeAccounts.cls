@@ -46,26 +46,60 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
         
         // handle optional parameters (must use string, not ID, to handle null)
         string id = ApexPages.currentPage().getParameters().get('id');
-        if (id != null && id != '') accountFilter.Id = id;
+        if (id != null && id != '') objectFilter.Id = id;
         
         // Get list of fields FROM fieldset
         listStrFields = new List<String>();
-        for (Schema.FieldSetMember f : SObjectType.Account.FieldSets.MassMergeAccounts.getFields()) {
+        for (Schema.FieldSetMember f : this.getFields()) {
             listStrFields.add(f.getFieldPath());
         }
 
         // Required fields
-        listStrFields.add('Id');
-        listStrFields.add('C501_Merge_Id__c');
-        listStrFields.add('C501_Merge_Action__c');
-        listStrFields.add('C501_Merge_Account__c');
-        listStrFields.add('C501_Merge_Target__c');
+        if (!ListPartialContains(listStrFields, 'Id')) {
+            listStrFields.add('Id');
+        }
+        if (!ListPartialContains(listStrFields, 'Name')) {
+            listStrFields.add('Name');
+        }
+        if (!ListPartialContains(listStrFields, 'C501_Merge_Metric_Name__c')) {
+            listStrFields.add('C501_Merge_Metric_Name__c');
+        }
+        if (!ListPartialContains(listStrFields, 'C501_Merge_Id__c')) {
+            listStrFields.add('C501_Merge_Id__c');
+        }
+        if (!ListPartialContains(listStrFields, 'C501_Merge_Action__c')) {
+            listStrFields.add('C501_Merge_Action__c');
+        }
+        if (!ListPartialContains(listStrFields, 'C501_Merge_Account__c')) {
+            listStrFields.add('C501_Merge_Account__c');
+        }
+        if (!ListPartialContains(listStrFields, 'C501_Merge_Target__c')) {
+            listStrFields.add('C501_Merge_Target__c');
+        }
+        if (!ListPartialContains(listStrFields, 'C501_Merge_Confidence__c')) {
+            listStrFields.add('C501_Merge_Confidence__c');
+        }
     }   
+    
+    private Boolean ListPartialContains(List<String> listStrFields, String fieldValue) {
+
+        if (listStrFields == null) {
+            return false;
+        }
+
+        for (String listValue :listStrFields) {
+            if (listValue.contains(fieldValue)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
     
     global List<SelectOption> listSOAccounts {
         get {
             if (listSOAccounts == null )
-                listSOAccounts = c501MassMerge_SharedCode_Account.ListObjectsWithConfidence(accountFilter.C501_Merge_Rule__c, accountFilter.C501_Merge_Confidence_From__c, accountFilter.C501_Merge_Confidence_To__c);
+                listSOAccounts = c501MassMerge_SharedCode_Account.ListObjectsWithConfidence(objectFilter.C501_Merge_Rule__c, objectFilter.C501_Merge_Confidence_From__c, objectFilter.C501_Merge_Confidence_To__c);
 
             return listSOAccounts;
         }
@@ -97,17 +131,39 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
         set;
         }
 
-    // Confidence to filter the list of accounts
-    global Account accountFilter {
+    global Schema.FieldSet fieldSetActive {
         get {
-            if (accountFilter == null) {
-                accountFilter = new Account();
-                
-                accountFilter.C501_Merge_Rule__c = null;
-                accountFilter.C501_Merge_Confidence_From__c = 90.0;
-                accountFilter.C501_Merge_Confidence_To__c = 100.0;
+
+            Schema.FieldSet fieldSetCheck = SObjectType.Account.FieldSets.MassMergeAccounts;
+            for (String fieldSetName :Schema.SObjectType.Account.fieldSets.getMap().keySet()) {
+
+                // Check for custom fields set
+                if (fieldSetName.contains('massmergeaccounts_custom')) {
+                    fieldSetCheck = Schema.SObjectType.Account.fieldSets.getMap().get(fieldSetName);
+                    break;
+                }
             }
-            return accountFilter;
+
+            return fieldSetCheck;
+        }
+        set;
+    }
+
+    // getter - reference in Visualforce as fields
+    global List<Schema.FieldSetMember> getFields() {
+        return fieldSetActive.getFields();
+    }
+
+    global Account objectFilter {
+        get {
+            if (objectFilter == null) {
+                objectFilter = new Account();
+                
+                objectFilter.C501_Merge_Rule__c = null;
+                objectFilter.C501_Merge_Confidence_From__c = 90.0;
+                objectFilter.C501_Merge_Confidence_To__c = 100.0;
+            }
+            return objectFilter;
         }
         set;
     }
@@ -125,7 +181,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
     global virtual PageReference ChangeRule() {
 
         listSOAccounts = null;
-        accountFilter.Id = null;
+        objectFilter.Id = null;
         listAccounts = null;
         strSaveResults = null;
 
@@ -136,7 +192,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
     global virtual PageReference ChangeMergeConfidence() {
 
         listSOAccounts = null;
-        accountFilter.Id = null;
+        objectFilter.Id = null;
         listAccounts = null;
         strSaveResults = null;
 
@@ -148,7 +204,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
         System.debug('***** C501_CTRL_MassMergeAccounts::ResetAccounts');
 
         listSOAccounts = null;
-        accountFilter.Id = null;
+        objectFilter.Id = null;
         listAccounts = null;
     }
 
@@ -173,14 +229,14 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
 
 		Map<Id,C501_Account_Merge__c> accountsMerge = new Map<Id,C501_Account_Merge__c>();
 
-        if (accountFilter.Id <> null) {
+        if (objectFilter.Id <> null) {
         
-            System.debug('***** C501_CTRL_MassMergeAccounts::FillListAccounts accountFilter.Id: ' + accountFilter.Id);
+            System.debug('***** C501_CTRL_MassMergeAccounts::FillListAccounts objectFilter.Id: ' + objectFilter.Id);
 
             for(C501_Account_Merge__c accountMerge : [
                 SELECT Id, Account__c, Merge_Target_Account__c, Merge_Confidence__c, Merge_Action__c, Merge_Metric__c, Merge_Metric__r.Name
                 FROM C501_Account_Merge__c
-                WHERE (Account__c = :accountFilter.Id OR Merge_Target_Account__c = :accountFilter.Id) AND isDeleted = false
+                WHERE (Account__c = :objectFilter.Id OR Merge_Target_Account__c = :objectFilter.Id) AND Merge_Action__c = null AND isDeleted = false
                 LIMIT 1]) {
 
                     System.debug('***** C501_CTRL_MassMergeAccounts::FillListAccounts accountMerge: ' + accountMerge);
@@ -225,7 +281,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
             Integer mergeIndex = 1;
             String mergeBuffer = '0';
 
-            String mergeRule = accountFilter.C501_Merge_Rule__c;
+            String mergeRule = objectFilter.C501_Merge_Rule__c;
             String strRuleSoql = '';
             if (mergeRule <> null && !String.isBlank(mergeRule)) {
                 strRuleSoql = ' and Merge_Metric__r.Name = :mergeRule';
@@ -234,7 +290,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
             string strSoql = 'SELECT Id, Account__c, Merge_Target_Account__c, Merge_Confidence__c, Merge_Action__c, Merge_Metric__c, Merge_Metric__r.Name';
 
             strSoql += ' FROM C501_Account_Merge__c';
-            strSoql += ' WHERE (Account__c in :accountIds OR Merge_Target_Account__c in :accountIds) AND isDeleted = false';
+            strSoql += ' WHERE (Account__c in :accountIds OR Merge_Target_Account__c in :accountIds) AND Merge_Action__c = null AND isDeleted = false';
             strSoql += strRuleSoql;
             strSoql += ' ORDER BY Account__r.Name ASC';
 
@@ -354,8 +410,8 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
         strSaveResults = null;
         
         try {
-            Map<String, C501_Account_Merge__c> listAccountsMergeUpdates = new Map<String, C501_Account_Merge__c>();
-            Map<String, C501_Account_Merge__c> listAccountsMerges = new Map<String, C501_Account_Merge__c>();
+            Map<String, C501_Account_Merge__c> listAccountsMergesIgnore = new Map<String, C501_Account_Merge__c>();
+            Map<String, C501_Account_Merge__c> listAccountsMergesMaster = new Map<String, C501_Account_Merge__c>();
 
             System.debug('***** C501_CTRL_MassMergeAccounts::SaveAccounts listAccounts: ' + String.valueOf(listAccounts));
 
@@ -369,19 +425,18 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
                     // so we've decided it is better to always update all records.
                     //if (setAccountsIdDirty.contains(account.Id)) 
 
-                    if (!listAccountsMerges.containsKey(account.C501_Merge_Id__c)) {
+                    if (!listAccountsMergesMaster.containsKey(account.C501_Merge_Id__c)) {
 
                         Account targetObject = getTargetMerge(account);
                         if (targetObject == null) {
                             continue;
                         }
 
-                        listAccountsMerges.put(account.C501_Merge_Id__c, new C501_Account_Merge__c(
+                        listAccountsMergesMaster.put(account.C501_Merge_Id__c, new C501_Account_Merge__c(
                             Id = account.C501_Merge_Id__c,
                             Account__c = account.Id,
                             Merge_Target_Account__c = targetObject.Id,
-                            Merge_Action__c = account.C501_Merge_Action__c,
-                            Merge_Confidence__c = account.C501_Merge_Confidence__c
+                            Merge_Action__c = account.C501_Merge_Action__c
                         ));
                     }
                 }
@@ -394,14 +449,14 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
                     // so we've decided it is better to always update all records.
                     //if (setAccountsIdDirty.contains(account.Id)) 
 
-                    if (!listAccountsMergeUpdates.containsKey(account.C501_Merge_Id__c)) {
+                    if (!listAccountsMergesIgnore.containsKey(account.C501_Merge_Id__c)) {
 
                         Account targetObject = getTargetMerge(account);
                         if (targetObject == null) {
                             continue;
                         }
 
-                        listAccountsMergeUpdates.put(account.C501_Merge_Id__c, new C501_Account_Merge__c(
+                        listAccountsMergesIgnore.put(account.C501_Merge_Id__c, new C501_Account_Merge__c(
                             Id = account.C501_Merge_Id__c,
                             Account__c = account.Id,
                             Merge_Target_Account__c = targetObject.Id,
@@ -411,15 +466,17 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
                 }
             }
 
-            if (!listAccountsMergeUpdates.values().isEmpty()) {
-                update listAccountsMergeUpdates.values();
+            if (!listAccountsMergesIgnore.values().isEmpty()) {
+                update listAccountsMergesIgnore.values();
             }
 
-            if (!listAccountsMerges.values().isEmpty()) {
-                c501MassMerge_SharedCode_Account.ProcessObjectMerges(listAccountsMerges.values(), false);
+            if (!listAccountsMergesMaster.values().isEmpty()) {
+
+                update listAccountsMergesMaster.values();
+                c501MassMerge_SharedCode_Account.ProcessObjectMerges(listAccountsMergesMaster.values(), false);
             }
 
-            strSaveResults = (listAccountsMerges.values().size() * 2) + ' ' + Label.Merge_labelMassMergeSaveSuccess;
+            strSaveResults = ( (listAccountsMergesIgnore.values().size() + listAccountsMergesMaster.values().size()) * 2) + ' ' + Label.Merge_labelMassMergeSaveSuccess;
             ApexPages.addMessage(new ApexPages.message(ApexPages.Severity.CONFIRM, strSaveResults));
 
             // successful save, so clear out dirty list
@@ -451,7 +508,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
     // user wants to close this page
     global virtual PageReference Cancel() {
         // figure out which object to return to.
-        idRedirect = accountFilter.Id;
+        idRedirect = objectFilter.Id;
         
         // trigger our redirect component to redirect using javascript.
         redirect = true;

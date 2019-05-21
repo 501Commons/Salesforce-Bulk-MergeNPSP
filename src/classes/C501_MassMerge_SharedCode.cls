@@ -81,7 +81,7 @@ global with sharing class C501_MassMerge_SharedCode {
         strSoql += ' AutoMerge_Percentage__c, AutoMerge_Objects__c,';
         strSoql += ' Last_Discover_Date__c, Last_Merge_Date__c';
         strSoql += ' FROM C501_Merge_Metric__c';
-        strSoql += ' WHERE Source_Object__c <> NULL AND Source_Report__c <> NULL';
+        strSoql += ' WHERE Source_Object__c <> NULL AND Source_Report__c <> NULL AND (Source_Object_Account_Id__c <> NULL OR Source_Object_Contact_Id__c <> NULL)';
 
         if (Test.isRunningTest()) {        
             strSoql += ' AND Name LIKE \'TESTDATA%\'';
@@ -458,6 +458,17 @@ global with sharing class C501_MassMerge_SharedCode {
         update mergeMetrics;
 
         //this.PrintSalesforceStructure();
+    }
+
+    global void PrintSalesforceLimits() {
+
+        // https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/apex_methods_system_limits.htm
+        System.debug('***** C501_MassMerge_SharedCode::PrintSalesforceLimits - Aggregate Queries ' + Limits.getAggregateQueries() + ' of ' + Limits.getLimitAggregateQueries());
+        System.debug('***** C501_MassMerge_SharedCode::PrintSalesforceLimits - DML Rows ' + Limits.getDMLRows() + ' of ' + Limits.getLimitDMLRows());
+        System.debug('***** C501_MassMerge_SharedCode::PrintSalesforceLimits - DML Statments ' + Limits.getDMLStatements() + ' of ' + Limits.getLimitDMLStatements());
+        System.debug('***** C501_MassMerge_SharedCode::PrintSalesforceLimits - Queies ' + Limits.getQueries() + ' of ' + Limits.getLimitQueries());
+        System.debug('***** C501_MassMerge_SharedCode::PrintSalesforceLimits - Query Rows ' + Limits.getQueryRows() + ' of ' + Limits.getLimitQueryRows());
+        System.debug('***** C501_MassMerge_SharedCode::PrintSalesforceLimits - Sosl Queries ' + Limits.getSoslQueries() + ' of ' + Limits.getLimitSoslQueries());
     }
 
     global void PrintSalesforceStructure() {

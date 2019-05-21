@@ -59,8 +59,8 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
                 FROM C501_Contact_Merge__c
                 WHERE Merge_Confidence__c >= :fromMergeConfidence
                     and Merge_Confidence__c <= :toMergeConfidence
-                    and Merge_Action__c <> 'Ignore' 
-                    and Merge_Action__c <> 'Master' 
+                    and Merge_Action__c = null
+                    and isDeleted = false
                 GROUP BY Contact__c, Contact__r.Name
                 LIMIT 999]) {
 
@@ -83,8 +83,8 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
                 FROM C501_Contact_Merge__c
                 WHERE Merge_Confidence__c >= :fromMergeConfidence
                     and Merge_Confidence__c <= :toMergeConfidence
-                    and Merge_Action__c <> 'Ignore' 
-                    and Merge_Action__c <> 'Master' 
+                    and Merge_Action__c = null
+                    and isDeleted = false
                     and Merge_Metric__r.Name = :mergeRule
                 GROUP BY Contact__c, Contact__r.Name
                 LIMIT 999]) {
@@ -240,7 +240,7 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
 
         // Check for batch queued merges
         if (!pendingMerges.isEmpty()) {
-            
+
             ProcessObjectMerges(pendingMerges, false);
             return pendingMerges.size();
         }
@@ -259,7 +259,9 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
         // Jobs with Status = 'Holding' applies to batch jobs in the Apex flex queue (max allowed 100)
         //  https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/api/sforce_api_objects_asyncapexjob.htm
         List<AsyncApexJob> flexQueueJobs = [SELECT Id FROM AsyncApexJob WHERE Status = 'Holding'];
-        Integer remainingFlexQueueJobs = 100 - flexQueueJobs.size();
+        System.debug('***** C501_MassMerge_SharedCode_Contact::ProcessObjectMerges - flexQueueJobs ' + flexQueueJobs);
+        System.debug('***** C501_MassMerge_SharedCode_Contact::ProcessObjectMerges - QueuableJobs ' + Limits.getQueueableJobs() + ' of ' + Limits.getLimitQueueableJobs());
+        Integer remainingFlexQueueJobs = Limits.getLimitQueueableJobs() - flexQueueJobs.size();
 
         Set<Id> objectsProcessed = new Set<Id>();
         List<C501_Contact_Merge__c> deleteMergeCandidates = new List<C501_Contact_Merge__c>();

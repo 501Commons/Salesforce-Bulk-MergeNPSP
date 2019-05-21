@@ -92,7 +92,7 @@
                         <apex:outputLabel for="ddlAccounts" styleClass="slds-form-element__label" >
                             Household
                         </apex:outputLabel>
-                        <apex:selectList id="ddlAccounts" value="{!accountFilter.Id}" required="false" size="1" styleClass="slds-select" disabled="{!listSOAccounts.size=1}">
+                        <apex:selectList id="ddlAccounts" value="{!objectFilter.Id}" required="false" size="1" styleClass="slds-select" disabled="{!listSOAccounts.size=1}">
                             <apex:actionSupport immediate="false" event="onchange" rerender="ddlAccounts,ddlRules,tblAccounts" status="retrieveStatus" action="{!ChangeAccount}" />
                             <apex:selectOptions value="{!listSOAccounts}" /> 
                         </apex:selectList>
@@ -101,7 +101,7 @@
                         <apex:outputLabel for="ddlRules" styleClass="slds-form-element__label" >
                             Rule
                         </apex:outputLabel>
-                        <apex:selectList id="ddlRules" value="{!accountFilter.C501_Merge_Rule__c}" required="false" size="1" styleClass="slds-select" disabled="{!listSORules.size=1}">
+                        <apex:selectList id="ddlRules" value="{!objectFilter.C501_Merge_Rule__c}" required="false" size="1" styleClass="slds-select" disabled="{!listSORules.size=1}">
                             <apex:actionSupport immediate="false" event="onchange" rerender="ddlAccounts,ddlRules,tblAccounts" status="retrieveStatus" action="{!ChangeRule}" />
                             <apex:selectOptions value="{!listSORules}" /> 
                         </apex:selectList>
@@ -114,7 +114,7 @@
                         <apex:outputLabel for="fldConfidenceFrom" styleClass="slds-form-element__label" >
                             {!$Label.Merge_labelMassMergeFilterConfidenceFrom}
                         </apex:outputLabel>
-                        <apex:inputField id="fldConfidenceFrom" required="false" value="{!accountFilter.C501_Merge_Confidence_From__c}" label="" styleClass="slds-input" >
+                        <apex:inputField id="fldConfidenceFrom" required="false" value="{!objectFilter.C501_Merge_Confidence_From__c}" label="" styleClass="slds-input" >
                             <apex:actionSupport immediate="false" event="onchange" rerender="ddlAccounts,ddlRules,tblAccounts" status="retrieveStatus" action="{!ChangeMergeConfidence}" />
                         </apex:inputField>
                     </div>
@@ -122,7 +122,7 @@
                         <apex:outputLabel for="fldConfidenceTo" styleClass="slds-form-element__label" >
                             {!$Label.Merge_labelMassMergeFilterConfidenceTo}
                         </apex:outputLabel>
-                        <apex:inputField id="fldConfidenceTo" required="false" value="{!accountFilter.C501_Merge_Confidence_To__c}" label="" styleClass="slds-input" >
+                        <apex:inputField id="fldConfidenceTo" required="false" value="{!objectFilter.C501_Merge_Confidence_To__c}" label="" styleClass="slds-input" >
                             <apex:actionSupport immediate="false" event="onchange" rerender="ddlAccounts,ddlRules,tblAccounts" status="retrieveStatus" action="{!ChangeMergeConfidence}" />
                         </apex:inputField>
                     </div>

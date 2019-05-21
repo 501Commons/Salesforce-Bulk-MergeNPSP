@@ -163,12 +163,12 @@ public class C501_CTRL_MassMergeAccounts_TEST {
         Test.setCurrentPageReference(p);
         
         C501_CTRL_MassMergeAccounts ctrl = new C501_CTRL_MassMergeAccounts();
-        System.AssertEquals(masterAccountId, ctrl.accountFilter.Id);
+        System.AssertEquals(masterAccountId, ctrl.objectFilter.Id);
 
         System.Assert(ctrl.listSOAccounts.size() > 1);
         System.Assert(ctrl.listAccounts.size() > 0);
 
-        ctrl.accountFilter.Id = null;
+        ctrl.objectFilter.Id = null;
 
         System.Assert(ctrl.listSOAccounts.size() > 1);
         System.Assert(ctrl.listAccounts.size() > 0);
@@ -181,20 +181,20 @@ public class C501_CTRL_MassMergeAccounts_TEST {
         System.Assert(ctrl.listSORules.size() > 0);
 
         // Check filter by Rule
-        ctrl.accountFilter.Id = masterAccountId;
+        ctrl.objectFilter.Id = masterAccountId;
         List<C501_Merge_Metric__c> listMergeMetrics = [SELECT Name FROM C501_Merge_Metric__c WHERE Name LIKE 'TESTDATA%' AND Name LIKE '%Account%'];
-        ctrl.accountFilter.C501_Merge_Rule__c = listMergeMetrics[0].Name;
+        ctrl.objectFilter.C501_Merge_Rule__c = listMergeMetrics[0].Name;
         System.Assert(ctrl.listAccounts.size() > 0);
 
         // Check filter by Confidence
-        ctrl.accountFilter.Id = masterAccountId;
-        ctrl.accountFilter.C501_Merge_Confidence_From__c = 0.0;
-        ctrl.accountFilter.C501_Merge_Confidence_To__c = 100.0;
+        ctrl.objectFilter.Id = masterAccountId;
+        ctrl.objectFilter.C501_Merge_Confidence_From__c = 0.0;
+        ctrl.objectFilter.C501_Merge_Confidence_To__c = 100.0;
         System.Assert(ctrl.listAccounts.size() > 0);
 
         // Clear filter
         ctrl.ChangeRule();
-        ctrl.accountFilter.Id = masterAccountId;
+        ctrl.objectFilter.Id = masterAccountId;
         System.Assert(ctrl.listAccounts.size() > 0);
         System.AssertEquals(0, ctrl.numberOfRecordsDirty);
         
@@ -222,7 +222,7 @@ public class C501_CTRL_MassMergeAccounts_TEST {
         //System.AssertEquals(0, ctrl.numberOfRecordsDirty);  
 
         // Clear out household filter
-        ctrl.accountFilter.Id = null;
+        ctrl.objectFilter.Id = null;
         ctrl.SaveAndCloseAccounts();   
 
         Test.StopTest();

@@ -46,28 +46,60 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
         
         // handle optional parameters (must use string, not ID, to handle null)
         string id = ApexPages.currentPage().getParameters().get('id');
-        if (id != null && id != '') contactFilter.Id = id;
-
-        System.debug('***** C501_CTRL_MassMergeContacts::C501_CTRL_MassMergeContacts contactFilter.Id: ' + contactFilter.Id);
+        if (id != null && id != '') objectFilter.Id = id;
 
         // Get list of fields FROM fieldset
         listStrFields = new List<String>();
-        for (Schema.FieldSetMember f : SObjectType.contact.FieldSets.MassMergeContacts.getFields()) {
+        for (Schema.FieldSetMember f : this.getFields()) {
             listStrFields.add(f.getFieldPath());
         }
 
         // Required fields
-        listStrFields.add('Id');
-        listStrFields.add('C501_Merge_Id__c');
-        listStrFields.add('C501_Merge_Action__c');
-        listStrFields.add('C501_Merge_Contact__c');
-        listStrFields.add('C501_Merge_Target__c');
+        if (!ListPartialContains(listStrFields, 'Id')) {
+            listStrFields.add('Id');
+        }
+        if (!ListPartialContains(listStrFields, 'Name')) {
+            listStrFields.add('Name');
+        }
+        if (!ListPartialContains(listStrFields, 'C501_Merge_Metric_Name__c')) {
+            listStrFields.add('C501_Merge_Metric_Name__c');
+        }
+        if (!ListPartialContains(listStrFields, 'C501_Merge_Id__c')) {
+            listStrFields.add('C501_Merge_Id__c');
+        }
+        if (!ListPartialContains(listStrFields, 'C501_Merge_Action__c')) {
+            listStrFields.add('C501_Merge_Action__c');
+        }
+        if (!ListPartialContains(listStrFields, 'C501_Merge_Contact__c')) {
+            listStrFields.add('C501_Merge_Contact__c');
+        }
+        if (!ListPartialContains(listStrFields, 'C501_Merge_Target__c')) {
+            listStrFields.add('C501_Merge_Target__c');
+        }
+        if (!ListPartialContains(listStrFields, 'C501_Merge_Confidence__c')) {
+            listStrFields.add('C501_Merge_Confidence__c');
+        }
     }   
     
+    private Boolean ListPartialContains(List<String> listStrFields, String fieldValue) {
+
+        if (listStrFields == null) {
+            return false;
+        }
+
+        for (String listValue :listStrFields) {
+            if (listValue.contains(fieldValue)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     global List<SelectOption> listSOContacts {
         get {
             if (listSOContacts == null )
-                listSOContacts = c501MassMerge_SharedCode_Contact.listObjectsWithConfidence(contactFilter.C501_Merge_Rule__c, contactFilter.C501_Merge_Confidence_From__c, contactFilter.C501_Merge_Confidence_To__c);
+                listSOContacts = c501MassMerge_SharedCode_Contact.listObjectsWithConfidence(objectFilter.C501_Merge_Rule__c, objectFilter.C501_Merge_Confidence_From__c, objectFilter.C501_Merge_Confidence_To__c);
 
             return listSOContacts;
         }
@@ -99,17 +131,39 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
         set;
         }
 
-    // Confidence to filter the list of Contacts
-    global Contact contactFilter {
+    global Schema.FieldSet fieldSetActive {
         get {
-            if (contactFilter == null) {
-                contactFilter = new Contact();
-                
-                contactFilter.C501_Merge_Rule__c = null;
-                contactFilter.C501_Merge_Confidence_From__c = 90.0;
-                contactFilter.C501_Merge_Confidence_To__c = 100.0;
+
+            Schema.FieldSet fieldSetCheck = SObjectType.Contact.FieldSets.MassMergeContacts;
+            for (String fieldSetName :Schema.SObjectType.Contact.fieldSets.getMap().keySet()) {
+
+                // Check for custom fields set
+                if (fieldSetName.contains('massmergecontacts_custom')) {
+                    fieldSetCheck = Schema.SObjectType.Contact.fieldSets.getMap().get(fieldSetName);
+                    break;
+                }
             }
-            return contactFilter;
+
+            return fieldSetCheck;
+        }
+        set;
+    }
+
+    // getter - reference in Visualforce as fields
+    global List<Schema.FieldSetMember> getFields() {
+        return fieldSetActive.getFields();
+    }
+
+    global Contact objectFilter {
+        get {
+            if (objectFilter == null) {
+                objectFilter = new Contact();
+                
+                objectFilter.C501_Merge_Rule__c = null;
+                objectFilter.C501_Merge_Confidence_From__c = 90.0;
+                objectFilter.C501_Merge_Confidence_To__c = 100.0;
+            }
+            return objectFilter;
         }
         set;
     }
@@ -127,7 +181,7 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
     global virtual PageReference ChangeRule() {
 
         listSOContacts = null;
-        contactFilter.Id = null;
+        objectFilter.Id = null;
         listContacts = null;
         strSaveResults = null;
 
@@ -138,7 +192,7 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
     global virtual PageReference ChangeMergeConfidence() {
 
         listSOContacts = null;
-        contactFilter.Id = null;
+        objectFilter.Id = null;
         listContacts = null;
         strSaveResults = null;
 
@@ -150,7 +204,7 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
         System.debug('***** C501_CTRL_MassMergeContacts::ResetContacts');
 
         listSOContacts = null;
-        contactFilter.Id = null;
+        objectFilter.Id = null;
         listContacts = null;
     }
 
@@ -175,12 +229,12 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
 
 		Map<Id,C501_Contact_Merge__c> contactsMerge = new Map<Id,C501_Contact_Merge__c>();
 
-        if (contactFilter.Id <> null) {
+        if (objectFilter.Id <> null) {
         
             for(C501_Contact_Merge__c contactMerge : [
                 SELECT Id, Contact__c, Merge_Target_Contact__c, Merge_Confidence__c, Merge_Action__c, Merge_Metric__c, Merge_Metric__r.Name
                 FROM C501_Contact_Merge__c
-                WHERE (Contact__c = :contactFilter.Id OR Merge_Target_Contact__c = :contactFilter.Id) AND isDeleted = false
+                WHERE (Contact__c = :objectFilter.Id OR Merge_Target_Contact__c = :objectFilter.Id) AND Merge_Action__c = null AND isDeleted = false
                 LIMIT 1]) {
 
                     contactsMerge.put(
@@ -223,7 +277,7 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
             Integer mergeIndex = 1;
             String mergeBuffer = '0';
 
-            String mergeRule = contactFilter.C501_Merge_Rule__c;
+            String mergeRule = objectFilter.C501_Merge_Rule__c;
             String strRuleSoql = '';
             if (mergeRule <> null && !String.isBlank(mergeRule)) {
                 strRuleSoql = ' and Merge_Metric__r.Name = :mergeRule';
@@ -232,7 +286,7 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
             string strSoql = 'SELECT Id, Contact__c, Merge_Target_Contact__c, Merge_Confidence__c, Merge_Action__c, Merge_Metric__c, Merge_Metric__r.Name';
 
             strSoql += ' FROM C501_Contact_Merge__c';
-            strSoql += ' WHERE (Contact__c in :ContactIds OR Merge_Target_Contact__c in :ContactIds) AND isDeleted = false';
+            strSoql += ' WHERE (Contact__c in :ContactIds OR Merge_Target_Contact__c in :ContactIds) AND Merge_Action__c = null AND isDeleted = false';
             strSoql += strRuleSoql;
             strSoql += ' ORDER BY Contact__r.Name ASC';
 
@@ -350,8 +404,8 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
         strSaveResults = null;
         
         try {
-            Map<String, C501_Contact_Merge__c> listContactsMergeUpdates = new Map<String, C501_Contact_Merge__c>();
-            Map<String, C501_Contact_Merge__c> listContactsMerges = new Map<String, C501_Contact_Merge__c>();
+            Map<String, C501_Contact_Merge__c> listContactsMergesIgnore = new Map<String, C501_Contact_Merge__c>();
+            Map<String, C501_Contact_Merge__c> listContactsMergesMaster = new Map<String, C501_Contact_Merge__c>();
 
             System.debug('***** C501_CTRL_MassMergeContacts::SaveContacts listContacts: ' + String.valueOf(listContacts));
 
@@ -365,19 +419,18 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
                     // so we've decided it is better to always update all records.
                     //if (setContactsIdDirty.contains(contact.Id)) 
 
-                    if (!listContactsMerges.containsKey(contact.C501_Merge_Id__c)) {
+                    if (!listContactsMergesMaster.containsKey(contact.C501_Merge_Id__c)) {
 
                         Contact targetObject = getTargetMerge(contact);
                         if (targetObject == null) {
                             continue;
                         }
 
-                        listContactsMerges.put(contact.C501_Merge_Id__c, new C501_Contact_Merge__c(
+                        listContactsMergesMaster.put(contact.C501_Merge_Id__c, new C501_Contact_Merge__c(
                             Id = contact.C501_Merge_Id__c,
                             Contact__c = contact.Id,
                             Merge_Target_Contact__c = targetObject.Id,
-                            Merge_Action__c = contact.C501_Merge_Action__c,
-                            Merge_Confidence__c = contact.C501_Merge_Confidence__c
+                            Merge_Action__c = contact.C501_Merge_Action__c
                         ));
                     }
                 }
@@ -390,14 +443,14 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
                     // so we've decided it is better to always update all records.
                     //if (setContactsIdDirty.contains(contact.Id)) 
 
-                    if (!listContactsMergeUpdates.containsKey(contact.C501_Merge_Id__c)) {
+                    if (!listContactsMergesIgnore.containsKey(contact.C501_Merge_Id__c)) {
 
                         Contact targetObject = getTargetMerge(contact);
                         if (targetObject == null) {
                             continue;
                         }
 
-                        listContactsMergeUpdates.put(contact.C501_Merge_Id__c, new C501_Contact_Merge__c(
+                        listContactsMergesIgnore.put(contact.C501_Merge_Id__c, new C501_Contact_Merge__c(
                             Id = contact.C501_Merge_Id__c,
                             Contact__c = contact.Id,
                             Merge_Target_Contact__c = targetObject.Id,
@@ -407,15 +460,17 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
                 }
             }
 
-            if (!listContactsMergeUpdates.values().isEmpty()) {
-                update listContactsMergeUpdates.values();
+            if (!listContactsMergesIgnore.values().isEmpty()) {
+                update listContactsMergesIgnore.values();
             }
 
-            if (!listContactsMerges.values().isEmpty()) {
-                c501MassMerge_SharedCode_Contact.ProcessObjectMerges(listContactsMerges.values(), true);
+            if (!listContactsMergesMaster.values().isEmpty()) {
+
+                update listContactsMergesMaster.values();
+                c501MassMerge_SharedCode_Contact.ProcessObjectMerges(listContactsMergesMaster.values(), true);
             }
 
-            strSaveResults = (listContactsMerges.values().size() * 2) + ' ' + Label.Merge_labelMassMergeSaveSuccess;
+            strSaveResults = ( (listContactsMergesIgnore.values().size() + listContactsMergesMaster.values().size()) * 2) + ' ' + Label.Merge_labelMassMergeSaveSuccess;
             ApexPages.addMessage(new ApexPages.message(ApexPages.Severity.CONFIRM, strSaveResults));
 
             // successful save, so clear out dirty list
@@ -447,7 +502,7 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
     // user wants to close this page
     global virtual PageReference Cancel() {
         // figure out which object to return to.
-        idRedirect = contactFilter.Id;
+        idRedirect = objectFilter.Id;
         
         // trigger our redirect component to redirect using javascript.
         redirect = true;
