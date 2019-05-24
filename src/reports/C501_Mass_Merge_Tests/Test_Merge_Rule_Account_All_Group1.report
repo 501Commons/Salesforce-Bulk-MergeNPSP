@@ -1,52 +1,52 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Report xmlns="http://soap.sforce.com/2006/04/metadata">
     <columns>
-        <field>ADDRESS1_COUNTRY</field>
+        <field>ACCOUNT.ADDRESS2_COUNTRY</field>
     </columns>
     <columns>
-        <field>ADDRESS1_ZIP</field>
+        <field>ACCOUNT.ADDRESS2_ZIP</field>
     </columns>
     <columns>
-        <field>ADDRESS1_STATE</field>
+        <field>ACCOUNT.ADDRESS2_STATE</field>
     </columns>
     <columns>
-        <field>ADDRESS1_CITY</field>
+        <field>ACCOUNT.ADDRESS2_CITY</field>
     </columns>
     <columns>
-        <field>ADDRESS1_LINE3</field>
+        <field>ACCOUNT.ADDRESS2_LINE3</field>
     </columns>
     <columns>
-        <field>ADDRESS1_LINE2</field>
+        <field>ACCOUNT.ADDRESS2_LINE2</field>
     </columns>
     <columns>
-        <field>ADDRESS1_LINE1</field>
+        <field>ACCOUNT.ADDRESS2_LINE1</field>
     </columns>
     <columns>
-        <field>ADDRESS1_STREET</field>
+        <field>ACCOUNT.ADDRESS2_STREET</field>
     </columns>
     <columns>
-        <field>ADDRESS2_COUNTRY</field>
+        <field>ACCOUNT.ADDRESS1_COUNTRY</field>
     </columns>
     <columns>
-        <field>ADDRESS2_ZIP</field>
+        <field>ACCOUNT.ADDRESS1_ZIP</field>
     </columns>
     <columns>
-        <field>ADDRESS2_STATE</field>
+        <field>ACCOUNT.ADDRESS1_STATE</field>
     </columns>
     <columns>
-        <field>ADDRESS2_CITY</field>
+        <field>ACCOUNT.ADDRESS1_CITY</field>
     </columns>
     <columns>
-        <field>ADDRESS2_LINE3</field>
+        <field>ACCOUNT.ADDRESS1_LINE3</field>
     </columns>
     <columns>
-        <field>ADDRESS2_LINE2</field>
+        <field>ACCOUNT.ADDRESS1_LINE2</field>
     </columns>
     <columns>
-        <field>ADDRESS2_LINE1</field>
+        <field>ACCOUNT.ADDRESS1_LINE1</field>
     </columns>
     <columns>
-        <field>ADDRESS2_STREET</field>
+        <field>ACCOUNT.ADDRESS1_STREET</field>
     </columns>
     <filter>
         <criteriaItems>
@@ -55,9 +55,15 @@
             <operator>startsWith</operator>
             <value>TESTDATA</value>
         </criteriaItems>
+        <criteriaItems>
+            <column>ACCOUNT.NAME</column>
+            <isUnlocked>true</isUnlocked>
+            <operator>equals</operator>
+            <value>Full Contact Match</value>
+        </criteriaItems>
     </filter>
     <format>Tabular</format>
-    <name>Test Merge Rule Contact All Address</name>
+    <name>Test Merge Rule Account All Group1</name>
     <params>
         <name>co</name>
         <value>1</value>

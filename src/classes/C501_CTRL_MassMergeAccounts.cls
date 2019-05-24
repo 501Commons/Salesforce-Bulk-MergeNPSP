@@ -473,7 +473,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
             if (!listAccountsMergesMaster.values().isEmpty()) {
 
                 update listAccountsMergesMaster.values();
-                c501MassMerge_SharedCode_Account.ProcessObjectMerges(listAccountsMergesMaster.values(), false);
+                c501MassMerge_SharedCode_Account.ProcessObjectMerges(new List<C501_Merge_Metric__c>{}, listAccountsMergesMaster.values(), false);
             }
 
             strSaveResults = ( (listAccountsMergesIgnore.values().size() + listAccountsMergesMaster.values().size()) * 2) + ' ' + Label.Merge_labelMassMergeSaveSuccess;

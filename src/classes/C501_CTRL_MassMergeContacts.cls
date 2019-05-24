@@ -467,7 +467,7 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
             if (!listContactsMergesMaster.values().isEmpty()) {
 
                 update listContactsMergesMaster.values();
-                c501MassMerge_SharedCode_Contact.ProcessObjectMerges(listContactsMergesMaster.values(), true);
+                c501MassMerge_SharedCode_Contact.ProcessObjectMerges(new List<C501_Merge_Metric__c>(), listContactsMergesMaster.values(), true);
             }
 
             strSaveResults = ( (listContactsMergesIgnore.values().size() + listContactsMergesMaster.values().size()) * 2) + ' ' + Label.Merge_labelMassMergeSaveSuccess;

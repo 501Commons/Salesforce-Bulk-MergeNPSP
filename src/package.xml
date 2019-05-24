@@ -168,14 +168,14 @@
         <members>C501_Mass_Merge_Templates/Merge_Rule_Contact_Name_Email</members>
         <members>C501_Mass_Merge_Templates/Merge_Rule_Contact_Name_Email_Gender</members>
         <members>C501_Mass_Merge_Tests</members>
-        <members>C501_Mass_Merge_Tests/Test_Merge_Rule_Account_Address</members>
-        <members>C501_Mass_Merge_Tests/Test_Merge_Rule_Account_All_Address</members>
         <members>C501_Mass_Merge_Tests/Test_Merge_Rule_Account_All_General</members>
-        <members>C501_Mass_Merge_Tests/Test_Merge_Rule_Account_All_PhFxURL</members>
-        <members>C501_Mass_Merge_Tests/Test_Merge_Rule_Contact_All_Address</members>
+        <members>C501_Mass_Merge_Tests/Test_Merge_Rule_Account_All_Group1</members>
+        <members>C501_Mass_Merge_Tests/Test_Merge_Rule_Account_All_Group2</members>
+        <members>C501_Mass_Merge_Tests/Test_Merge_Rule_Account_Test</members>
         <members>C501_Mass_Merge_Tests/Test_Merge_Rule_Contact_All_General</members>
-        <members>C501_Mass_Merge_Tests/Test_Merge_Rule_Contact_All_PhFxEmail</members>
-        <members>C501_Mass_Merge_Tests/Test_Merge_Rule_Contact_Name_DOB</members>
+        <members>C501_Mass_Merge_Tests/Test_Merge_Rule_Contact_All_Group1</members>
+        <members>C501_Mass_Merge_Tests/Test_Merge_Rule_Contact_All_Group2</members>
+        <members>C501_Mass_Merge_Tests/Test_Merge_Rule_Contact_Test</members>
         <name>Report</name>
     </types>
     <types>

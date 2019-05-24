@@ -59,7 +59,7 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
                 FROM C501_Contact_Merge__c
                 WHERE Merge_Confidence__c >= :fromMergeConfidence
                     and Merge_Confidence__c <= :toMergeConfidence
-                    and Merge_Action__c = null
+                    and Merge_Action__c = null 
                     and isDeleted = false
                 GROUP BY Contact__c, Contact__r.Name
                 LIMIT 999]) {
@@ -209,7 +209,8 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
         List<C501_Contact_Merge__c> pendingAutoMerges = new List<C501_Contact_Merge__c>();
 
         Map<Id, Id> ContactHouseholdMap = new Map<Id, Id>();
-        String strSoql = 'SELECT Id, Unique_Id__c, Contact__c, Contact__r.C501_Household_Id__c, Contact__r.IsDeleted, Merge_Target_Contact__c, Merge_Target_Contact__r.C501_Household_Id__c, Merge_Target_Contact__r.IsDeleted, Merge_Confidence__c, Merge_Action__c';
+        String strSoql = 'SELECT Id, Unique_Id__c, Contact__c, Contact__r.C501_Household_Id__c, Contact__r.IsDeleted, Merge_Target_Contact__c, Merge_Target_Contact__r.C501_Household_Id__c, Merge_Target_Contact__r.IsDeleted';
+        strSoql += ' ,Merge_Confidence__c, Merge_Action__c, Merge_Metric__c';
         strSoql += ' FROM C501_Contact_Merge__c';
         strSoql += ' WHERE Merge_Metric__r.Name = :mergeMetricName AND Merge_Action__c <> \'Ignore\'';
 
@@ -241,7 +242,7 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
         // Check for batch queued merges
         if (!pendingMerges.isEmpty()) {
 
-            ProcessObjectMerges(pendingMerges, false);
+            ProcessObjectMerges(new List<C501_Merge_Metric__c> {mergeMetric}, pendingMerges, false);
             return pendingMerges.size();
         }
 
@@ -254,7 +255,7 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
         return c501MassMerge_SharedCode.ProcessObjectMergeCandidates_Contact(mergeMetric, pendingAutoMerges, ContactHouseholdMap);
     }
 
-    global void ProcessObjectMerges(List<C501_Contact_Merge__c> objectMerges, Boolean batchMerge)
+    global void ProcessObjectMerges(List<C501_Merge_Metric__c> mergeMetrics, List<C501_Contact_Merge__c> objectMerges, Boolean batchMerge)
     {
         // Jobs with Status = 'Holding' applies to batch jobs in the Apex flex queue (max allowed 100)
         //  https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/api/sforce_api_objects_asyncapexjob.htm
@@ -262,6 +263,11 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
         System.debug('***** C501_MassMerge_SharedCode_Contact::ProcessObjectMerges - flexQueueJobs ' + flexQueueJobs);
         System.debug('***** C501_MassMerge_SharedCode_Contact::ProcessObjectMerges - QueuableJobs ' + Limits.getQueueableJobs() + ' of ' + Limits.getLimitQueueableJobs());
         Integer remainingFlexQueueJobs = Limits.getLimitQueueableJobs() - flexQueueJobs.size();
+
+        Map<String, Decimal> mergeMetricMap = new Map<String, Decimal>();
+        for (C501_Merge_Metric__c mergeMetric :mergeMetrics) {
+            mergeMetricMap.put(mergeMetric.Id, mergeMetric.AutoMerge_Percentage__c);
+        }
 
         Set<Id> objectsProcessed = new Set<Id>();
         List<C501_Contact_Merge__c> deleteMergeCandidates = new List<C501_Contact_Merge__c>();
@@ -285,6 +291,25 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
             if (objectsProcessed.contains(mergeCandidate.Contact__c) || objectsProcessed.contains(mergeCandidate.Merge_Target_Contact__c)) {
 
                 deleteMergeCandidates.add(mergeCandidate);
+                continue;
+            }
+
+            // Check Automerge Percentage
+            if (!mergeMetricMap.containsKey(mergeCandidate.Merge_Metric__c)) {
+                C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
+                String strSoql = c501MassMerge_SharedCode.GetC501MergeMetricQuery();
+                mergeMetrics = Database.Query(strSoql);
+
+                for (C501_Merge_Metric__c mergeMetric :mergeMetrics) {
+                    mergeMetricMap.put(mergeMetric.Id, mergeMetric.AutoMerge_Percentage__c);
+                }
+
+                if (!mergeMetricMap.containsKey(mergeCandidate.Merge_Metric__c)) {
+                    throw new C501_MassMerge_SharedCode_ContactException('Contact Merge Data Error - Invalid Merge Metric: ' + mergeCandidate.Merge_Metric__c + ' on Contact Merge Id: ' + mergeCandidate.Id);
+                }
+            }
+            
+            if (mergeCandidate.Merge_Confidence__c < mergeMetricMap.get(mergeCandidate.Merge_Metric__c)) {
                 continue;
             }
 

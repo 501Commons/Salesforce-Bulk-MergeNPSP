@@ -117,7 +117,6 @@ global with sharing class C501_MassMerge_SharedCode_Account {
         //
 
         String mergeMetricName = mergeMetric.Name;
-        Decimal mergeMetricAutoPercentage = mergeMetric.AutoMerge_Percentage__c;
 
         Set<String> mergeObjectsExisting = new Set<String>();
         List<C501_Account_Merge__c> invalidMerges = new List<C501_Account_Merge__c>();
@@ -202,14 +201,14 @@ global with sharing class C501_MassMerge_SharedCode_Account {
         //
 
         String mergeMetricName = mergeMetric.Name;
-        Decimal mergeMetricAutoPercentage = mergeMetric.AutoMerge_Percentage__c;
 
         List<C501_Account_Merge__c> invalidMerges = new List<C501_Account_Merge__c>();
         List<C501_Account_Merge__c> pendingMerges = new List<C501_Account_Merge__c>();
         List<C501_Account_Merge__c> pendingAutoMerges = new List<C501_Account_Merge__c>();
 
         Map<Id, Id> AccountHouseholdMap = new Map<Id, Id>();
-        String strSoql = 'SELECT Id, Unique_Id__c, Account__c, Account__r.C501_Household_Id__c, Account__r.IsDeleted, Merge_Target_Account__c, Merge_Target_Account__r.C501_Household_Id__c, Merge_Target_Account__r.IsDeleted, Merge_Confidence__c, Merge_Action__c';
+        String strSoql = 'SELECT Id, Unique_Id__c, Account__c, Account__r.C501_Household_Id__c, Account__r.IsDeleted, Merge_Target_Account__c, Merge_Target_Account__r.C501_Household_Id__c, Merge_Target_Account__r.IsDeleted';
+        strSoql += ' ,Merge_Confidence__c, Merge_Action__c, Merge_Metric__c';
         strSoql += ' FROM C501_Account_Merge__c';
         strSoql += ' WHERE Merge_Metric__r.Name = :mergeMetricName AND Merge_Action__c <> \'Ignore\'';
 
@@ -241,12 +240,12 @@ global with sharing class C501_MassMerge_SharedCode_Account {
         // Check for batch queued merges
         if (!pendingMerges.isEmpty()) {
 
-            ProcessObjectMerges(pendingMerges, false);
+            ProcessObjectMerges(new List<C501_Merge_Metric__c> {mergeMetric}, pendingMerges, false);
             return pendingMerges.size();
         }
 
         // Check if AutoMerge Enabled
-        if (mergeMetric.AutoMerge_Percentage__c == null || mergeMetric.AutoMerge_Percentage__c <= 0.0) {
+        if (String.isBlank(mergeMetric.AutoMerge_Objects__c)) {
             return 0;
         }
 
@@ -254,7 +253,7 @@ global with sharing class C501_MassMerge_SharedCode_Account {
         return c501MassMerge_SharedCode.ProcessObjectMergeCandidates_Account(mergeMetric, pendingAutoMerges, AccountHouseholdMap);
     }
 
-    global void ProcessObjectMerges(List<C501_Account_Merge__c> objectMerges, Boolean batchMerge)
+    global void ProcessObjectMerges(List<C501_Merge_Metric__c> mergeMetrics, List<C501_Account_Merge__c> objectMerges, Boolean batchMerge)
     {
         // Jobs with Status = 'Holding' applies to batch jobs in the Apex flex queue (max allowed 100)
         //  https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/api/sforce_api_objects_asyncapexjob.htm
@@ -262,6 +261,11 @@ global with sharing class C501_MassMerge_SharedCode_Account {
         System.debug('***** C501_MassMerge_SharedCode_Account::ProcessObjectMerges - flexQueueJobs ' + flexQueueJobs);
         System.debug('***** C501_MassMerge_SharedCode_Account::ProcessObjectMerges - QueuableJobs ' + Limits.getQueueableJobs() + ' of ' + Limits.getLimitQueueableJobs());
         Integer remainingFlexQueueJobs = Limits.getLimitQueueableJobs() - flexQueueJobs.size();
+
+        Map<String, Decimal> mergeMetricMap = new Map<String, Decimal>();
+        for (C501_Merge_Metric__c mergeMetric :mergeMetrics) {
+            mergeMetricMap.put(mergeMetric.Id, mergeMetric.AutoMerge_Percentage__c);
+        }
 
         Set<Id> objectsProcessed = new Set<Id>();
         List<C501_Account_Merge__c> deleteMergeCandidates = new List<C501_Account_Merge__c>();
@@ -285,6 +289,25 @@ global with sharing class C501_MassMerge_SharedCode_Account {
             if (objectsProcessed.contains(mergeCandidate.Account__c) || objectsProcessed.contains(mergeCandidate.Merge_Target_Account__c)) {
 
                 deleteMergeCandidates.add(mergeCandidate);
+                continue;
+            }
+
+            // Check Automerge Percentage
+            if (!mergeMetricMap.containsKey(mergeCandidate.Merge_Metric__c)) {
+                C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
+                String strSoql = c501MassMerge_SharedCode.GetC501MergeMetricQuery();
+                mergeMetrics = Database.Query(strSoql);
+
+                for (C501_Merge_Metric__c mergeMetric :mergeMetrics) {
+                    mergeMetricMap.put(mergeMetric.Id, mergeMetric.AutoMerge_Percentage__c);
+                }
+
+                if (!mergeMetricMap.containsKey(mergeCandidate.Merge_Metric__c)) {
+                    throw new C501_MassMerge_SharedCode_AccountException('Account Merge Data Error - Invalid Merge Metric: ' + mergeCandidate.Merge_Metric__c + ' on Account Merge Id: ' + mergeCandidate.Id);
+                }
+            }
+            
+            if (mergeCandidate.Merge_Confidence__c < mergeMetricMap.get(mergeCandidate.Merge_Metric__c)) {
                 continue;
             }
 

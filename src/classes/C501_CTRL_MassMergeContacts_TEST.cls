@@ -47,7 +47,7 @@ public with sharing class C501_CTRL_MassMergeContacts_TEST {
         C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
 
         Test.StartTest();
-        c501MassMerge_SharedCode.TestDiscoverHelper('Contact All Address');
+        c501MassMerge_SharedCode.TestDiscoverHelper('Contact All Group1');
         Test.StopTest();
     }
 
@@ -56,7 +56,7 @@ public with sharing class C501_CTRL_MassMergeContacts_TEST {
         C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
 
         Test.StartTest();
-        c501MassMerge_SharedCode.TestDiscoverHelper('Contact All PhFxEmail');
+        c501MassMerge_SharedCode.TestDiscoverHelper('Contact All Group2');
         Test.StopTest();
     }
 
@@ -65,7 +65,7 @@ public with sharing class C501_CTRL_MassMergeContacts_TEST {
         C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
 
         Test.StartTest();
-        c501MassMerge_SharedCode.TestDiscoverHelper('Contact Name');
+        c501MassMerge_SharedCode.TestDiscoverHelper('Contact Test');
         Test.StopTest();
     }
 
@@ -73,9 +73,7 @@ public with sharing class C501_CTRL_MassMergeContacts_TEST {
     public static void ProcessContactMerges_BatchTest() {
 
         C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
-        c501MassMerge_SharedCode.TestDiscoverHelper('Contact Name');
-
-        List<C501_Merge_Metric__c> listMergeMetrics = [SELECT Id FROM C501_Merge_Metric__c WHERE Name LIKE 'TESTDATA%' AND Name LIKE '%Contact Name%'];
+        List<C501_Merge_Metric__c> listMergeMetrics = c501MassMerge_SharedCode.TestDiscoverHelper('Contact Test');
         List<Contact> listContacts = [SELECT Id FROM Contact WHERE LastName LIKE 'TESTDATA%'];
 
         C501_Contact_Merge__c contactMerge1 = new C501_Contact_Merge__c(
@@ -105,7 +103,7 @@ public with sharing class C501_CTRL_MassMergeContacts_TEST {
         try
         {
             C501_MassMerge_SharedCode_Contact c501MassMerge_SharedCode_Contact = new C501_MassMerge_SharedCode_Contact();
-            c501MassMerge_SharedCode_Contact.ProcessObjectMerges(new List<C501_Contact_Merge__c> { contactMerge1 }, true);
+            c501MassMerge_SharedCode_Contact.ProcessObjectMerges(listMergeMetrics, new List<C501_Contact_Merge__c> { contactMerge1 }, true);
         }
         catch (C501_MassMerge_SharedCode_Account.C501_MassMerge_SharedCode_AccountException customException)
         {
@@ -125,9 +123,7 @@ public with sharing class C501_CTRL_MassMergeContacts_TEST {
     public static void ProcessContactMerges_SyncTest() {
 
         C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
-        c501MassMerge_SharedCode.TestDiscoverHelper('Contact Name');
-
-        List<C501_Merge_Metric__c> listMergeMetrics = [SELECT Id FROM C501_Merge_Metric__c WHERE Name LIKE 'TESTDATA%' AND Name LIKE '%Contact Name%'];
+        List<C501_Merge_Metric__c> listMergeMetrics = c501MassMerge_SharedCode.TestDiscoverHelper('Contact Test');
         List<Contact> listContacts = [SELECT Id FROM Contact WHERE LastName LIKE 'TESTDATA%'];
 
         C501_Contact_Merge__c contactMerge1 = new C501_Contact_Merge__c(
@@ -152,7 +148,7 @@ public with sharing class C501_CTRL_MassMergeContacts_TEST {
         Test.StartTest();
 
         C501_MassMerge_SharedCode_Contact c501MassMerge_SharedCode_Contact = new C501_MassMerge_SharedCode_Contact();
-        c501MassMerge_SharedCode_Contact.ProcessObjectMerges(new List<C501_Contact_Merge__c> { contactMerge1 }, false);
+        c501MassMerge_SharedCode_Contact.ProcessObjectMerges(listMergeMetrics, new List<C501_Contact_Merge__c> { contactMerge1 }, false);
 
         Test.StopTest();
     }
@@ -161,7 +157,7 @@ public with sharing class C501_CTRL_MassMergeContacts_TEST {
     public static void ProcessContactMerges_AcrossAccountsTest() {
 
         C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
-        c501MassMerge_SharedCode.TestDiscoverHelper('Contact Name');
+        List<C501_Merge_Metric__c> listMergeMetrics = c501MassMerge_SharedCode.TestDiscoverHelper('Contact Test');
 
         Account account1 = new Account(
             Name = 'TESTDATA Account1',
@@ -194,8 +190,6 @@ public with sharing class C501_CTRL_MassMergeContacts_TEST {
         );
         insert contact21;
 
-        List<C501_Merge_Metric__c> listMergeMetrics = [SELECT Id FROM C501_Merge_Metric__c WHERE Name LIKE 'TESTDATA%' AND Name LIKE '%Contact%'];
-
         C501_Contact_Merge__c contactMerge1 = new C501_Contact_Merge__c(
                 Unique_Id__c = 'TESTDATA Name ' + contact11.Id,
                 Merge_Metric__c = listMergeMetrics[0].Id,
@@ -227,7 +221,7 @@ public with sharing class C501_CTRL_MassMergeContacts_TEST {
         Test.StartTest();
 
         C501_MassMerge_SharedCode_Contact c501MassMerge_SharedCode_Contact = new C501_MassMerge_SharedCode_Contact();
-        c501MassMerge_SharedCode_Contact.ProcessObjectMerges(new List<C501_Contact_Merge__c> { contactMerge1 }, false);
+        c501MassMerge_SharedCode_Contact.ProcessObjectMerges(listMergeMetrics, new List<C501_Contact_Merge__c> { contactMerge1 }, false);
 
         Test.StopTest();
     }
@@ -236,7 +230,7 @@ public with sharing class C501_CTRL_MassMergeContacts_TEST {
     public static void CodeCoverageTests() {
 
         C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
-        c501MassMerge_SharedCode.TestDiscoverHelper('Contact Name');
+        List<C501_Merge_Metric__c> listMergeMetrics = c501MassMerge_SharedCode.TestDiscoverHelper('Contact Test');
 
         Id masterContactId = [SELECT Id FROM Contact WHERE LastName LIKE 'TESTDATA%' ORDER BY Id ASC LIMIT 1].Id;
 
@@ -267,7 +261,6 @@ public with sharing class C501_CTRL_MassMergeContacts_TEST {
         // Check filter by Rule
         ctrl.objectFilter.Id = masterContactId;
 
-        List<C501_Merge_Metric__c> listMergeMetrics = [SELECT Name FROM C501_Merge_Metric__c WHERE Name LIKE 'TESTDATA%' AND Name LIKE '%Contact%'];
         ctrl.objectFilter.C501_Merge_Rule__c = listMergeMetrics[0].Name;
         System.Assert(ctrl.listContacts.size() > 0);
 

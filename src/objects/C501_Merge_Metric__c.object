@@ -84,6 +84,7 @@
     </fields>
     <fields>
         <fullName>AutoMerge_Percentage__c</fullName>
+        <defaultValue>100.0</defaultValue>
         <externalId>false</externalId>
         <label>AutoMerge Percentage</label>
         <precision>18</precision>

@@ -1,16 +1,40 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Report xmlns="http://soap.sforce.com/2006/04/metadata">
     <columns>
-        <field>ACCOUNT.ADDRESS1_STREET</field>
+        <aggregateTypes>Sum</aggregateTypes>
+        <field>IS_EMAIL_BOUNCED</field>
     </columns>
     <columns>
-        <field>ACCOUNT.ADDRESS1_CITY</field>
+        <field>EMAIL_BOUNCED_DATE</field>
     </columns>
     <columns>
-        <field>ACCOUNT.ADDRESS1_STATE</field>
+        <field>EMAIL_BOUNCED_REASON</field>
     </columns>
     <columns>
-        <field>ACCOUNT.ADDRESS1_ZIP</field>
+        <aggregateTypes>Sum</aggregateTypes>
+        <field>FAX_OPT_OUT</field>
+    </columns>
+    <columns>
+        <aggregateTypes>Sum</aggregateTypes>
+        <field>EMAIL_OPT_OUT</field>
+    </columns>
+    <columns>
+        <field>EMAIL</field>
+    </columns>
+    <columns>
+        <field>PHONE2</field>
+    </columns>
+    <columns>
+        <field>PHONE5</field>
+    </columns>
+    <columns>
+        <field>PHONE4</field>
+    </columns>
+    <columns>
+        <field>PHONE3</field>
+    </columns>
+    <columns>
+        <field>PHONE1</field>
     </columns>
     <filter>
         <criteriaItems>
@@ -19,15 +43,9 @@
             <operator>startsWith</operator>
             <value>TESTDATA</value>
         </criteriaItems>
-        <criteriaItems>
-            <column>ACCOUNT.NAME</column>
-            <isUnlocked>true</isUnlocked>
-            <operator>equals</operator>
-            <value>Full Contact Match</value>
-        </criteriaItems>
     </filter>
     <format>Tabular</format>
-    <name>Test Merge Rule Account Address</name>
+    <name>Test Merge Rule Contact All Group2</name>
     <params>
         <name>co</name>
         <value>1</value>

@@ -146,7 +146,7 @@ global with sharing class C501_MassMerge_SharedCode {
                         Source_Object__c = (report.DeveloperName.contains('Account') ? 'Account' : 'Contact'),
                         Source_Object_Account_Id__c = (report.DeveloperName.contains('Account') ? 'Id' : 'AccountId'),
                         Source_Object_Contact_Id__c = (report.DeveloperName.contains('Contact') ? 'Id' : 'Id'),
-                        AutoMerge_Percentage__c = 0.0
+                        AutoMerge_Percentage__c = 100.0
                     ));
                 }
         }
@@ -167,13 +167,9 @@ global with sharing class C501_MassMerge_SharedCode {
 
         // Merge contacts into master
         String mergeMetricName = 'User Merge Rule Account No Contacts';
-        List<C501_Merge_Metric__c> mergeMetrics = [
-            SELECT
-                Id, Name, Confidence__c,
-                Total_Unassigned_Accounts__c, Total_Unassigned_Contacts__c,
-                AutoMerge_Percentage__c, AutoMerge_Objects__c
-            FROM C501_Merge_Metric__c
-            WHERE Name = :mergeMetricName];
+        String strSoql = GetC501MergeMetricQuery();
+        strSoql += ' AND Name = \'' + mergeMetricName + '\'';
+        List<C501_Merge_Metric__c> mergeMetrics = Database.Query(strSoql);
 
         if (mergeMetrics.isEmpty()) {
             mergeMetrics.add( new C501_Merge_Metric__c (
@@ -291,7 +287,7 @@ global with sharing class C501_MassMerge_SharedCode {
 
             if (!pendingAutoMerges.isEmpty()) {
                 C501_MassMerge_SharedCode_Account c501MassMerge_SharedCode_Account = new C501_MassMerge_SharedCode_Account();
-                c501MassMerge_SharedCode_Account.ProcessObjectMerges(pendingAutoMerges, false);
+                c501MassMerge_SharedCode_Account.ProcessObjectMerges(new List<C501_Merge_Metric__c> {mergeMetric}, pendingAutoMerges, false);
 
                 return pendingAutoMerges.size();
             }
@@ -327,7 +323,7 @@ global with sharing class C501_MassMerge_SharedCode {
 
             if (!pendingAutoMergeCandidates.isEmpty()) {
                 C501_MassMerge_SharedCode_Contact c501MassMerge_SharedCode_Contact = new C501_MassMerge_SharedCode_Contact();
-                c501MassMerge_SharedCode_Contact.ProcessObjectMerges(pendingAutoMergeCandidates, true);
+                c501MassMerge_SharedCode_Contact.ProcessObjectMerges(new List<C501_Merge_Metric__c> {mergeMetric}, pendingAutoMergeCandidates, true);
 
                 return pendingAutoMergeCandidates.size();
             }
@@ -449,11 +445,13 @@ global with sharing class C501_MassMerge_SharedCode {
         //PrintSalesforceStructure();
     }
 
-    global void TestDiscoverHelper(String queryNameCriteria) {
+    global List<C501_Merge_Metric__c> TestDiscoverHelper(String queryNameCriteria) {
 
         this.TestSetupMerge();
 
-        String strSoql = 'SELECT Id FROM C501_Merge_Metric__c WHERE Name LIKE \'TESTDATA%\' AND Name LIKE \'%' + queryNameCriteria + '%\'';
+        String strSoql = this.GetC501MergeMetricQuery();
+        strSoql += ' AND Name LIKE \'%' + queryNameCriteria + '%\'';
+
         List<C501_Merge_Metric__c> mergeMetrics = Database.Query(strSoql);
         for (C501_Merge_Metric__c mergeMetric :mergeMetrics) {
 
@@ -466,6 +464,8 @@ global with sharing class C501_MassMerge_SharedCode {
         update mergeMetrics;
 
         //this.PrintSalesforceStructure();
+
+        return mergeMetrics;
     }
 
     global void PrintSalesforceLimits() {
@@ -493,7 +493,8 @@ global with sharing class C501_MassMerge_SharedCode {
             System.debug('***** C501_MassMerge_SharedCode::PrintSalesforceStructure - ' + String.valueOf(opportunity));
         }
 */       
-        for (C501_Merge_Metric__c mergeMetric :[SELECT Id, Name FROM C501_Merge_Metric__c WHERE Name LIKE 'TESTDATA%']) {
+        String strSoql = this.GetC501MergeMetricQuery();
+        for (C501_Merge_Metric__c mergeMetric :Database.Query(strSoql)) {
 
             System.debug('***** C501_MassMerge_SharedCode::PrintSalesforceStructure - Merge Metric: ' + mergeMetric.Name);
 
