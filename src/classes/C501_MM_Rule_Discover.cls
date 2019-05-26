@@ -68,7 +68,7 @@ public class C501_MM_Rule_Discover implements Schedulable {
         this.ProcessMergeMetrics(strSoql);
     }
 
-    public void executeMetric(String mergeMetricId) {
+    public void executeMetricById(String mergeMetricId) {
 
         C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
         c501MassMerge_SharedCode.InitializeMassMergeInstances();
@@ -180,6 +180,9 @@ public class C501_MM_Rule_Discover implements Schedulable {
 
         // NOTE: Calling Reports.ReportManager within this loop context get compile error ReportManager variable does not exist.  Future task - investigate why
         this.ProcessReport(reportIdDiscover, mergeMetricDiscover);
+
+        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
+        c501MassMerge_SharedCode.NearSalesforceLimits();
     }
 
     public void ProcessReport(String reportId, C501_Merge_Metric__c mergeMetric) {
@@ -751,7 +754,7 @@ public class C501_MM_Rule_Discover implements Schedulable {
             return columnFieldName.replace('ADDRESS2_', 'Other');
         }
 
-        // Contact PhFxEmail Columns
+        // Contact Other Columns
         //
         else if (columnFieldName.equals('IS_EMAIL_BOUNCED')) {
             return 'IsEmailBounced';
@@ -825,7 +828,7 @@ public class C501_MM_Rule_Discover implements Schedulable {
             return columnFieldName.replace('ACCOUNT.ADDRESS2_', 'ACCOUNT.Shipping');
         }
 
-        // Account PhFxURL Columns
+        // Account Other Columns
         //
         else if (columnFieldName.equals('URL')) {
             return 'Account.Website';

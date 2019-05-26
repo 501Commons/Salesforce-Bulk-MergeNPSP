@@ -43,7 +43,7 @@ public with sharing class C501_MM_Action_Controller {
     public PageReference discoverTrigger() {
 
         System.Debug('*****C501_MM_Action_Controller::discoverTrigger Id: ' + Id);
-        C501_MM_Rule_Discover.get().executeMetric(Id);
+        C501_MM_Rule_Discover.get().executeMetricById(Id);
 
         System.Debug('*****C501_MM_Action_Controller::discoverTrigger After executeMetric');
 
@@ -60,7 +60,7 @@ public with sharing class C501_MM_Action_Controller {
     public PageReference mergeTrigger() {
 
         System.Debug('*****C501_MM_Action_Controller::mergeTrigger Id: ' + Id);
-        C501_MM_Rule_Merge.get().executeMetric(Id);
+        C501_MM_Rule_Merge.get().executeMetricById(Id);
 
         PageReference pageRef = new PageReference('/' + Id);
         pageRef.setRedirect(true);

@@ -1,6 +1,7 @@
 {
   "orgName": "Salesforce-Bulk-MergeNPSP - Dev Org",
   "edition": "Developer",
+  "features": "DebugApex",
   "settings": {
     "orgPreferenceSettings": {
       "s1DesktopEnabled": true

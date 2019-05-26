@@ -44,7 +44,7 @@ public class C501_CTRL_MassMergeAccounts_TEST {
     }
 
     @isTest(SeeAllData='true')
-    public static void AllFields_Address_DiscoverTest() {
+    public static void AllFields_Group1_DiscoverTest() {
 
         C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
 
@@ -54,7 +54,7 @@ public class C501_CTRL_MassMergeAccounts_TEST {
     }
 
     @isTest(SeeAllData='true')
-    public static void AllFields_PhFxURL_DiscoverTest() {
+    public static void AllFields_Group2_DiscoverTest() {
 
         C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
 
@@ -263,7 +263,7 @@ public class C501_CTRL_MassMergeAccounts_TEST {
         C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
         List<C501_Merge_Metric__c> mergeMetrics = c501MassMerge_SharedCode.TestDiscoverHelper('Account Test');
 
-        List<C501_Account_Merge__c> objectMergesBefore = [SELECT Id FROM C501_Account_Merge__c WHERE Name LIKE 'TESTDATA%'];
+        List<C501_Account_Merge__c> objectMergesBefore = [SELECT Id FROM C501_Account_Merge__c WHERE Merge_Metric__r.Name LIKE 'TESTDATA%'];
         System.Assert(objectMergesBefore.size() > 0);
 
         for (C501_Merge_Metric__c mergeMetric :mergeMetrics) {
@@ -277,11 +277,13 @@ public class C501_CTRL_MassMergeAccounts_TEST {
         Test.StartTest();
 
         C501_MM_Rule_Merge mergeRule = new C501_MM_Rule_Merge();
-        mergeRule.execute(null);
+        for (C501_Merge_Metric__c mergeMetric :mergeMetrics) {
+            mergeRule.executeMetricById(mergeMetric.Id);
+        }
 
         Test.StopTest();
 
-        List<C501_Account_Merge__c> objectMergesAfter = [SELECT Id FROM C501_Account_Merge__c WHERE Name LIKE 'TESTDATA%'];
+        List<C501_Account_Merge__c> objectMergesAfter = [SELECT Id FROM C501_Account_Merge__c WHERE Merge_Metric__r.Name LIKE 'TESTDATA%'];
         System.AssertEquals(objectMergesBefore.size(), objectMergesAfter.size());
     }
 
@@ -291,7 +293,7 @@ public class C501_CTRL_MassMergeAccounts_TEST {
         C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
         List<C501_Merge_Metric__c> mergeMetrics = c501MassMerge_SharedCode.TestDiscoverHelper('Account Test');
 
-        List<C501_Account_Merge__c> objectMergesBefore = [SELECT Id FROM C501_Account_Merge__c WHERE Name LIKE 'TESTDATA%'];
+        List<C501_Account_Merge__c> objectMergesBefore = [SELECT Id FROM C501_Account_Merge__c WHERE Merge_Metric__r.Name LIKE 'TESTDATA%'];
         System.Assert(objectMergesBefore.size() > 0);
 
         for (C501_Merge_Metric__c mergeMetric :mergeMetrics) {
@@ -304,11 +306,13 @@ public class C501_CTRL_MassMergeAccounts_TEST {
         Test.StartTest();
 
         C501_MM_Rule_Merge mergeRule = new C501_MM_Rule_Merge();
-        mergeRule.execute(null);
+        for (C501_Merge_Metric__c mergeMetric :mergeMetrics) {
+            mergeRule.executeMetricById(mergeMetric.Id);
+        }
 
         Test.StopTest();
 
-        List<C501_Account_Merge__c> objectMergesAfter = [SELECT Id FROM C501_Account_Merge__c WHERE Name LIKE 'TESTDATA%'];
+        List<C501_Account_Merge__c> objectMergesAfter = [SELECT Id FROM C501_Account_Merge__c WHERE Merge_Metric__r.Name LIKE 'TESTDATA%'];
         System.AssertEquals(objectMergesBefore.size(), objectMergesAfter.size());
     }
 
@@ -318,7 +322,7 @@ public class C501_CTRL_MassMergeAccounts_TEST {
         C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
         List<C501_Merge_Metric__c> mergeMetrics = c501MassMerge_SharedCode.TestDiscoverHelper('Account Test');
 
-        List<C501_Account_Merge__c> objectMergesBefore = [SELECT Id FROM C501_Account_Merge__c WHERE Name LIKE 'TESTDATA%'];
+        List<C501_Account_Merge__c> objectMergesBefore = [SELECT Id FROM C501_Account_Merge__c WHERE Merge_Metric__r.Name LIKE 'TESTDATA%'];
         System.Assert(objectMergesBefore.size() > 0);
 
         for (C501_Merge_Metric__c mergeMetric :mergeMetrics) {
@@ -326,16 +330,18 @@ public class C501_CTRL_MassMergeAccounts_TEST {
             mergeMetric.AutoMerge_Percentage__c = 0.0;
         }
 
-        update objectMergesBefore;
+        update mergeMetrics;
 
         Test.StartTest();
 
         C501_MM_Rule_Merge mergeRule = new C501_MM_Rule_Merge();
-        mergeRule.execute(null);
+        for (C501_Merge_Metric__c mergeMetric :mergeMetrics) {
+            mergeRule.executeMetricById(mergeMetric.Id);
+        }
 
         Test.StopTest();
 
-        List<C501_Account_Merge__c> objectMergesAfter = [SELECT Id FROM C501_Account_Merge__c WHERE Name LIKE 'TESTDATA%'];
+        List<C501_Account_Merge__c> objectMergesAfter = [SELECT Id FROM C501_Account_Merge__c WHERE Merge_Metric__r.Name LIKE 'TESTDATA%'];
         System.AssertEquals(objectMergesBefore.size() - 1, objectMergesAfter.size());
     }
 
@@ -345,7 +351,7 @@ public class C501_CTRL_MassMergeAccounts_TEST {
         C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
         List<C501_Merge_Metric__c> mergeMetrics = c501MassMerge_SharedCode.TestDiscoverHelper('Account Test');
 
-        List<C501_Account_Merge__c> objectMergesBefore = [SELECT Id FROM C501_Account_Merge__c WHERE Name LIKE 'TESTDATA%'];
+        List<C501_Account_Merge__c> objectMergesBefore = [SELECT Id, Merge_Confidence__c FROM C501_Account_Merge__c WHERE Merge_Metric__r.Name LIKE 'TESTDATA%'];
         System.Assert(objectMergesBefore.size() > 0);
 
         for (C501_Merge_Metric__c mergeMetric :mergeMetrics) {
@@ -353,16 +359,18 @@ public class C501_CTRL_MassMergeAccounts_TEST {
             mergeMetric.AutoMerge_Percentage__c = objectMergesBefore[0].Merge_Confidence__c;
         }
 
-        update objectMergesBefore;
+        update mergeMetrics;
 
         Test.StartTest();
 
         C501_MM_Rule_Merge mergeRule = new C501_MM_Rule_Merge();
-        mergeRule.execute(null);
+        for (C501_Merge_Metric__c mergeMetric :mergeMetrics) {
+            mergeRule.executeMetricById(mergeMetric.Id);
+        }
 
         Test.StopTest();
 
-        List<C501_Account_Merge__c> objectMergesAfter = [SELECT Id FROM C501_Account_Merge__c WHERE Name LIKE 'TESTDATA%'];
+        List<C501_Account_Merge__c> objectMergesAfter = [SELECT Id FROM C501_Account_Merge__c WHERE Merge_Metric__r.Name LIKE 'TESTDATA%'];
         System.AssertEquals(objectMergesBefore.size() - 1, objectMergesAfter.size());
     }
 }

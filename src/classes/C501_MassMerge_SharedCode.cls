@@ -118,8 +118,6 @@ global with sharing class C501_MassMerge_SharedCode {
         String strSoql = this.GetC501MergeMetricQuery();
         List<C501_Merge_Metric__c> mergeMetrics = Database.Query(strSoql);
 
-        System.debug('***** C501_MassMerge_SharedCode::InitializeMassMergeInstances Check for merge reports - Folder: ' + reportFolder);
-
         // Initialize Merge Metrics - make sure there is a merge metric for each report in Mass Merge folder
         List<C501_Merge_Metric__c> mergeMetricsInsert = new List<C501_Merge_Metric__c>();
         for (Report report :[
@@ -278,10 +276,18 @@ global with sharing class C501_MassMerge_SharedCode {
 
     global Integer ProcessObjectMergeCandidates_Account(C501_Merge_Metric__c mergeMetric, List<C501_Account_Merge__c> pendingAutoMerges, Map<Id, Id> contactHouseholdMap) {
 
+        System.debug('*****C501_MassMerge_SharedCode::ProcessObjectMergeCandidates_Account pendingAutoMerges: ' + pendingAutoMerges);
+
+        if (String.isBlank(mergeMetric.AutoMerge_Objects__c)) {
+            return 0;
+        }
+
         List<String> automergeObjects = new List<String> { mergeMetric.AutoMerge_Objects__c };
         if (mergeMetric.AutoMerge_Objects__c.contains(';')) {
             automergeObjects = mergeMetric.AutoMerge_Objects__c.split(';');
         }
+
+        System.debug('*****C501_MassMerge_SharedCode::ProcessObjectMergeCandidates_Account automergeObjects: ' + automergeObjects);
 
         if (automergeObjects.contains('Account')) {
 
@@ -297,6 +303,10 @@ global with sharing class C501_MassMerge_SharedCode {
     }
 
     global Integer ProcessObjectMergeCandidates_Contact(C501_Merge_Metric__c mergeMetric, List<C501_Contact_Merge__c> pendingAutoMerges, Map<Id, Id> contactHouseholdMap) {
+
+        if (String.isBlank(mergeMetric.AutoMerge_Objects__c)) {
+            return 0;
+        }
 
         List<String> automergeObjects = new List<String> { mergeMetric.AutoMerge_Objects__c };
         if (mergeMetric.AutoMerge_Objects__c.contains(';')) {
@@ -356,7 +366,9 @@ global with sharing class C501_MassMerge_SharedCode {
                     continue;
                 }
 
-                System.schedule(scheduleJobName, cronExpression, new C501_MM_Rule_Discover());
+                if (!Test.isRunningTest()) {
+                    System.schedule(scheduleJobName, cronExpression, new C501_MM_Rule_Discover());
+                }
             }
             else {
                 scheduleJobName = C501_MM_Rule_Merge.class.getName() + '_' + (triggerNumber <= 9 ? '0' : '') + String.valueOf(triggerNumber++);
@@ -365,7 +377,9 @@ global with sharing class C501_MassMerge_SharedCode {
                     continue;
                 }
 
-                System.schedule(scheduleJobName, cronExpression, new C501_MM_Rule_Merge());
+                if (!Test.isRunningTest()) {
+                    System.schedule(scheduleJobName, cronExpression, new C501_MM_Rule_Merge());
+                }
             }
         }
     }
@@ -449,34 +463,60 @@ global with sharing class C501_MassMerge_SharedCode {
 
         this.TestSetupMerge();
 
+        // Reset report change detected during a merge process call
+        C501_MM_Rule_Merge.get().execute(null);
+
         String strSoql = this.GetC501MergeMetricQuery();
         strSoql += ' AND Name LIKE \'%' + queryNameCriteria + '%\'';
 
         List<C501_Merge_Metric__c> mergeMetrics = Database.Query(strSoql);
+        System.Assert(mergeMetrics.size() > 0);
         for (C501_Merge_Metric__c mergeMetric :mergeMetrics) {
 
-            mergeMetric.AutoMerge_Percentage__c = 90.0;
-            mergeMetric.AutoMerge_Objects__c = 'Account;Contacts Within Account;Contacts Across Accounts';
+            C501_MM_Rule_Discover.get().executeMetricById(mergeMetric.Id);
 
-            C501_MM_Rule_Discover.get().executeMetric(mergeMetric.Id);
+            mergeMetric.AutoMerge_Objects__c = 'Account;Contacts Within Account;Contacts Across Accounts';
         }
 
         update mergeMetrics;
 
-        //this.PrintSalesforceStructure();
+        this.PrintSalesforceStructure();
 
         return mergeMetrics;
     }
 
-    global void PrintSalesforceLimits() {
+    global Boolean NearSalesforceLimits() {
+
+        Boolean nearLimit = false;
 
         // https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/apex_methods_system_limits.htm
-        System.debug('***** C501_MassMerge_SharedCode::PrintSalesforceLimits - Aggregate Queries ' + Limits.getAggregateQueries() + ' of ' + Limits.getLimitAggregateQueries());
-        System.debug('***** C501_MassMerge_SharedCode::PrintSalesforceLimits - DML Rows ' + Limits.getDMLRows() + ' of ' + Limits.getLimitDMLRows());
-        System.debug('***** C501_MassMerge_SharedCode::PrintSalesforceLimits - DML Statments ' + Limits.getDMLStatements() + ' of ' + Limits.getLimitDMLStatements());
-        System.debug('***** C501_MassMerge_SharedCode::PrintSalesforceLimits - Queies ' + Limits.getQueries() + ' of ' + Limits.getLimitQueries());
-        System.debug('***** C501_MassMerge_SharedCode::PrintSalesforceLimits - Query Rows ' + Limits.getQueryRows() + ' of ' + Limits.getLimitQueryRows());
-        System.debug('***** C501_MassMerge_SharedCode::PrintSalesforceLimits - Sosl Queries ' + Limits.getSoslQueries() + ' of ' + Limits.getLimitSoslQueries());
+
+        if (Limits.getAggregateQueries() > (Limits.getLimitAggregateQueries() / 10 * 8)) {
+            System.debug('***** C501_MassMerge_SharedCode::NearSalesforceLimits - Aggregate Queries ' + Limits.getAggregateQueries() + ' of ' + Limits.getLimitAggregateQueries());
+            nearLimit = true;
+        }
+        if (Limits.getDMLRows() > (Limits.getLimitDMLRows() / 10 * 8)) {
+            System.debug('***** C501_MassMerge_SharedCode::NearSalesforceLimits - DML Rows ' + Limits.getDMLRows() + ' of ' + Limits.getLimitDMLRows());
+            nearLimit = true;
+        }
+        if (Limits.getDMLStatements() > (Limits.getLimitDMLStatements() / 10 * 8)) {
+            System.debug('***** C501_MassMerge_SharedCode::NearSalesforceLimits - DML Statments ' + Limits.getDMLStatements() + ' of ' + Limits.getLimitDMLStatements());
+            nearLimit = true;
+        }
+        if (Limits.getQueries() > (Limits.getLimitQueries() / 10 * 8)) {
+            System.debug('***** C501_MassMerge_SharedCode::NearSalesforceLimits - Queies ' + Limits.getQueries() + ' of ' + Limits.getLimitQueries());
+            nearLimit = true;
+        }
+        if (Limits.getQueryRows() > (Limits.getLimitQueryRows() / 10 * 8)) {
+            System.debug('***** C501_MassMerge_SharedCode::NearSalesforceLimits - Query Rows ' + Limits.getQueryRows() + ' of ' + Limits.getLimitQueryRows());
+            nearLimit = true;
+        }
+        if (Limits.getSoslQueries() > (Limits.getLimitSoslQueries() / 10 * 8)) {
+            System.debug('***** C501_MassMerge_SharedCode::NearSalesforceLimits - Sosl Queries ' + Limits.getSoslQueries() + ' of ' + Limits.getLimitSoslQueries());
+            nearLimit = true;
+        }
+
+        return nearLimit;
     }
 
     global void PrintSalesforceStructure() {
