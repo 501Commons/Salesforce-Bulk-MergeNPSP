@@ -29,7 +29,7 @@
 */
 
 //
-// GENERIC CLASS - modify of the C501_MassMerge_SharedCode_[Object].cls classes then complete copy to the all the others
+// GENERIC CLASS - modify of the C501_MassMerge_SharedCode_[Object].cls classes then copy to the all the others
 //
 //      1) Make changes to the class
 //      2) Copy/Paste entire class to all other C501_MassMerge_SharedCode_[Object].cls classes

@@ -437,6 +437,15 @@ global with sharing class C501_MassMerge_SharedCode {
 
             listContacts.add( new Contact(
                 LastName = 'TESTDATA Flintstone' + String.valueOf(matchIndex),
+                FirstName = 'Fred' + String.valueOf(matchIndex),
+                AccountId = listAccounts[i].Id,
+                Birthdate = date.today().addYears(-21 - matchIndex),
+                Email = String.valueOf(matchIndex) + 'fred@bedrock.org',
+                Gender__c = 'Male'
+            ));
+
+            listContacts.add( new Contact(
+                LastName = 'TESTDATA Flintstone' + String.valueOf(matchIndex),
                 FirstName = 'Wilma' + String.valueOf(matchIndex),
                 AccountId = listAccounts[i].Id,
                 Birthdate = date.today().addYears(-21 - matchIndex),
@@ -474,7 +483,6 @@ global with sharing class C501_MassMerge_SharedCode {
         for (C501_Merge_Metric__c mergeMetric :mergeMetrics) {
 
             C501_MM_Rule_Discover.get().executeMetricById(mergeMetric.Id);
-
             mergeMetric.AutoMerge_Objects__c = 'Account;Contacts Within Account;Contacts Across Accounts';
         }
 
@@ -483,6 +491,25 @@ global with sharing class C501_MassMerge_SharedCode {
         this.PrintSalesforceStructure();
 
         return mergeMetrics;
+    }
+
+    global String TestHelperAutoMergeObjects(String sourceObject, String autoMergeType) {
+
+        if (sourceObject.equals('Account')) {
+            if (autoMergeType.equals('Object')) {
+                return 'Account';
+            }
+        }
+        else if (sourceObject.equals('Contact')) {
+            if (autoMergeType.equals('ObjectsWithinObject')) {
+                return 'Contacts Within Account';
+            }
+            else if (autoMergeType.equals('ObjectsAcrossObjects')) {
+                return 'Contacts Across Accounts';
+            }
+        }
+
+        return null;
     }
 
     global Boolean NearSalesforceLimits() {
