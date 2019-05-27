@@ -81,6 +81,10 @@ public class C501_MM_Rule_Discover implements Schedulable {
         this.ProcessMergeMetrics(strSoql);
     }
 
+    public void executeMetric(String mergeMetricId) {
+        this.executeMetricById(mergeMetricId);
+    }
+
     public void ProcessMergeMetrics(String strSoql) {
 
  		//
