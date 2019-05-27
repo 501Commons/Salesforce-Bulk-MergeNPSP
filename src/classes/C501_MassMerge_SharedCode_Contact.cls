@@ -308,6 +308,12 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
                 }
             }
             
+            // Check to merge if Merge Confidence is greater than or equal to AutoMerge Confidence
+            //      No Merge:   Merge Confidence 50%, AutoMerge Confidence 90%
+            //      No Merge:   Merge Confidence 90%, AutoMerge Confidence 100%
+            //      Merge:      Merge Confidence 90%, AutoMerge Confidence 0%
+            //      Merge:      Merge Confidence 90%, AutoMerge Confidence 90%
+            //      Merge:      Merge Confidence 90%, AutoMerge Confidence 80%
             if (mergeCandidate.Merge_Confidence__c < mergeMetricMap.get(mergeCandidate.Merge_Metric__c)) {
                 continue;
             }
