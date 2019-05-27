@@ -308,7 +308,7 @@ global with sharing class C501_MassMerge_SharedCode_Account {
                 }
             }
             
-            if (mergeCandidate.Merge_Confidence__c < mergeMetricMap.get(mergeCandidate.Merge_Metric__c)) {
+            if (mergeCandidate.Merge_Confidence__c > mergeMetricMap.get(mergeCandidate.Merge_Metric__c)) {
                 continue;
             }
 
