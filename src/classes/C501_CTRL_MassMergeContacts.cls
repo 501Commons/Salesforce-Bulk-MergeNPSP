@@ -64,6 +64,9 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
         if (!ListPartialContains(listStrFields, 'C501_Merge_Metric_Name__c')) {
             listStrFields.add('C501_Merge_Metric_Name__c');
         }
+        if (!ListPartialContains(listStrFields, 'C501_Merge_Metric__c')) {
+            listStrFields.add('C501_Merge_Metric__c');
+        }
         if (!ListPartialContains(listStrFields, 'C501_Merge_Id__c')) {
             listStrFields.add('C501_Merge_Id__c');
         }
@@ -344,6 +347,7 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
                 contact.C501_Merge_Contact__c = mergeContact.Contact__c;
                 contact.C501_Merge_Target__c = mergeContact.Merge_Target_Contact__c;
                 contact.C501_Merge_Metric_Name__c = mergeContact.Merge_Metric_Name__c;
+                contact.C501_Merge_Metric__c = mergeContact.Merge_Metric__c;
             }
         }
 
@@ -430,7 +434,10 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
                             Id = contact.C501_Merge_Id__c,
                             Contact__c = contact.Id,
                             Merge_Target_Contact__c = targetObject.Id,
-                            Merge_Action__c = contact.C501_Merge_Action__c
+                            Merge_Action__c = contact.C501_Merge_Action__c,
+                            Merge_Metric__c = contact.C501_Merge_Metric__c,
+                            // Set merge Confidence to 100% to ensure merge regardless of automerge percentage
+                            Merge_Confidence__c = 100.0
                         ));
                     }
                 }

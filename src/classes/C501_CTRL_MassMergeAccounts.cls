@@ -64,6 +64,9 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
         if (!ListPartialContains(listStrFields, 'C501_Merge_Metric_Name__c')) {
             listStrFields.add('C501_Merge_Metric_Name__c');
         }
+        if (!ListPartialContains(listStrFields, 'C501_Merge_Metric__c')) {
+            listStrFields.add('C501_Merge_Metric__c');
+        }
         if (!ListPartialContains(listStrFields, 'C501_Merge_Id__c')) {
             listStrFields.add('C501_Merge_Id__c');
         }
@@ -350,6 +353,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
                 account.C501_Merge_Account__c = mergeAccount.Account__c;
                 account.C501_Merge_Target__c = mergeAccount.Merge_Target_Account__c;
                 account.C501_Merge_Metric_Name__c = mergeAccount.Merge_Metric_Name__c;
+                account.C501_Merge_Metric__c = mergeAccount.Merge_Metric__c;
             }
         }
 
@@ -436,7 +440,10 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
                             Id = account.C501_Merge_Id__c,
                             Account__c = account.Id,
                             Merge_Target_Account__c = targetObject.Id,
-                            Merge_Action__c = account.C501_Merge_Action__c
+                            Merge_Action__c = account.C501_Merge_Action__c,
+                            Merge_Metric__c = account.C501_Merge_Metric__c,
+                            // Set merge Confidence to 100% to ensure merge regardless of automerge percentage
+                            Merge_Confidence__c = 100.0
                         ));
                     }
                 }
