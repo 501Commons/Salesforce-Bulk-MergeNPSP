@@ -253,6 +253,12 @@ global with sharing class C501_MassMerge_SharedCode_Account {
         return c501MassMerge_SharedCode.ProcessObjectMergeCandidates_Account(mergeMetric, pendingAutoMerges, AccountHouseholdMap);
     }
 
+    // Legacy Method for Managed Package
+    global void ProcessObjectMerges(List<C501_Account_Merge__c> objectMerges, Boolean batchMerge)
+    {
+        this.ProcessObjectMerges(new List<C501_Merge_Metric__c>(), objectMerges, batchMerge);
+    }
+
     global void ProcessObjectMerges(List<C501_Merge_Metric__c> mergeMetrics, List<C501_Account_Merge__c> objectMerges, Boolean batchMerge)
     {
 

@@ -468,7 +468,12 @@ global with sharing class C501_MassMerge_SharedCode {
         //PrintSalesforceStructure();
     }
 
-    global List<C501_Merge_Metric__c> TestDiscoverHelper(String queryNameCriteria) {
+    // Legacy Method for Managed Package
+    global void TestDiscoverHelper(String queryNameCriteria) {
+        this.TestDiscoverHelper_v2(queryNameCriteria);
+    }
+
+    global List<C501_Merge_Metric__c> TestDiscoverHelper_v2(String queryNameCriteria) {
 
         this.TestSetupMerge();
 
@@ -512,6 +517,16 @@ global with sharing class C501_MassMerge_SharedCode {
         return null;
     }
 
+    global void PrintSalesforceLimits() {
+
+        System.debug('***** C501_MassMerge_SharedCode::NearSalesforceLimits - Aggregate Queries ' + Limits.getAggregateQueries() + ' of ' + Limits.getLimitAggregateQueries());
+        System.debug('***** C501_MassMerge_SharedCode::NearSalesforceLimits - DML Rows ' + Limits.getDMLRows() + ' of ' + Limits.getLimitDMLRows());
+        System.debug('***** C501_MassMerge_SharedCode::NearSalesforceLimits - DML Statments ' + Limits.getDMLStatements() + ' of ' + Limits.getLimitDMLStatements());
+        System.debug('***** C501_MassMerge_SharedCode::NearSalesforceLimits - Queies ' + Limits.getQueries() + ' of ' + Limits.getLimitQueries());
+        System.debug('***** C501_MassMerge_SharedCode::NearSalesforceLimits - Query Rows ' + Limits.getQueryRows() + ' of ' + Limits.getLimitQueryRows());
+        System.debug('***** C501_MassMerge_SharedCode::NearSalesforceLimits - Sosl Queries ' + Limits.getSoslQueries() + ' of ' + Limits.getLimitSoslQueries());
+    }
+
     global Boolean NearSalesforceLimits() {
 
         Boolean nearLimit = false;
@@ -549,6 +564,9 @@ global with sharing class C501_MassMerge_SharedCode {
     global void PrintSalesforceStructure() {
 
         System.debug('***** C501_MassMerge_SharedCode::PrintSalesforceStructure');
+
+        PrintSalesforceLimits();
+
 /*
         for (Account account :[select Id, Name, Website, BillingStreet from Account WHERE Name LIKE 'TESTDATA%']) {
             System.debug('***** C501_MassMerge_SharedCode::PrintSalesforceStructure - ' + String.valueOf(account));
