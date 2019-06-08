@@ -209,10 +209,11 @@ global with sharing class C501_MassMerge_SharedCode {
         // Check to add an account merge request - can not Account merge here because might be in a batch call which is not supported for Account merging
         String masterAccountId = contactAccounts.get(masterContact.Id);
         Map<String, C501_Account_Merge__c> accountMergeInserts = new Map<String, C501_Account_Merge__c>();
-        for (Contact contact :duplicateContacts) {
+        for (String accountId :contactAccounts.values()) {
 
-            String accountId = contactAccounts.get(contact.Id);
             if (accountId <> masterAccountId && accountMembers.get(accountId) <= 1) {
+
+                System.debug('*****C501_MassMerge_SharedCode::ObjectsMerge_Contact queue empty accountId: ' + accountId + ' for merge into masterAccountId: ' + masterAccountId);
 
                 // Create an account merge because the duplicate account now has no children
                 String maxId = (masterAccountId > accountId) ? masterAccountId : accountId;
@@ -221,13 +222,27 @@ global with sharing class C501_MassMerge_SharedCode {
                 accountMergeInserts.put(uniqueId, new C501_Account_Merge__c(
                     Unique_Id__c = uniqueId,
                     Merge_Confidence__c = mergeMetrics[0].Confidence__c,
-                    Account__c = minId,
-                    Merge_Target_Account__c = maxId,
+                    Account__c = masterAccountId,
+                    Merge_Target_Account__c = accountId,
                     Merge_Metric__c = mergeMetrics[0].Id
                 ));
             }
         }
 
+        // Delete any account merges for accounts where contact was merged
+        List<C501_Account_Merge__c> deleteMerges = [
+            SELECT Id
+            FROM C501_Account_Merge__c
+            WHERE Account__c = null
+                OR Merge_Target_Account__c = null
+                OR Account__c in :contactAccounts.values()
+                OR Merge_Target_Account__c in :contactAccounts.values()];
+
+        if (!deleteMerges.isEmpty()) {
+            delete deleteMerges;
+        }
+
+        // Queue empty household merge
         if (!accountMergeInserts.values().isEmpty()) {
             insert accountMergeInserts.values();
         }
@@ -527,34 +542,50 @@ global with sharing class C501_MassMerge_SharedCode {
         System.debug('***** C501_MassMerge_SharedCode::NearSalesforceLimits - Sosl Queries ' + Limits.getSoslQueries() + ' of ' + Limits.getLimitSoslQueries());
     }
 
+    global Integer GetMaximumLimitSize(Integer groupByNumberFields) {
+
+        Integer percentageMultiple = 9;
+        // Add 100 to allow just more than 90% to make sure to trip the NearSalesforceLimits check
+        Integer maximumLimitSize = ((Limits.getLimitQueryRows() / 10) * percentageMultiple) - Limits.getQueryRows() + 100;
+
+        // Check for groupByNumberFields which count 1 query row per group by field for each query row
+        //  https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/langCon_apex_SOQL_agg_fns.htm
+        if (groupByNumberFields > 1) {
+            return maximumLimitSize / groupByNumberFields;
+        }
+
+        return maximumLimitSize;
+    }
+
     global Boolean NearSalesforceLimits() {
 
         Boolean nearLimit = false;
+        Integer percentageMultiple = 9;
 
         // https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/apex_methods_system_limits.htm
 
-        if (Limits.getAggregateQueries() > (Limits.getLimitAggregateQueries() / 10 * 8)) {
-            System.debug('***** C501_MassMerge_SharedCode::NearSalesforceLimits - Aggregate Queries ' + Limits.getAggregateQueries() + ' of ' + Limits.getLimitAggregateQueries());
+        if (Limits.getAggregateQueries() > ((Limits.getLimitAggregateQueries() / 10) * percentageMultiple)) {
+            System.debug('***** C501_MassMerge_SharedCode::NearSalesforceLimits - Aggregate Queries - Query Rows ' + String.valueOf(percentageMultiple) + '0% of Limit - ' + Limits.getAggregateQueries() + ' of ' + Limits.getLimitAggregateQueries());
             nearLimit = true;
         }
-        if (Limits.getDMLRows() > (Limits.getLimitDMLRows() / 10 * 8)) {
-            System.debug('***** C501_MassMerge_SharedCode::NearSalesforceLimits - DML Rows ' + Limits.getDMLRows() + ' of ' + Limits.getLimitDMLRows());
+        if (Limits.getDMLRows() > ((Limits.getLimitDMLRows() / 10) * percentageMultiple)) {
+            System.debug('***** C501_MassMerge_SharedCode::NearSalesforceLimits - DML Rows - Query Rows ' + String.valueOf(percentageMultiple) + '0% of Limit - ' + Limits.getDMLRows() + ' of ' + Limits.getLimitDMLRows());
             nearLimit = true;
         }
-        if (Limits.getDMLStatements() > (Limits.getLimitDMLStatements() / 10 * 8)) {
-            System.debug('***** C501_MassMerge_SharedCode::NearSalesforceLimits - DML Statments ' + Limits.getDMLStatements() + ' of ' + Limits.getLimitDMLStatements());
+        if (Limits.getDMLStatements() > ((Limits.getLimitDMLStatements() / 10) * percentageMultiple)) {
+            System.debug('***** C501_MassMerge_SharedCode::NearSalesforceLimits - DML Statments - Query Rows ' + String.valueOf(percentageMultiple) + '0% of Limit - ' + Limits.getDMLStatements() + ' of ' + Limits.getLimitDMLStatements());
             nearLimit = true;
         }
-        if (Limits.getQueries() > (Limits.getLimitQueries() / 10 * 8)) {
-            System.debug('***** C501_MassMerge_SharedCode::NearSalesforceLimits - Queies ' + Limits.getQueries() + ' of ' + Limits.getLimitQueries());
+        if (Limits.getQueries() > ((Limits.getLimitQueries() / 10) * percentageMultiple)) {
+            System.debug('***** C501_MassMerge_SharedCode::NearSalesforceLimits - Queies - Query Rows ' + String.valueOf(percentageMultiple) + '0% of Limit - ' + Limits.getQueries() + ' of ' + Limits.getLimitQueries());
             nearLimit = true;
         }
-        if (Limits.getQueryRows() > (Limits.getLimitQueryRows() / 10 * 8)) {
-            System.debug('***** C501_MassMerge_SharedCode::NearSalesforceLimits - Query Rows ' + Limits.getQueryRows() + ' of ' + Limits.getLimitQueryRows());
+        if (Limits.getQueryRows() > ((Limits.getLimitQueryRows() / 10) * percentageMultiple)) {
+            System.debug('***** C501_MassMerge_SharedCode::NearSalesforceLimits - Query Rows ' + String.valueOf(percentageMultiple) + '0% of Limit - ' + Limits.getQueryRows() + ' of ' + Limits.getLimitQueryRows());
             nearLimit = true;
         }
-        if (Limits.getSoslQueries() > (Limits.getLimitSoslQueries() / 10 * 8)) {
-            System.debug('***** C501_MassMerge_SharedCode::NearSalesforceLimits - Sosl Queries ' + Limits.getSoslQueries() + ' of ' + Limits.getLimitSoslQueries());
+        if (Limits.getSoslQueries() > ((Limits.getLimitSoslQueries() / 10) * percentageMultiple)) {
+            System.debug('***** C501_MassMerge_SharedCode::NearSalesforceLimits - Sosl Queries - Query Rows ' + String.valueOf(percentageMultiple) + '0% of Limit - ' + Limits.getSoslQueries() + ' of ' + Limits.getLimitSoslQueries());
             nearLimit = true;
         }
 

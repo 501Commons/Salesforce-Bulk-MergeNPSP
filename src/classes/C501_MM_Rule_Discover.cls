@@ -91,6 +91,7 @@ public class C501_MM_Rule_Discover implements Schedulable {
 		// Perform all SOQL Queries outside of loop to avoid Salesforce Governor Limits: https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/apex_gov_limits.htm
 		//
 
+        strSoql += ' ORDER BY Last_Discover_Date__c ASC NULLS FIRST';
         List<C501_Merge_Metric__c> mergeMetrics = Database.Query(strSoql);
 
         Set<String> sourceReportIds = new Set<String>();
@@ -106,11 +107,12 @@ public class C501_MM_Rule_Discover implements Schedulable {
             WHERE Id in :sourceReportIds OR DeveloperName in :sourceReportIds];
 
         // Walk through Merge Metrics
-        String reportIdDiscover;
-        C501_Merge_Metric__c mergeMetricDiscover = new C501_Merge_Metric__c();
         List<C501_Merge_Metric__c> mergeMetricsUpdate = new List<C501_Merge_Metric__c>();
         Set<Id> mergeMetricDeleteChildren = new Set<Id>();
+        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
 
+        // Delete all merge candidates where the linked report has been updated
+        //
         for (C501_Merge_Metric__c mergeMetric : mergeMetrics) {
 
             String reportId;
@@ -121,6 +123,7 @@ public class C501_MM_Rule_Discover implements Schedulable {
                     // Check for report change
                     if (mergeMetric.Source_Report_LastModifiedDate__c == null || mergeMetric.Source_Report_LastModifiedDate__c <> report.LastModifiedDate) {
 
+                        System.debug('***** C501_MM_Rule_Discover:execute - Merge Metric linked Report changed so clear out all merge candidates: ' + String.valueOf(mergeMetric));
                         mergeMetric.Source_Report_LastModifiedDate__c = report.LastModifiedDate;
                         mergeMetricsUpdate.add(mergeMetric);
 
@@ -133,31 +136,6 @@ public class C501_MM_Rule_Discover implements Schedulable {
                     break;
                 }
             }
-
-            if (String.isBlank(reportId)) {
-                continue;
-            }
-
-            if (mergeMetric.Last_Discover_Date__c == null) {
-
-                reportIdDiscover = reportId;
-
-                // Shallow Copy
-                mergeMetricDiscover = mergeMetric;
-
-                break;
-            }
-            else if (mergeMetricDiscover.Id == null || (mergeMetric.Last_Discover_Date__c <> null && mergeMetric.Last_Discover_Date__c < mergeMetricDiscover.Last_Discover_Date__c)) {
-
-                reportIdDiscover = reportId;
-
-                // Shallow Copy
-                mergeMetricDiscover = mergeMetric;
-            }
-        }
-
-        if (!mergeMetricsUpdate.isEmpty()) {
-            update mergeMetricsUpdate;
         }
 
         if (!mergeMetricDeleteChildren.isEmpty()) {
@@ -173,20 +151,43 @@ public class C501_MM_Rule_Discover implements Schedulable {
             }
         }
 
-        if (mergeMetricDiscover.Id == null) {
-            return;
+        if (!mergeMetricsUpdate.isEmpty()) {
+
+            update mergeMetricsUpdate;
         }
 
-        System.debug('***** C501_MM_Rule_Discover:execute - Merge Metric: ' + String.valueOf(mergeMetricDiscover));
+        // Discover any new merge candidates
+        //
+        for (C501_Merge_Metric__c mergeMetric : mergeMetrics) {
 
-        mergeMetricDiscover.Last_Discover_Date__c = System.now();
-        update mergeMetricDiscover;
+            String reportId;
+            for (Report report :reports) {
 
-        // NOTE: Calling Reports.ReportManager within this loop context get compile error ReportManager variable does not exist.  Future task - investigate why
-        this.ProcessReport(reportIdDiscover, mergeMetricDiscover);
+                if ((String)report.Id == mergeMetric.Source_Report__c || report.DeveloperName == mergeMetric.Source_Report__c) {
 
-        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
-        c501MassMerge_SharedCode.NearSalesforceLimits();
+                    reportId = (String)report.Id;
+
+                    break;
+                }
+            }
+
+            if (String.isBlank(reportId)) {
+                continue;
+            }
+
+            System.debug('***** C501_MM_Rule_Discover:execute - Merge Metric Discover: ' + String.valueOf(mergeMetric));
+            mergeMetric.Last_Discover_Date__c = System.now();
+            update mergeMetric;
+
+            this.ProcessReport(reportId, mergeMetric);
+
+            if (c501MassMerge_SharedCode.NearSalesforceLimits()) {
+
+                System.debug('***** C501_MM_Rule_Discover:execute - Merge Metric Near Salesforce Limits so kick out of continued discovery: ' + String.valueOf(mergeMetric));
+                
+                break;
+            }
+        }
     }
 
     public void ProcessReport(String reportId, C501_Merge_Metric__c mergeMetric) {
@@ -374,6 +375,9 @@ public class C501_MM_Rule_Discover implements Schedulable {
         String strSoqlHaving = ' HAVING Count(' + mergeMetric.Source_Object_Account_Id__c + ') > 1 ';
         String strSoqlOrderBy = ' ORDER BY Count(' + mergeMetric.Source_Object_Account_Id__c + ') DESC';
 
+        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
+        String strSoqlLimit = ' LIMIT ' + String.valueOf(c501MassMerge_SharedCode.GetMaximumLimitSize(groupByFields.size()));
+
         System.debug('***** C501_MM_Rule_Discover:ProcessReportByAccounts aggregate SOQL');
         System.debug(strSoqlSelect);
         System.debug(strSoqlFrom);
@@ -381,8 +385,20 @@ public class C501_MM_Rule_Discover implements Schedulable {
         System.debug(strSoqlGroupBy);
         System.debug(strSoqlHaving);
         System.debug(strSoqlOrderBy);
+        System.debug(strSoqlLimit);
 
-		AggregateResult[] allAggregatedByAccounts = Database.Query(strSoqlSelect + strSoqlFrom + strSoqlWhere + strSoqlGroupBy + strSoqlHaving + strSoqlOrderBy);
+        AggregateResult[] allAggregatedByAccounts;
+        try {
+		    allAggregatedByAccounts = Database.Query(strSoqlSelect + strSoqlFrom + strSoqlWhere + strSoqlGroupBy + strSoqlHaving + strSoqlOrderBy + strSoqlLimit);
+        }
+        catch (System.LimitException exLimit) {
+            System.debug('***** C501_MM_Rule_Discover:ProcessReportByAccounts SOQL System.LimitException Error: ' + exLimit.getMessage());
+            return;
+        }
+        catch (Exception ex) {
+            System.debug('***** C501_MM_Rule_Discover:ProcessReportByAccounts SOQL Error: ' + ex.getMessage());
+            return;
+        }
 
         // Filter out account ids already associated with merge metric
         Set<Id> existingAccountIds = new Set<Id>();
@@ -584,6 +600,9 @@ public class C501_MM_Rule_Discover implements Schedulable {
         String strSoqlHaving = ' HAVING Count(' + mergeMetric.Source_Object_Contact_Id__c + ') > 1 ';
         String strSoqlOrderBy = ' ORDER BY Count(' + mergeMetric.Source_Object_Contact_Id__c + ') DESC';
 
+        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
+        String strSoqlLimit = ' LIMIT ' + String.valueOf(c501MassMerge_SharedCode.GetMaximumLimitSize(groupByFields.size()));
+
         System.debug('***** C501_MM_Rule_Discover:ProcessReportByContacts aggregate SOQL');
         System.debug(strSoqlSelect);
         System.debug(strSoqlFrom);
@@ -591,8 +610,20 @@ public class C501_MM_Rule_Discover implements Schedulable {
         System.debug(strSoqlGroupBy);
         System.debug(strSoqlHaving);
         System.debug(strSoqlOrderBy);
+        System.debug(strSoqlLimit);
 
-		AggregateResult[] allAggregatedByContacts = Database.Query(strSoqlSelect + strSoqlFrom + strSoqlWhere + strSoqlGroupBy + strSoqlHaving + strSoqlOrderBy);
+        AggregateResult[] allAggregatedByContacts;
+        try {
+    		allAggregatedByContacts = Database.Query(strSoqlSelect + strSoqlFrom + strSoqlWhere + strSoqlGroupBy + strSoqlHaving + strSoqlOrderBy + strSoqlLimit);
+        }
+        catch (System.LimitException exLimit) {
+            System.debug('***** C501_MM_Rule_Discover:ProcessReportByAccounts SOQL System.LimitException Error: ' + exLimit.getMessage());
+            return;
+        }
+        catch (Exception ex) {
+            System.debug('***** C501_MM_Rule_Discover:ProcessReportByAccounts SOQL Error: ' + ex.getMessage());
+            return;
+        }
 
         Map<String, C501_Contact_Merge__c> mergeContacts = new Map<String, C501_Contact_Merge__c>();
         String uniqueId, minId, maxId;
