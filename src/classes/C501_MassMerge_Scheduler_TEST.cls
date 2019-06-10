@@ -64,7 +64,11 @@ class C501_MassMerge_Scheduler_TEST {
 
         Test.stopTest();
 
+        String strSoql = c501MassMerge_SharedCode.GetC501AccountMergeQuery();
+        strSoql += ' AND Merge_Metric__r.Name LIKE \'TESTDATA%\'';
+        strSoql += ' LIMIT 1';
+
         //System.assert(
-        //    100.0 == [SELECT Id, Merge_Confidence__c FROM C501_Account_Merge__c].Merge_Confidence__c);
+        //    100.0 == Database.query(strSoql).Merge_Confidence__c);
    }
 }

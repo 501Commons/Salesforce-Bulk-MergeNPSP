@@ -134,12 +134,18 @@ public class C501_MM_Rule_Merge implements Schedulable {
                 }
 
                 // Queue merge metric to delete children since report changed or report not found
-                List<C501_Account_Merge__c> accountMergesDelete = [SELECT Id FROM C501_Account_Merge__c WHERE Merge_Metric__c = :mergeMetric.Id];
+                //
+
+                String strSoqlAccountMergesDelete = c501MassMerge_SharedCode.GetC501AccountMergeQuery();
+                strSoqlAccountMergesDelete += ' AND Merge_Metric__c = :mergeMetric.Id]';
+                List<C501_Account_Merge__c> accountMergesDelete = Database.query(strSoqlAccountMergesDelete);
                 if (!accountMergesDelete.isEmpty()) {
                     delete accountMergesDelete;
                 }
 
-                List<C501_Contact_Merge__c> contactMergesDelete = [SELECT Id FROM C501_Contact_Merge__c WHERE Merge_Metric__c = :mergeMetric.Id];
+                String strSoqlContactMergesDelete = c501MassMerge_SharedCode.GetC501ContactMergeQuery();
+                strSoqlContactMergesDelete += ' AND Merge_Metric__c = :mergeMetric.Id]';
+                List<C501_Contact_Merge__c> contactMergesDelete = Database.query(strSoqlContactMergesDelete);
                 if (!contactMergesDelete.isEmpty()) {
                     delete contactMergesDelete;
                 }

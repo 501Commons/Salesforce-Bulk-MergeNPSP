@@ -234,11 +234,12 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
 
         if (objectFilter.Id <> null) {
         
-            for(C501_Contact_Merge__c contactMerge : [
-                SELECT Id, Contact__c, Merge_Target_Contact__c, Merge_Confidence__c, Merge_Action__c, Merge_Metric__c, Merge_Metric__r.Name
-                FROM C501_Contact_Merge__c
-                WHERE (Contact__c = :objectFilter.Id OR Merge_Target_Contact__c = :objectFilter.Id) AND Merge_Action__c = null AND isDeleted = false
-                LIMIT 1]) {
+            C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
+            String strSoql = c501MassMerge_SharedCode.GetC501ContactMergeQuery();
+            strSoql += ' AND (Contact__c = :objectFilter.Id OR Merge_Target_Contact__c = :objectFilter.Id) AND Merge_Action__c = null';
+            strSoql += ' LIMIT 1';
+
+            for(C501_Contact_Merge__c contactMerge :Database.query(strSoql)) {
 
                     contactsMerge.put(
                         contactMerge.Contact__c,
@@ -267,12 +268,12 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
         }
         else {
 
-            Set<String> ContactIds = new Set<String>();
+            Set<String> objectIds = new Set<String>();
             for (SelectOption option : listSOContacts) {
-                ContactIds.add(option.getValue());
+                objectIds.add(option.getValue());
 
                 // Performance: Only allow 50 at a time to load in the webpage
-                if (ContactIds.size() >= 50) {
+                if (objectIds.size() >= 50) {
                     break;
                 }
             }
@@ -286,10 +287,9 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
                 strRuleSoql = ' and Merge_Metric__r.Name = :mergeRule';
             }
 
-            string strSoql = 'SELECT Id, Contact__c, Merge_Target_Contact__c, Merge_Confidence__c, Merge_Action__c, Merge_Metric__c, Merge_Metric__r.Name';
-
-            strSoql += ' FROM C501_Contact_Merge__c';
-            strSoql += ' WHERE (Contact__c in :ContactIds OR Merge_Target_Contact__c in :ContactIds) AND Merge_Action__c = null AND isDeleted = false';
+            C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
+            String strSoql = c501MassMerge_SharedCode.GetC501ContactMergeQuery();
+            strSoql += ' WHERE (Contact__c in :objectIds OR Merge_Target_Contact__c in :objectIds) AND Merge_Action__c = null';
             strSoql += strRuleSoql;
             strSoql += ' ORDER BY Contact__r.Name ASC';
 

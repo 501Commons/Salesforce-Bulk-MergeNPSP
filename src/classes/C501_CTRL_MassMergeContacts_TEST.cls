@@ -273,7 +273,10 @@ public class C501_CTRL_MassMergeContacts_TEST {
         C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
         List<C501_Merge_Metric__c> mergeMetrics = c501MassMerge_SharedCode.TestDiscoverHelper_v2('Contact Test');
 
-        List<C501_Contact_Merge__c> objectMergesBefore = [SELECT Id FROM C501_Contact_Merge__c WHERE Merge_Metric__r.Name LIKE 'TESTDATA%'];
+        String strSoql = c501MassMerge_SharedCode.GetC501ContactMergeQuery();
+        strSoql += ' AND Merge_Metric__r.Name LIKE \'TESTDATA%\'';
+
+        List<C501_Contact_Merge__c> objectMergesBefore = Database.query(strSoql);
         System.Assert(objectMergesBefore.size() > 0);
 
         for (C501_Merge_Metric__c mergeMetric :mergeMetrics) {
@@ -293,7 +296,7 @@ public class C501_CTRL_MassMergeContacts_TEST {
 
         Test.StopTest();
 
-        List<C501_Contact_Merge__c> objectMergesAfter = [SELECT Id FROM C501_Contact_Merge__c WHERE Merge_Metric__r.Name LIKE 'TESTDATA%'];
+        List<C501_Contact_Merge__c> objectMergesAfter = Database.query(strSoql);
         System.AssertEquals(objectMergesBefore.size(), objectMergesAfter.size());
     }
 
@@ -303,7 +306,10 @@ public class C501_CTRL_MassMergeContacts_TEST {
         C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
         List<C501_Merge_Metric__c> mergeMetrics = c501MassMerge_SharedCode.TestDiscoverHelper_v2('Contact Test');
 
-        List<C501_Contact_Merge__c> objectMergesBefore = [SELECT Id FROM C501_Contact_Merge__c WHERE Merge_Metric__r.Name LIKE 'TESTDATA%'];
+        String strSoql = c501MassMerge_SharedCode.GetC501ContactMergeQuery();
+        strSoql += ' AND Merge_Metric__r.Name LIKE \'TESTDATA%\'';
+
+        List<C501_Contact_Merge__c> objectMergesBefore = Database.query(strSoql);
         System.Assert(objectMergesBefore.size() > 0);
 
         for (C501_Merge_Metric__c mergeMetric :mergeMetrics) {
@@ -322,7 +328,7 @@ public class C501_CTRL_MassMergeContacts_TEST {
 
         Test.StopTest();
 
-        List<C501_Contact_Merge__c> objectMergesAfter = [SELECT Id FROM C501_Contact_Merge__c WHERE Merge_Metric__r.Name LIKE 'TESTDATA%'];
+        List<C501_Contact_Merge__c> objectMergesAfter = Database.query(strSoql);
         System.AssertEquals(objectMergesBefore.size(), objectMergesAfter.size());
     }
 
@@ -332,7 +338,10 @@ public class C501_CTRL_MassMergeContacts_TEST {
         C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
         List<C501_Merge_Metric__c> mergeMetrics = c501MassMerge_SharedCode.TestDiscoverHelper_v2('Contact Test');
 
-        List<C501_Contact_Merge__c> objectMergesBefore = [SELECT Id FROM C501_Contact_Merge__c WHERE Merge_Metric__r.Name LIKE 'TESTDATA%'];
+        String strSoql = c501MassMerge_SharedCode.GetC501ContactMergeQuery();
+        strSoql += ' AND Merge_Metric__r.Name LIKE \'TESTDATA%\'';
+
+        List<C501_Contact_Merge__c> objectMergesBefore = Database.query(strSoql);
         System.Assert(objectMergesBefore.size() > 0);
 
         for (C501_Merge_Metric__c mergeMetric :mergeMetrics) {
@@ -351,7 +360,7 @@ public class C501_CTRL_MassMergeContacts_TEST {
 
         Test.StopTest();
 
-        List<C501_Contact_Merge__c> objectMergesAfter = [SELECT Id FROM C501_Contact_Merge__c WHERE Merge_Metric__r.Name LIKE 'TESTDATA%'];
+        List<C501_Contact_Merge__c> objectMergesAfter = Database.query(strSoql);
         System.AssertNotEquals(objectMergesBefore.size(), objectMergesAfter.size());
     }
 
@@ -361,7 +370,10 @@ public class C501_CTRL_MassMergeContacts_TEST {
         C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
         List<C501_Merge_Metric__c> mergeMetrics = c501MassMerge_SharedCode.TestDiscoverHelper_v2('Contact Test');
 
-        List<C501_Contact_Merge__c> objectMergesBefore = [SELECT Id, Merge_Confidence__c FROM C501_Contact_Merge__c WHERE Merge_Metric__r.Name LIKE 'TESTDATA%'];
+        String strSoql = c501MassMerge_SharedCode.GetC501ContactMergeQuery();
+        strSoql += ' AND Merge_Metric__r.Name LIKE \'TESTDATA%\'';
+
+        List<C501_Contact_Merge__c> objectMergesBefore = Database.query(strSoql);
         System.Assert(objectMergesBefore.size() > 0);
 
         for (C501_Merge_Metric__c mergeMetric :mergeMetrics) {
@@ -380,7 +392,7 @@ public class C501_CTRL_MassMergeContacts_TEST {
 
         Test.StopTest();
 
-        List<C501_Contact_Merge__c> objectMergesAfter = [SELECT Id FROM C501_Contact_Merge__c WHERE Merge_Metric__r.Name LIKE 'TESTDATA%'];
+        List<C501_Contact_Merge__c> objectMergesAfter = Database.query(strSoql);
         System.AssertNotEquals(objectMergesBefore.size(), objectMergesAfter.size());
     }
 
@@ -395,7 +407,10 @@ public class C501_CTRL_MassMergeContacts_TEST {
 
         List<C501_Merge_Metric__c> mergeMetrics = c501MassMerge_SharedCode.TestDiscoverHelper_v2('Contact Test');
 
-        List<C501_Contact_Merge__c> objectMergesBefore = [SELECT Id, Merge_Confidence__c FROM C501_Contact_Merge__c WHERE Merge_Metric__r.Name LIKE 'TESTDATA%'];
+        String strSoql = c501MassMerge_SharedCode.GetC501ContactMergeQuery();
+        strSoql += ' AND Merge_Metric__r.Name LIKE \'TESTDATA%\'';
+
+        List<C501_Contact_Merge__c> objectMergesBefore = Database.query(strSoql);
         System.Assert(objectMergesBefore.size() > 0);
 
         for (C501_Merge_Metric__c mergeMetric :mergeMetrics) {
@@ -414,7 +429,7 @@ public class C501_CTRL_MassMergeContacts_TEST {
 
         Test.StopTest();
 
-        List<C501_Contact_Merge__c> objectMergesAfter = [SELECT Id FROM C501_Contact_Merge__c WHERE Merge_Metric__r.Name LIKE 'TESTDATA%'];
+        List<C501_Contact_Merge__c> objectMergesAfter = Database.query(strSoql);
         System.AssertNotEquals(objectMergesBefore.size(), objectMergesAfter.size());
     }
 
@@ -429,7 +444,10 @@ public class C501_CTRL_MassMergeContacts_TEST {
 
         List<C501_Merge_Metric__c> mergeMetrics = c501MassMerge_SharedCode.TestDiscoverHelper_v2('Contact Test');
 
-        List<C501_Contact_Merge__c> objectMergesBefore = [SELECT Id, Merge_Confidence__c FROM C501_Contact_Merge__c WHERE Merge_Metric__r.Name LIKE 'TESTDATA%'];
+        String strSoql = c501MassMerge_SharedCode.GetC501ContactMergeQuery();
+        strSoql += ' AND Merge_Metric__r.Name LIKE \'TESTDATA%\'';
+
+        List<C501_Contact_Merge__c> objectMergesBefore = Database.query(strSoql);
         System.Assert(objectMergesBefore.size() > 0);
 
         for (C501_Merge_Metric__c mergeMetric :mergeMetrics) {
@@ -448,7 +466,7 @@ public class C501_CTRL_MassMergeContacts_TEST {
 
         Test.StopTest();
 
-        List<C501_Contact_Merge__c> objectMergesAfter = [SELECT Id FROM C501_Contact_Merge__c WHERE Merge_Metric__r.Name LIKE 'TESTDATA%'];
+        List<C501_Contact_Merge__c> objectMergesAfter = Database.query(strSoql);
         System.AssertNotEquals(objectMergesBefore.size(), objectMergesAfter.size());
     }
 
@@ -463,7 +481,10 @@ public class C501_CTRL_MassMergeContacts_TEST {
 
         List<C501_Merge_Metric__c> mergeMetrics = c501MassMerge_SharedCode.TestDiscoverHelper_v2('Contact Test');
 
-        List<C501_Contact_Merge__c> objectMergesBefore = [SELECT Id, Merge_Confidence__c FROM C501_Contact_Merge__c WHERE Merge_Metric__r.Name LIKE 'TESTDATA%'];
+        String strSoql = c501MassMerge_SharedCode.GetC501ContactMergeQuery();
+        strSoql += ' AND Merge_Metric__r.Name LIKE \'TESTDATA%\'';
+
+        List<C501_Contact_Merge__c> objectMergesBefore = Database.query(strSoql);
         System.Assert(objectMergesBefore.size() > 0);
 
         for (C501_Merge_Metric__c mergeMetric :mergeMetrics) {
@@ -482,7 +503,7 @@ public class C501_CTRL_MassMergeContacts_TEST {
 
         Test.StopTest();
 
-        List<C501_Contact_Merge__c> objectMergesAfter = [SELECT Id FROM C501_Contact_Merge__c WHERE Merge_Metric__r.Name LIKE 'TESTDATA%'];
+        List<C501_Contact_Merge__c> objectMergesAfter = Database.query(strSoql);
         System.AssertNotEquals(objectMergesBefore.size(), objectMergesAfter.size());
     }
 }

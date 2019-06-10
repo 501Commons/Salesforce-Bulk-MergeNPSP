@@ -127,10 +127,11 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
             isSandbox = Boolean.valueOf(organizations[0].IsSandbox);
         }
 
-        for (C501_Contact_Merge__c mergeObject :[
-            SELECT Id, Unique_Id__c, Contact__c, Contact__r.IsDeleted, Merge_Target_Contact__c, Merge_Target_Contact__r.IsDeleted, Merge_Confidence__c, Merge_Action__c
-            FROM C501_Contact_Merge__c
-            WHERE Merge_Metric__r.Name = :mergeMetricName]) {
+        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
+        String strSoql = c501MassMerge_SharedCode.GetC501ContactMergeQuery();
+        strSoql += 'WHERE Merge_Metric__r.Name = :mergeMetricName';
+
+        for (C501_Contact_Merge__c mergeObject :Database.query(strSoql)) {
 
             if (mergeObject.Contact__c == null || mergeObject.Merge_Target_Contact__c == null) {
 
@@ -207,10 +208,10 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
         List<C501_Contact_Merge__c> pendingAutoMerges = new List<C501_Contact_Merge__c>();
 
         Map<Id, Id> ContactHouseholdMap = new Map<Id, Id>();
-        String strSoql = 'SELECT Id, Unique_Id__c, Contact__c, Contact__r.C501_Household_Id__c, Contact__r.IsDeleted, Merge_Target_Contact__c, Merge_Target_Contact__r.C501_Household_Id__c, Merge_Target_Contact__r.IsDeleted';
-        strSoql += ' ,Merge_Confidence__c, Merge_Action__c, Merge_Metric__c';
-        strSoql += ' FROM C501_Contact_Merge__c';
-        strSoql += ' WHERE Merge_Metric__r.Name = :mergeMetricName AND Merge_Action__c <> \'Ignore\'';
+
+        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
+        String strSoql = c501MassMerge_SharedCode.GetC501ContactMergeQuery();
+        strSoql += ' AND Merge_Metric__r.Name = :mergeMetricName AND Merge_Action__c <> \'Ignore\'';
 
         for(C501_Contact_Merge__c mergeObject : Database.Query(strSoql)) {
 
@@ -249,7 +250,6 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
             return 0;
         }
 
-        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
         return c501MassMerge_SharedCode.ProcessObjectMergeCandidates_Contact(mergeMetric, pendingAutoMerges, ContactHouseholdMap);
     }
 
@@ -503,13 +503,9 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
             objectIds.add(duplicateObject.Id);
         }
 
-        List<C501_Contact_Merge__c> deleteMerges = [
-            SELECT Id
-            FROM C501_Contact_Merge__c
-            WHERE Contact__c = null
-                OR Merge_Target_Contact__c = null
-                OR Contact__c in :objectIds
-                OR Merge_Target_Contact__c in :objectIds];
+        String strSoql = c501MassMerge_SharedCode.GetC501ContactMergeQuery();
+        strSoql += 'WHERE Contact__c = null OR Merge_Target_Contact__c = null OR Contact__c in :objectIds OR Merge_Target_Contact__c in :objectIds';
+        List<C501_Contact_Merge__c> deleteMerges = Database.query(strSoql);
 
         if (!deleteMerges.isEmpty()) {
             delete deleteMerges;

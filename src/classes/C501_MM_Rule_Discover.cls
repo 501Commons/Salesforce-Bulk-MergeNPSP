@@ -140,12 +140,18 @@ public class C501_MM_Rule_Discover implements Schedulable {
 
         if (!mergeMetricDeleteChildren.isEmpty()) {
 
-            List<C501_Account_Merge__c> accountMergesDelete = [SELECT Id FROM C501_Account_Merge__c WHERE Merge_Metric__c in :mergeMetricDeleteChildren];
+            String strSoqlAccountMergesDelete = c501MassMerge_SharedCode.GetC501AccountMergeQuery();
+            strSoqlAccountMergesDelete += ' AND Merge_Metric__c in :mergeMetricDeleteChildren';
+
+            List<C501_Account_Merge__c> accountMergesDelete = Database.query(strSoqlAccountMergesDelete);
             if (!accountMergesDelete.isEmpty()) {
                 delete accountMergesDelete;
             }
 
-            List<C501_Contact_Merge__c> contactMergesDelete = [SELECT Id FROM C501_Contact_Merge__c WHERE Merge_Metric__c in :mergeMetricDeleteChildren];
+            String strSoqlContactMergesDelete = c501MassMerge_SharedCode.GetC501ContactMergeQuery();
+            strSoqlContactMergesDelete += ' AND Merge_Metric__c in :mergeMetricDeleteChildren';
+
+            List<C501_Contact_Merge__c> contactMergesDelete = Database.query(strSoqlContactMergesDelete);
             if (!contactMergesDelete.isEmpty()) {
                 delete contactMergesDelete;
             }
@@ -402,10 +408,11 @@ public class C501_MM_Rule_Discover implements Schedulable {
 
         // Filter out account ids already associated with merge metric
         Set<Id> existingAccountIds = new Set<Id>();
-        for(C501_Account_Merge__c existingMerge : [
-            SELECT Account__c, Merge_Target_Account__c
-            FROM C501_Account_Merge__c
-            WHERE Merge_Metric__c = :mergeMetric.Id]) {
+
+        String strSoql = c501MassMerge_SharedCode.GetC501AccountMergeQuery();
+        strSoql += ' AND Merge_Metric__c = :mergeMetric.Id]';
+
+        for(C501_Account_Merge__c existingMerge : Database.query(strSoql)) {
                 existingAccountIds.add(existingMerge.Account__c);
                 existingAccountIds.add(existingMerge.Merge_Target_Account__c);
         }

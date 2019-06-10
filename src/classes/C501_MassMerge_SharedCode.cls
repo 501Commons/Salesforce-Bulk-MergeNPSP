@@ -106,6 +106,40 @@ global with sharing class C501_MassMerge_SharedCode {
         return strSoql;
     }
 
+    global String GetC501AccountMergeQuery() {
+
+        String strSoql = 'SELECT';
+        strSoql += ' Id, Unique_Id__c,';
+        strSoql += ' Account__c, Account__r.C501_Household_Id__c, Account__r.IsDeleted, Merge_Target_Account__c, Merge_Target_Account__r.C501_Household_Id__c, Merge_Target_Account__r.IsDeleted,';
+        strSoql += ' Merge_Confidence__c, Merge_Action__c,';
+        strSoql += ' Merge_Metric__c, Merge_Metric__r.Name';
+        strSoql += ' FROM C501_Account_Merge__c';
+        strSoql += ' WHERE isDeleted = false';
+
+        if (Test.isRunningTest()) {        
+            strSoql += ' AND Name LIKE \'TESTDATA%\'';
+        }
+
+        return strSoql;
+    }
+
+    global String GetC501ContactMergeQuery() {
+
+        String strSoql = 'SELECT';
+        strSoql += ' Id, Unique_Id__c,';
+        strSoql += ' Contact__c, Contact__r.IsDeleted, Merge_Target_Contact__c, Merge_Target_Contact__r.IsDeleted,';
+        strSoql += ' Merge_Confidence__c, Merge_Action__c,';
+        strSoql += ' Merge_Metric__c, Merge_Metric__r.Name';
+        strSoql += ' FROM C501_Contact_Merge__c';
+        strSoql += ' WHERE isDeleted = false';
+
+        if (Test.isRunningTest()) {        
+            strSoql += ' AND Name LIKE \'TESTDATA%\'';
+        }
+
+        return strSoql;
+    }
+
     global void InitializeMassMergeInstances() {
 
         this.ScheduleJobs();
@@ -230,13 +264,9 @@ global with sharing class C501_MassMerge_SharedCode {
         }
 
         // Delete any account merges for accounts where contact was merged
-        List<C501_Account_Merge__c> deleteMerges = [
-            SELECT Id
-            FROM C501_Account_Merge__c
-            WHERE Account__c = null
-                OR Merge_Target_Account__c = null
-                OR Account__c in :contactAccounts.values()
-                OR Merge_Target_Account__c in :contactAccounts.values()];
+        String strSoqlDelete = this.GetC501AccountMergeQuery();
+        strSoqlDelete += 'WHERE Account__c = null OR Merge_Target_Account__c = null OR Account__c in :contactAccounts.values OR Merge_Target_Account__c in :contactAccounts.values';
+        List<C501_Account_Merge__c> deleteMerges = Database.query(strSoqlDelete);
 
         if (!deleteMerges.isEmpty()) {
             delete deleteMerges;
@@ -610,15 +640,18 @@ global with sharing class C501_MassMerge_SharedCode {
         }
 */       
         String strSoql = this.GetC501MergeMetricQuery();
+        String strSoqlAccountMerges = this.GetC501AccountMergeQuery();
+        String strSoqlContactMerges = this.GetC501ContactMergeQuery();
+
         for (C501_Merge_Metric__c mergeMetric :Database.Query(strSoql)) {
 
             System.debug('***** C501_MassMerge_SharedCode::PrintSalesforceStructure - Merge Metric: ' + mergeMetric.Name);
 
-            for (C501_Account_Merge__c mergeAccount :[select Id, Merge_Metric__r.Name, Merge_Confidence__c, Merge_Action__c from C501_Account_Merge__c WHERE Merge_Metric__c = :mergeMetric.Id]) {
-                System.debug('***** C501_MassMerge_SharedCode::PrintSalesforceStructure - ' + String.valueOf(mergeAccount));
+            for (C501_Account_Merge__c mergeAccount :Database.query(strSoqlAccountMerges + ' AND Merge_Metric__c = :mergeMetric.Id')) {
+                System.debug('***** C501_MassMerge_SharedCode::PrintSalesforceStructure - Merge Accounts: ' + String.valueOf(mergeAccount));
             }
-            for (C501_Contact_Merge__c mergeContact :[select Id, Merge_Metric__r.Name, Merge_Confidence__c, Merge_Action__c from C501_Contact_Merge__c WHERE Merge_Metric__c = :mergeMetric.Id]) {
-                System.debug('***** C501_MassMerge_SharedCode::PrintSalesforceStructure - ' + String.valueOf(mergeContact));
+            for (C501_Contact_Merge__c mergeContact :Database.query(strSoqlContactMerges + ' AND Merge_Metric__c = :mergeMetric.Id')) {
+                System.debug('***** C501_MassMerge_SharedCode::PrintSalesforceStructure - Merge Contacts: ' + String.valueOf(mergeContact));
             }
         }
     }

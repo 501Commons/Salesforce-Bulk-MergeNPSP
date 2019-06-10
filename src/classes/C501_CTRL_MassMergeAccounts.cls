@@ -236,11 +236,12 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
         
             System.debug('***** C501_CTRL_MassMergeAccounts::FillListAccounts objectFilter.Id: ' + objectFilter.Id);
 
-            for(C501_Account_Merge__c accountMerge : [
-                SELECT Id, Account__c, Merge_Target_Account__c, Merge_Confidence__c, Merge_Action__c, Merge_Metric__c, Merge_Metric__r.Name
-                FROM C501_Account_Merge__c
-                WHERE (Account__c = :objectFilter.Id OR Merge_Target_Account__c = :objectFilter.Id) AND Merge_Action__c = null AND isDeleted = false
-                LIMIT 1]) {
+            C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
+            String strSoql = c501MassMerge_SharedCode.GetC501AccountMergeQuery();
+            strSoql += ' AND (Account__c = :objectFilter.Id OR Merge_Target_Account__c = :objectFilter.Id) AND Merge_Action__c = null';
+            strSoql += ' LIMIT 1';
+
+            for(C501_Account_Merge__c accountMerge : Database.query(strSoql)) {
 
                     System.debug('***** C501_CTRL_MassMergeAccounts::FillListAccounts accountMerge: ' + accountMerge);
 
@@ -271,12 +272,12 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
         }
         else {
 
-            Set<String> accountIds = new Set<String>();
+            Set<String> objectIds = new Set<String>();
             for (SelectOption option : listSOAccounts) {
-                accountIds.add(option.getValue());
+                objectIds.add(option.getValue());
 
                 // Performance: Only allow 50 at a time to load in the webpage
-                if (accountIds.size() >= 50) {
+                if (objectIds.size() >= 50) {
                     break;
                 }
             }
@@ -290,10 +291,9 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
                 strRuleSoql = ' and Merge_Metric__r.Name = :mergeRule';
             }
 
-            string strSoql = 'SELECT Id, Account__c, Merge_Target_Account__c, Merge_Confidence__c, Merge_Action__c, Merge_Metric__c, Merge_Metric__r.Name';
-
-            strSoql += ' FROM C501_Account_Merge__c';
-            strSoql += ' WHERE (Account__c in :accountIds OR Merge_Target_Account__c in :accountIds) AND Merge_Action__c = null AND isDeleted = false';
+            C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
+            String strSoql = c501MassMerge_SharedCode.GetC501AccountMergeQuery();
+            strSoql += ' WHERE (Account__c in :objectIds OR Merge_Target_Account__c in :objectIds) AND Merge_Action__c = null';
             strSoql += strRuleSoql;
             strSoql += ' ORDER BY Account__r.Name ASC';
 

@@ -160,6 +160,10 @@
         <name>ListView</name>
     </types>
     <types>
+        <members>MMA_Admin</members>
+        <name>PermissionSet</name>
+    </types>
+    <types>
         <members>C501_Mass_Merge_Rules</members>
         <members>C501_Mass_Merge_Templates</members>
         <members>C501_Mass_Merge_Templates/Merge_Rule_Account_Address</members>
