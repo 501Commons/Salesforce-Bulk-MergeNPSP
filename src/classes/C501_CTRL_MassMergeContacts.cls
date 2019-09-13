@@ -236,8 +236,10 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
         
             C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
             String strSoql = c501MassMerge_SharedCode.GetC501ContactMergeQuery();
-            strSoql += ' AND (Contact__c = :objectFilter.Id OR Merge_Target_Contact__c = :objectFilter.Id) AND Merge_Action__c = null';
+            strSoql += ' AND (Contact__c = \'' + objectFilter.Id + '\' OR Merge_Target_Contact__c = \'' + objectFilter.Id + '\') AND Merge_Action__c = null';
             strSoql += ' LIMIT 1';
+
+            System.debug('***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::FillListContacts strSoql: ' + strSoql);
 
             for(C501_Contact_Merge__c contactMerge :Database.query(strSoql)) {
 
@@ -289,9 +291,11 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
 
             C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
             String strSoql = c501MassMerge_SharedCode.GetC501ContactMergeQuery();
-            strSoql += ' WHERE (Contact__c in :objectIds OR Merge_Target_Contact__c in :objectIds) AND Merge_Action__c = null';
+            strSoql += ' AND (Contact__c in ' + C501_MassMerge_SharedCode.GetSafeSoqlList(objectIds) + ' OR Merge_Target_Contact__c in ' + C501_MassMerge_SharedCode.GetSafeSoqlList(objectIds) + ') AND Merge_Action__c = null';
             strSoql += strRuleSoql;
             strSoql += ' ORDER BY Contact__r.Name ASC';
+
+            System.debug('***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::FillListContacts strSoql: ' + strSoql);
 
             for(C501_Contact_Merge__c contactMerge : Database.Query(strSoql)) {
 
@@ -333,9 +337,12 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
         String strSoql = 'SELECT ' + String.join(listStrFields, ',');
 
         Set<Id> contactsMergeIds = contactsMerge.keySet();
-        strSoql += ' FROM Contact WHERE Id in :contactsMergeIds';
+        
+        strSoql += ' FROM Contact WHERE Id in ' + C501_MassMerge_SharedCode.GetSafeSoqlList(contactsMergeIds);
         strSoql += ' order by C501_Merge_Metric_Name__c ASC NULLS FIRST';
         
+        System.debug('***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::FillListContacts strSoql: ' + strSoql);
+
         listContacts = Database.Query(strSoql);
 
         for ( Contact Contact :listContacts ) {
@@ -353,6 +360,8 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
 
         // Update Contacts w/ Merge fields then query to get the correct sort order by Metric Name
         update listContacts;
+
+        System.debug('***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::FillListContacts strSoql: ' + strSoql);
 
         listContacts = Database.Query(strSoql);
     }

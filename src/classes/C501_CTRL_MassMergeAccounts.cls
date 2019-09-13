@@ -238,8 +238,10 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
 
             C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
             String strSoql = c501MassMerge_SharedCode.GetC501AccountMergeQuery();
-            strSoql += ' AND (Account__c = :objectFilter.Id OR Merge_Target_Account__c = :objectFilter.Id) AND Merge_Action__c = null';
+            strSoql += ' AND (Account__c = \'' + objectFilter.Id + '\' OR Merge_Target_Account__c = \'' + objectFilter.Id + '\') AND Merge_Action__c = null';
             strSoql += ' LIMIT 1';
+
+            System.debug('***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::FillListAccounts strSoql: ' + strSoql);
 
             for(C501_Account_Merge__c accountMerge : Database.query(strSoql)) {
 
@@ -293,9 +295,11 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
 
             C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
             String strSoql = c501MassMerge_SharedCode.GetC501AccountMergeQuery();
-            strSoql += ' WHERE (Account__c in :objectIds OR Merge_Target_Account__c in :objectIds) AND Merge_Action__c = null';
+            strSoql += ' AND (Account__c in ' + C501_MassMerge_SharedCode.GetSafeSoqlList(objectIds) + ' OR Merge_Target_Account__c in ' + C501_MassMerge_SharedCode.GetSafeSoqlList(objectIds) + ') AND Merge_Action__c = null';
             strSoql += strRuleSoql;
             strSoql += ' ORDER BY Account__r.Name ASC';
+
+            System.debug('***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::FillListAccounts strSoql: ' + strSoql);
 
             for(C501_Account_Merge__c accountMerge : Database.Query(strSoql)) {
 
@@ -337,12 +341,13 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
         String strSoql = 'SELECT ' + String.join(listStrFields, ',');
 
         Set<Id> accountsMergeIds = accountsMerge.keySet();
-        strSoql += ' FROM Account WHERE Id in :accountsMergeIds';
+
+        strSoql += ' FROM Account WHERE Id in ' + C501_MassMerge_SharedCode.GetSafeSoqlList(accountsMergeIds);
         strSoql += ' order by C501_Merge_Metric_Name__c ASC NULLS FIRST';
         
-        listAccounts = Database.Query(strSoql);
+        System.debug('***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::FillListAccounts strSoql: ' + strSoql);
 
-        System.debug('***** C501_CTRL_MassMergeAccounts::FillListAccounts strSoql: ' + strSoql);
+        listAccounts = Database.Query(strSoql);
 
         for ( Account account :listAccounts ) {
             if (accountsMerge.containsKey(account.Id)) {
@@ -359,6 +364,8 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
 
         // Update Accounts w/ Merge fields then query to get the correct sort order by Metric Name
         update listAccounts;
+
+        System.debug('***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::FillListAccounts strSoql: ' + strSoql);
 
         listAccounts = Database.Query(strSoql);
     }

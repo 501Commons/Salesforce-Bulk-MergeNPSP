@@ -90,7 +90,7 @@
                 <div class="slds-grid">
                     <div class="slds-col--padded slds-form-element slds-size--1-of-3">
                         <apex:outputLabel for="ddlContacts" styleClass="slds-form-element__label" >
-                            Household
+                            Contact
                         </apex:outputLabel>
                         <apex:selectList id="ddlContacts" value="{!objectFilter.Id}" required="false" size="1" styleClass="slds-select" disabled="{!listSOContacts.size=1}">
                             <apex:actionSupport immediate="false" event="onchange" rerender="ddlContacts,ddlRules,tblContacts" status="retrieveStatus" action="{!ChangeContact}" />

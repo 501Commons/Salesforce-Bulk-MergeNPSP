@@ -68,7 +68,7 @@ public class C501_MM_Rule_Discover implements Schedulable {
         this.ProcessMergeMetrics(strSoql);
     }
 
-    public void executeMetricById(String mergeMetricId) {
+    public void executeMetricById(Id mergeMetricId) {
 
         C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
         c501MassMerge_SharedCode.InitializeMassMergeInstances();
@@ -81,7 +81,7 @@ public class C501_MM_Rule_Discover implements Schedulable {
         this.ProcessMergeMetrics(strSoql);
     }
 
-    public void executeMetric(String mergeMetricId) {
+    public void executeMetric(Id mergeMetricId) {
         this.executeMetricById(mergeMetricId);
     }
 
@@ -92,6 +92,9 @@ public class C501_MM_Rule_Discover implements Schedulable {
 		//
 
         strSoql += ' ORDER BY Last_Discover_Date__c ASC NULLS FIRST';
+
+        System.debug('***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::ProcessMergeMetrics strSoql: ' + strSoql);
+
         List<C501_Merge_Metric__c> mergeMetrics = Database.Query(strSoql);
 
         Set<String> sourceReportIds = new Set<String>();
@@ -141,7 +144,10 @@ public class C501_MM_Rule_Discover implements Schedulable {
         if (!mergeMetricDeleteChildren.isEmpty()) {
 
             String strSoqlAccountMergesDelete = c501MassMerge_SharedCode.GetC501AccountMergeQuery();
-            strSoqlAccountMergesDelete += ' AND Merge_Metric__c in :mergeMetricDeleteChildren';
+
+            strSoqlAccountMergesDelete += ' AND Merge_Metric__c in ' + C501_MassMerge_SharedCode.GetSafeSoqlList(mergeMetricDeleteChildren);
+
+            System.debug('***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::ProcessMergeMetrics strSoql: ' + strSoqlAccountMergesDelete);
 
             List<C501_Account_Merge__c> accountMergesDelete = Database.query(strSoqlAccountMergesDelete);
             if (!accountMergesDelete.isEmpty()) {
@@ -149,7 +155,10 @@ public class C501_MM_Rule_Discover implements Schedulable {
             }
 
             String strSoqlContactMergesDelete = c501MassMerge_SharedCode.GetC501ContactMergeQuery();
-            strSoqlContactMergesDelete += ' AND Merge_Metric__c in :mergeMetricDeleteChildren';
+
+            strSoqlContactMergesDelete += ' AND Merge_Metric__c in ' + C501_MassMerge_SharedCode.GetSafeSoqlList(mergeMetricDeleteChildren);
+
+            System.debug('***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::ProcessMergeMetrics strSoql: ' + strSoqlContactMergesDelete);
 
             List<C501_Contact_Merge__c> contactMergesDelete = Database.query(strSoqlContactMergesDelete);
             if (!contactMergesDelete.isEmpty()) {
@@ -352,7 +361,7 @@ public class C501_MM_Rule_Discover implements Schedulable {
                 if (reportFilter.getValue().contains(',')) {
                     whereInValues = reportFilter.getValue().split(',');
 
-                    whereField = this.CheckReportColumnName(mergeMetric, foriegnKey, reportFilter.getColumn(), true) + ' in :whereInValues';
+                    whereField = this.CheckReportColumnName(mergeMetric, foriegnKey, reportFilter.getColumn(), true) + ' in ' + C501_MassMerge_SharedCode.GetSafeSoqlList(whereInValues);
                 }
 
                 whereFields.add(whereField);
@@ -395,6 +404,8 @@ public class C501_MM_Rule_Discover implements Schedulable {
 
         AggregateResult[] allAggregatedByAccounts;
         try {
+            System.debug('***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::ProcessReportByAccounts strSoql: ' + strSoqlSelect + strSoqlFrom + strSoqlWhere + strSoqlGroupBy + strSoqlHaving + strSoqlOrderBy + strSoqlLimit);
+
 		    allAggregatedByAccounts = Database.Query(strSoqlSelect + strSoqlFrom + strSoqlWhere + strSoqlGroupBy + strSoqlHaving + strSoqlOrderBy + strSoqlLimit);
         }
         catch (System.LimitException exLimit) {
@@ -410,7 +421,10 @@ public class C501_MM_Rule_Discover implements Schedulable {
         Set<Id> existingAccountIds = new Set<Id>();
 
         String strSoql = c501MassMerge_SharedCode.GetC501AccountMergeQuery();
-        strSoql += ' AND Merge_Metric__c = :mergeMetric.Id]';
+        strSoql += ' AND Merge_Metric__c = \'' + mergeMetric.Id + '\'';
+
+        System.debug('mergeMetric.Id: ' + mergeMetric.Id);
+        System.debug('***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::FillListAccounts strSoql: ' + strSoql);
 
         for(C501_Account_Merge__c existingMerge : Database.query(strSoql)) {
                 existingAccountIds.add(existingMerge.Account__c);
@@ -577,7 +591,8 @@ public class C501_MM_Rule_Discover implements Schedulable {
                 // Check if value contains a list of Strings
                 if (reportFilter.getValue().contains(',')) {
                     whereInValues = reportFilter.getValue().split(',');
-                    whereField = this.CheckReportColumnName(mergeMetric, foriegnKey, reportFilter.getColumn(), true) + ' in :whereInValues';
+
+                    whereField = this.CheckReportColumnName(mergeMetric, foriegnKey, reportFilter.getColumn(), true) + ' in ' + C501_MassMerge_SharedCode.GetSafeSoqlList(whereInValues);
                     System.Debug('***** 3 reportFilter.getColumn(): ' + reportFilter.getColumn() + ' whereField: ' + whereField);
                 }
 
@@ -621,6 +636,8 @@ public class C501_MM_Rule_Discover implements Schedulable {
 
         AggregateResult[] allAggregatedByContacts;
         try {
+            System.debug('***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::ProcessReportByContacts strSoql: ' + strSoqlSelect + strSoqlFrom + strSoqlWhere + strSoqlGroupBy + strSoqlHaving + strSoqlOrderBy + strSoqlLimit);
+
     		allAggregatedByContacts = Database.Query(strSoqlSelect + strSoqlFrom + strSoqlWhere + strSoqlGroupBy + strSoqlHaving + strSoqlOrderBy + strSoqlLimit);
         }
         catch (System.LimitException exLimit) {

@@ -129,7 +129,9 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
 
         C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
         String strSoql = c501MassMerge_SharedCode.GetC501ContactMergeQuery();
-        strSoql += 'WHERE Merge_Metric__r.Name = :mergeMetricName';
+        strSoql += ' AND Merge_Metric__r.Name = :mergeMetricName';
+
+        System.debug('***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::InsertObjectMergeCandidates strSoql: ' + strSoql);
 
         for (C501_Contact_Merge__c mergeObject :Database.query(strSoql)) {
 
@@ -212,6 +214,8 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
         C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
         String strSoql = c501MassMerge_SharedCode.GetC501ContactMergeQuery();
         strSoql += ' AND Merge_Metric__r.Name = :mergeMetricName AND Merge_Action__c <> \'Ignore\'';
+
+        System.debug('***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::ProcessObjectMergeCandidates strSoql: ' + strSoql);
 
         for(C501_Contact_Merge__c mergeObject : Database.Query(strSoql)) {
 
@@ -303,6 +307,9 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
             if (!mergeMetricMap.containsKey(mergeCandidate.Merge_Metric__c)) {
                 C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
                 String strSoql = c501MassMerge_SharedCode.GetC501MergeMetricQuery();
+
+                System.debug('***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::ProcessObjectMerges strSoql: ' + strSoql);
+
                 mergeMetrics = Database.Query(strSoql);
 
                 for (C501_Merge_Metric__c mergeMetric :mergeMetrics) {
@@ -378,7 +385,7 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
         C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
 
         // Construct the query string
-        String query = 'Select ';
+        String strSoql = 'Select ';
         for (String fieldName : objectFields.keySet()) {
 
             Schema.SObjectField f = objectFields.get(fieldName);
@@ -400,7 +407,7 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
                 // If the field is type lookup, then ignore in the merge fields because is handled during the object merge
                 string relName = fResult.getRelationshipName();
                 if (string.isBlank(relName)) {
-                    query += (fieldName + ',');
+                    strSoql += (fieldName + ',');
                 } else {
                     continue;
                 }
@@ -413,12 +420,15 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
             }
         }
 
-        query += 'Id from Contact where Id IN :mergeCandidates';
+        strSoql += ' Id from Contact where Id IN ' + C501_MassMerge_SharedCode.GetSafeSoqlList(mergeCandidates);
         //System.debug('***** C501_MassMerge_SharedCode::ObjectsFieldMerge - The Contact query is: ' + query);
         
         List<Contact> objectList;
         try {
-            objectList = Database.query(query); // Query the records
+
+            System.debug('***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::ObjectsFieldMerge strSoql: ' + strSoql);
+
+            objectList = Database.query(strSoql); // Query the records
 
             // Ensure we got back the same number of records as expected. In case any record got deleted/moved since last search.
             if (objectList == null || objectList.size() != mergeCandidates.size()) {
@@ -426,6 +436,8 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
                 System.debug('***** C501_MassMerge_SharedCode::ObjectsFieldMerge Query failed to return expected number of objects');
                 return;
             }
+
+            List<C501_Merge_History__c> insertMergeHistories = new List<C501_Merge_History__c>();
 
             // Merge fields into master
             SObject masterRecord = null;
@@ -447,6 +459,16 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
                             System.debug('***** C501_MassMerge_SharedCode::ObjectsFieldMerge Update Merge Standard Field - fieldName: ' + fieldName + ' Exception: ' + String.valueOf(e.getMessage()));
                         }
                     }
+                    else if (objectItem.get(fieldName) <> null && !String.isBlank(String.valueOf(objectItem.get(fieldName))) &&
+                        String.valueOf(masterRecord.get(fieldName)) <> String.valueOf(objectItem.get(fieldName))) {
+                            
+                        insertMergeHistories.add(new C501_Merge_History__c(
+                            Contact__c = masterRecord.Id,
+                            Merge_Value__c = String.valueOf(masterRecord.get(fieldName)),
+                            Ignore_Value__c = String.valueOf(objectItem.get(fieldName)),
+                            Field__c =  fieldName
+                        ));
+                    }
                 }
 
                 for (String fieldName :customFieldMap.keySet()) {
@@ -459,6 +481,16 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
                             System.debug('***** C501_MassMerge_SharedCode::ObjectsFieldMerge Update Merge Custom Field - fieldName: ' + fieldName + ' Exception: ' + String.valueOf(e.getMessage()));
                         }
                     }
+                    else if (objectItem.get(fieldName) <> null && !String.isBlank(String.valueOf(objectItem.get(fieldName))) &&
+                        String.valueOf(masterRecord.get(fieldName)) <> String.valueOf(objectItem.get(fieldName))) {
+
+                        insertMergeHistories.add(new C501_Merge_History__c(
+                            Contact__c = masterRecord.Id,
+                            Merge_Value__c = String.valueOf(masterRecord.get(fieldName)),
+                            Ignore_Value__c = String.valueOf(objectItem.get(fieldName)),
+                            Field__c =  fieldName
+                        ));
+                    }
                 }
             }
 
@@ -466,6 +498,17 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
             if (!updateResult.isSuccess()) {
                 for (Database.Error err : updateResult.getErrors()) {
                     System.debug('***** C501_MassMerge_SharedCode::ObjectsMerge Contact Merge Exception: ' + err.getMessage());
+                }
+            }
+
+            if (!insertMergeHistories.isEmpty()) {
+                Database.SaveResult[] insertResults = Database.insert(insertMergeHistories, false);
+                for (Database.SaveResult insertResult :insertResults) {
+                    if (!insertResult.isSuccess()) {
+                        for (Database.Error err : insertResult.getErrors()) {
+                            System.debug('***** C501_MassMerge_SharedCode::ObjectsMerge Contact Merge History Exception: ' + err.getMessage());
+                        }
+                    }
                 }
             }
 
@@ -504,7 +547,10 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
         }
 
         String strSoql = c501MassMerge_SharedCode.GetC501ContactMergeQuery();
-        strSoql += 'WHERE Contact__c = null OR Merge_Target_Contact__c = null OR Contact__c in :objectIds OR Merge_Target_Contact__c in :objectIds';
+        strSoql += ' AND (Contact__c = null OR Merge_Target_Contact__c = null OR Contact__c in ' + C501_MassMerge_SharedCode.GetSafeSoqlList(objectIds) + ' OR Merge_Target_Contact__c in ' + C501_MassMerge_SharedCode.GetSafeSoqlList(objectIds) + ')';
+
+        System.debug('***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::ObjectsMerge strSoql: ' + strSoql);
+
         List<C501_Contact_Merge__c> deleteMerges = Database.query(strSoql);
 
         if (!deleteMerges.isEmpty()) {

@@ -60,6 +60,55 @@ global with sharing class C501_MassMerge_SharedCode {
         set;
     }   
 
+    global static String GetSafeSoqlList(List<String> strList) {
+
+        List<String> strCleanList = new List<String>();
+        for (String strToken :strList) {
+            if (String.isBlank(strToken)) {
+                continue;
+            }
+            strCleanList.add(String.valueOf(strToken));
+        }
+
+        if (strCleanList.isEmpty()) {
+            return '';
+        }
+
+        System.debug('***** C501_MassMerge_SharedCode::GetSafeSoqlList strCleanList: ' + strCleanList);
+        String safeSoqlList = '(\'' + String.join(strCleanList, '\',\'') + '\')';
+        System.debug('***** C501_MassMerge_SharedCode::GetSafeSoqlList safeSoqlList: ' + safeSoqlList);
+
+        return safeSoqlList;
+    }
+
+    global static String GetSafeSoqlList(Set<String> strSet) {
+
+        if (strSet.isEmpty()) {
+            return '';
+        }
+
+        List<String> strList = new List<String>();
+        for (String strToken :strSet) {
+            strList.add(String.valueOf(strToken));
+        }
+
+        return C501_MassMerge_SharedCode.GetSafeSoqlList(strList);
+    }
+
+    global static String GetSafeSoqlList(Set<Id> idSet) {
+
+        if (idSet.isEmpty()) {
+            return '';
+        }
+
+        List<String> strList = new List<String>();
+        for (Id idToken :idSet) {
+            strList.add(String.valueOf(idToken));
+        }
+
+        return C501_MassMerge_SharedCode.GetSafeSoqlList(strList);
+    }
+
     /*******************************************************************************************************
     * @description returns whether the field should be treated as an NPSP hidden field, typically one
     * of our deprecated or system fields
@@ -110,7 +159,8 @@ global with sharing class C501_MassMerge_SharedCode {
 
         String strSoql = 'SELECT';
         strSoql += ' Id, Unique_Id__c,';
-        strSoql += ' Account__c, Account__r.C501_Household_Id__c, Account__r.IsDeleted, Merge_Target_Account__c, Merge_Target_Account__r.C501_Household_Id__c, Merge_Target_Account__r.IsDeleted,';
+        strSoql += ' Account__c, Account__r.C501_Household_Id__c, Account__r.IsDeleted,';
+        strSoql += ' Merge_Target_Account__c, Merge_Target_Account__r.C501_Household_Id__c, Merge_Target_Account__r.IsDeleted,';
         strSoql += ' Merge_Confidence__c, Merge_Action__c,';
         strSoql += ' Merge_Metric__c, Merge_Metric__r.Name';
         strSoql += ' FROM C501_Account_Merge__c';
@@ -127,7 +177,8 @@ global with sharing class C501_MassMerge_SharedCode {
 
         String strSoql = 'SELECT';
         strSoql += ' Id, Unique_Id__c,';
-        strSoql += ' Contact__c, Contact__r.IsDeleted, Merge_Target_Contact__c, Merge_Target_Contact__r.IsDeleted,';
+        strSoql += ' Contact__c, Contact__r.C501_Household_Id__c, Contact__r.IsDeleted,';
+        strSoql += ' Merge_Target_Contact__c, Merge_Target_Contact__r.C501_Household_Id__c, Merge_Target_Contact__r.IsDeleted,';
         strSoql += ' Merge_Confidence__c, Merge_Action__c,';
         strSoql += ' Merge_Metric__c, Merge_Metric__r.Name';
         strSoql += ' FROM C501_Contact_Merge__c';
@@ -150,6 +201,9 @@ global with sharing class C501_MassMerge_SharedCode {
         }
         
         String strSoql = this.GetC501MergeMetricQuery();
+
+        System.debug('***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::InitializeMassMergeInstances strSoql: ' + strSoql);
+
         List<C501_Merge_Metric__c> mergeMetrics = Database.Query(strSoql);
 
         // Initialize Merge Metrics - make sure there is a merge metric for each report in Mass Merge folder
@@ -201,6 +255,9 @@ global with sharing class C501_MassMerge_SharedCode {
         String mergeMetricName = 'User Merge Rule Account No Contacts';
         String strSoql = GetC501MergeMetricQuery();
         strSoql += ' AND Name = \'' + mergeMetricName + '\'';
+
+        System.debug('***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::ObjectsMerge_Contact strSoql: ' + strSoql);
+
         List<C501_Merge_Metric__c> mergeMetrics = Database.Query(strSoql);
 
         if (mergeMetrics.isEmpty()) {
@@ -264,9 +321,13 @@ global with sharing class C501_MassMerge_SharedCode {
         }
 
         // Delete any account merges for accounts where contact was merged
-        String strSoqlDelete = this.GetC501AccountMergeQuery();
-        strSoqlDelete += 'WHERE Account__c = null OR Merge_Target_Account__c = null OR Account__c in :contactAccounts.values OR Merge_Target_Account__c in :contactAccounts.values';
-        List<C501_Account_Merge__c> deleteMerges = Database.query(strSoqlDelete);
+        strSoql = this.GetC501AccountMergeQuery();
+        
+        strSoql += ' AND (Account__c = null OR Merge_Target_Account__c = null OR Account__c in ' + C501_MassMerge_SharedCode.GetSafeSoqlList(contactAccounts.values()) + ' OR Merge_Target_Account__c in ' + C501_MassMerge_SharedCode.GetSafeSoqlList(contactAccounts.values()) + ')';
+
+        System.debug('***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::ObjectsMerge_Contact strSoql: ' + strSoql);
+
+        List<C501_Account_Merge__c> deleteMerges = Database.query(strSoql);
 
         if (!deleteMerges.isEmpty()) {
             delete deleteMerges;
@@ -528,6 +589,8 @@ global with sharing class C501_MassMerge_SharedCode {
         String strSoql = this.GetC501MergeMetricQuery();
         strSoql += ' AND Name LIKE \'%' + queryNameCriteria + '%\'';
 
+        System.debug('***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::TestDiscoverHelper_v2 strSoql: ' + strSoql);
+
         List<C501_Merge_Metric__c> mergeMetrics = Database.Query(strSoql);
         System.Assert(mergeMetrics.size() > 0);
         for (C501_Merge_Metric__c mergeMetric :mergeMetrics) {
@@ -643,14 +706,16 @@ global with sharing class C501_MassMerge_SharedCode {
         String strSoqlAccountMerges = this.GetC501AccountMergeQuery();
         String strSoqlContactMerges = this.GetC501ContactMergeQuery();
 
+        System.debug('***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::PrintSalesforceStructure strSoql: ' + strSoql);
+
         for (C501_Merge_Metric__c mergeMetric :Database.Query(strSoql)) {
 
             System.debug('***** C501_MassMerge_SharedCode::PrintSalesforceStructure - Merge Metric: ' + mergeMetric.Name);
 
-            for (C501_Account_Merge__c mergeAccount :Database.query(strSoqlAccountMerges + ' AND Merge_Metric__c = :mergeMetric.Id')) {
+            for (C501_Account_Merge__c mergeAccount :Database.query(strSoqlAccountMerges + ' AND Merge_Metric__c = \'' + mergeMetric.Id + '\'')) {
                 System.debug('***** C501_MassMerge_SharedCode::PrintSalesforceStructure - Merge Accounts: ' + String.valueOf(mergeAccount));
             }
-            for (C501_Contact_Merge__c mergeContact :Database.query(strSoqlContactMerges + ' AND Merge_Metric__c = :mergeMetric.Id')) {
+            for (C501_Contact_Merge__c mergeContact :Database.query(strSoqlContactMerges + ' AND Merge_Metric__c = \'' + mergeMetric.Id + '\'')) {
                 System.debug('***** C501_MassMerge_SharedCode::PrintSalesforceStructure - Merge Contacts: ' + String.valueOf(mergeContact));
             }
         }

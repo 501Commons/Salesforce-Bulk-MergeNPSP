@@ -126,10 +126,10 @@
         <unique>false</unique>
     </fields>
     <fields>
-        <fullName>C501_Merge_Metric__c</fullName>
+        <fullName>C501_Merge_Metric_Name__c</fullName>
         <externalId>false</externalId>
-        <label>Merge Metric</label>
-        <length>18</length>
+        <label>Rule</label>
+        <length>80</length>
         <required>false</required>
         <trackFeedHistory>false</trackFeedHistory>
         <trackHistory>false</trackHistory>
@@ -137,10 +137,10 @@
         <unique>false</unique>
     </fields>
     <fields>
-        <fullName>C501_Merge_Metric_Name__c</fullName>
+        <fullName>C501_Merge_Metric__c</fullName>
         <externalId>false</externalId>
-        <label>Rule</label>
-        <length>80</length>
+        <label>Merge Metric</label>
+        <length>18</length>
         <required>false</required>
         <trackFeedHistory>false</trackFeedHistory>
         <trackHistory>false</trackHistory>
