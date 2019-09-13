@@ -204,11 +204,6 @@
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
-        <editable>false</editable>
-        <field>C501_Merge_History__c.User__c</field>
-        <readable>false</readable>
-    </fieldPermissions>
-    <fieldPermissions>
         <editable>true</editable>
         <field>C501_Merge_Metric__c.AutoMerge_Objects__c</field>
         <readable>true</readable>

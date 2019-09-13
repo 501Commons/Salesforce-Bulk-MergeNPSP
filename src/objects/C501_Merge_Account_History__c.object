@@ -57,22 +57,9 @@
         <externalId>false</externalId>
         <label>Account</label>
         <referenceTo>Account</referenceTo>
-        <relationshipLabel>Merge Histories</relationshipLabel>
-        <relationshipName>Merge_Histories</relationshipName>
+        <relationshipLabel>Merge Account Histories</relationshipLabel>
+        <relationshipName>Merge_Account_Histories</relationshipName>
         <relationshipOrder>0</relationshipOrder>
-        <reparentableMasterDetail>false</reparentableMasterDetail>
-        <trackTrending>false</trackTrending>
-        <type>MasterDetail</type>
-        <writeRequiresMasterRead>false</writeRequiresMasterRead>
-    </fields>
-    <fields>
-        <fullName>Contact__c</fullName>
-        <externalId>false</externalId>
-        <label>Contact</label>
-        <referenceTo>Contact</referenceTo>
-        <relationshipLabel>Merge Histories</relationshipLabel>
-        <relationshipName>Merge_Histories</relationshipName>
-        <relationshipOrder>1</relationshipOrder>
         <reparentableMasterDetail>false</reparentableMasterDetail>
         <trackTrending>false</trackTrending>
         <type>MasterDetail</type>
@@ -121,13 +108,13 @@
         <type>Text</type>
         <unique>false</unique>
     </fields>
-    <label>Merge History</label>
+    <label>Merge Account History</label>
     <nameField>
         <displayFormat>Merge History {0000}</displayFormat>
         <label>Name</label>
         <type>AutoNumber</type>
     </nameField>
-    <pluralLabel>Merge Histories</pluralLabel>
+    <pluralLabel>Merge Account Histories</pluralLabel>
     <searchLayouts/>
     <sharingModel>ControlledByParent</sharingModel>
     <visibility>Public</visibility>

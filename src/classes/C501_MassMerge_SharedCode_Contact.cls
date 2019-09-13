@@ -437,7 +437,7 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
                 return;
             }
 
-            List<C501_Merge_History__c> insertMergeHistories = new List<C501_Merge_History__c>();
+            List<C501_Merge_Contact_History__c> insertMergeHistories = new List<C501_Merge_Contact_History__c>();
 
             // Merge fields into master
             SObject masterRecord = null;
@@ -462,7 +462,7 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
                     else if (objectItem.get(fieldName) <> null && !String.isBlank(String.valueOf(objectItem.get(fieldName))) &&
                         String.valueOf(masterRecord.get(fieldName)) <> String.valueOf(objectItem.get(fieldName))) {
                             
-                        insertMergeHistories.add(new C501_Merge_History__c(
+                        insertMergeHistories.add(new C501_Merge_Contact_History__c(
                             Contact__c = masterRecord.Id,
                             Merge_Value__c = String.valueOf(masterRecord.get(fieldName)),
                             Ignore_Value__c = String.valueOf(objectItem.get(fieldName)),
@@ -484,7 +484,7 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
                     else if (objectItem.get(fieldName) <> null && !String.isBlank(String.valueOf(objectItem.get(fieldName))) &&
                         String.valueOf(masterRecord.get(fieldName)) <> String.valueOf(objectItem.get(fieldName))) {
 
-                        insertMergeHistories.add(new C501_Merge_History__c(
+                        insertMergeHistories.add(new C501_Merge_Contact_History__c(
                             Contact__c = masterRecord.Id,
                             Merge_Value__c = String.valueOf(masterRecord.get(fieldName)),
                             Ignore_Value__c = String.valueOf(objectItem.get(fieldName)),
