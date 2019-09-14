@@ -129,7 +129,7 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
 
         C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
         String strSoql = c501MassMerge_SharedCode.GetC501ContactMergeQuery();
-        strSoql += ' AND Merge_Metric__r.Name = :mergeMetricName';
+        strSoql += ' AND Merge_Metric__r.Name = \'' + mergeMetricName + '\'';
 
         System.debug('***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::InsertObjectMergeCandidates strSoql: ' + strSoql);
 
@@ -187,7 +187,12 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
 //                                continue;
 //                            }
 
-                            System.debug('***** C501_MassMerge_SharedCode_Contact::InsertObjectMergeCandidates Database.SaveResult');
+                            // Ignore DUPLICATE_VALUE because just trying to insert and not checking if already there to reduce SOQL calls - let the DB block
+                            if (statusCode.contains('DUPLICATE_VALUE')) {
+                                continue;
+                            }
+
+                            System.debug('***** C501_MassMerge_SharedCode_Contact::InsertObjectMergeCandidates Database.SaveResult Error');
                             System.debug(statusCode + ': ' + resultError.getMessage());
                             System.debug('Fields that affected this error: ' + resultError.getFields());
                         }                        
@@ -401,8 +406,8 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
                 continue;
             }
 */
-            // Only include the fields which are updateable and accessible
-            if (fResult.isUpdateable() && fResult.isAccessible() && !c501MassMerge_SharedCode.isNPSPHiddenField(fieldname)) {
+            // Only include the fields which are updateable and accessible and not hidden, unique, or externalid
+            if (fResult.isUpdateable() && fResult.isAccessible() && !c501MassMerge_SharedCode.isNPSPHiddenField(fieldname) && !fResult.isUnique() && !fResult.isExternalId()) {
 
                 // If the field is type lookup, then ignore in the merge fields because is handled during the object merge
                 string relName = fResult.getRelationshipName();
@@ -425,7 +430,6 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
         
         List<Contact> objectList;
         try {
-
             System.debug('***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::ObjectsFieldMerge strSoql: ' + strSoql);
 
             objectList = Database.query(strSoql); // Query the records
@@ -550,7 +554,7 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
         strSoql += ' AND (Contact__c = null OR Merge_Target_Contact__c = null OR Contact__c in ' + C501_MassMerge_SharedCode.GetSafeSoqlList(objectIds) + ' OR Merge_Target_Contact__c in ' + C501_MassMerge_SharedCode.GetSafeSoqlList(objectIds) + ')';
 
         System.debug('***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::ObjectsMerge strSoql: ' + strSoql);
-
+        
         List<C501_Contact_Merge__c> deleteMerges = Database.query(strSoql);
 
         if (!deleteMerges.isEmpty()) {

@@ -59,7 +59,7 @@
         <referenceTo>Contact</referenceTo>
         <relationshipLabel>Merge Contact Histories</relationshipLabel>
         <relationshipName>Merge_Contact_Histories</relationshipName>
-        <relationshipOrder>1</relationshipOrder>
+        <relationshipOrder>0</relationshipOrder>
         <reparentableMasterDetail>false</reparentableMasterDetail>
         <trackTrending>false</trackTrending>
         <type>MasterDetail</type>

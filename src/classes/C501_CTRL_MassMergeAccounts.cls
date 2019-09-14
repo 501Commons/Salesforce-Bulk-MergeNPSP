@@ -290,7 +290,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
             String mergeRule = objectFilter.C501_Merge_Rule__c;
             String strRuleSoql = '';
             if (mergeRule <> null && !String.isBlank(mergeRule)) {
-                strRuleSoql = ' and Merge_Metric__r.Name = :mergeRule';
+                strRuleSoql = ' and Merge_Metric__r.Name = \'' + mergeRule + '\'';
             }
 
             C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();

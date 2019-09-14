@@ -71,7 +71,7 @@ global with sharing class C501_MassMerge_SharedCode {
         }
 
         if (strCleanList.isEmpty()) {
-            return '';
+            return '(\'\')';
         }
 
         System.debug('***** C501_MassMerge_SharedCode::GetSafeSoqlList strCleanList: ' + strCleanList);
@@ -84,7 +84,7 @@ global with sharing class C501_MassMerge_SharedCode {
     global static String GetSafeSoqlList(Set<String> strSet) {
 
         if (strSet.isEmpty()) {
-            return '';
+            return '(\'\')';
         }
 
         List<String> strList = new List<String>();
@@ -98,7 +98,7 @@ global with sharing class C501_MassMerge_SharedCode {
     global static String GetSafeSoqlList(Set<Id> idSet) {
 
         if (idSet.isEmpty()) {
-            return '';
+            return '(\'\')';
         }
 
         List<String> strList = new List<String>();
@@ -146,7 +146,8 @@ global with sharing class C501_MassMerge_SharedCode {
         strSoql += ' AutoMerge_Percentage__c, AutoMerge_Objects__c,';
         strSoql += ' Last_Discover_Date__c, Last_Merge_Date__c';
         strSoql += ' FROM C501_Merge_Metric__c';
-        strSoql += ' WHERE Source_Object__c <> NULL AND Source_Report__c <> NULL AND (Source_Object_Account_Id__c <> NULL OR Source_Object_Contact_Id__c <> NULL)';
+        strSoql += ' WHERE isDeleted = false';
+        strSoql += ' AND Source_Object__c <> NULL AND Source_Report__c <> NULL AND (Source_Object_Account_Id__c <> NULL OR Source_Object_Contact_Id__c <> NULL)';
 
         if (Test.isRunningTest()) {        
             strSoql += ' AND Name LIKE \'TESTDATA%\'';
@@ -167,7 +168,7 @@ global with sharing class C501_MassMerge_SharedCode {
         strSoql += ' WHERE isDeleted = false';
 
         if (Test.isRunningTest()) {        
-            strSoql += ' AND Name LIKE \'TESTDATA%\'';
+            strSoql += ' AND Merge_Metric__r.Name LIKE \'TESTDATA%\'';
         }
 
         return strSoql;
@@ -185,7 +186,7 @@ global with sharing class C501_MassMerge_SharedCode {
         strSoql += ' WHERE isDeleted = false';
 
         if (Test.isRunningTest()) {        
-            strSoql += ' AND Name LIKE \'TESTDATA%\'';
+            strSoql += ' AND Merge_Metric__r.Name LIKE \'TESTDATA%\'';
         }
 
         return strSoql;
@@ -571,7 +572,7 @@ global with sharing class C501_MassMerge_SharedCode {
         insert listOpportunityHouseholds.values();
         insert listContacts;
 
-        //PrintSalesforceStructure();
+        //this.PrintSalesforceStructure();
     }
 
     // Legacy Method for Managed Package

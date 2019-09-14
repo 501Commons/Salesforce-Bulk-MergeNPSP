@@ -117,8 +117,8 @@
         <categories>MassMergeAccounts</categories>
         <language>en_US</language>
         <protected>false</protected>
-        <shortDescription>message displayed when Mass Merge Accounts saves successfully.</shortDescription>
-        <value>Account records have been saved.</value>
+        <shortDescription>message displayed when Mass Merge saves successfully.</shortDescription>
+        <value>records have been saved.</value>
     </labels>
     <labels>
         <fullName>Merge_labelMassMergeTitle</fullName>
