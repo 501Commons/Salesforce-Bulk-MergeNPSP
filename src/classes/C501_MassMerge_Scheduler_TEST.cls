@@ -36,7 +36,7 @@ class C501_MassMerge_Scheduler_TEST {
     @isTest(SeeAllData='true')
     public static void C501_MassMerge_Scheduler_TEST_Schedule() {
 
-        C501_MassMerge_SharedCode.TestSetupMerge();
+        C501_MassMerge_SharedCode.TestSetupMerge_v2();
 
         Test.startTest();
 
@@ -63,7 +63,7 @@ class C501_MassMerge_Scheduler_TEST {
 
         Test.stopTest();
 
-        String strSoql = C501_MassMerge_SharedCode.GetC501AccountMergeQuery();
+        String strSoql = C501_MassMerge_SharedCode.GetC501AccountMergeQuery_v2();
         strSoql += ' AND Merge_Metric__r.Name LIKE \'TESTDATA%\'';
         strSoql += ' LIMIT 1';
 

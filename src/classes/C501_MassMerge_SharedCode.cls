@@ -32,7 +32,7 @@ global with sharing class C501_MassMerge_SharedCode {
 
     // global utility used to detect whether the Non Profit Starter Pack is installed in this instance.
     private static boolean fCheckedForNPSP = false;
-    global static boolean IsNPSPInstalled {
+    public static boolean IsNPSPInstalled {
         get {
             if (!fCheckedForNPSP) {
                 Schema.SObjectType token = Schema.getGlobalDescribe().get('npe01__OppPayment__c');
@@ -46,7 +46,7 @@ global with sharing class C501_MassMerge_SharedCode {
 
     // global utility used to get current namespace
     private static boolean fCheckedForCurrentNamespace = false;
-    global static String CurrentNamespace {
+    public static String CurrentNamespace {
         get {
             if (!fCheckedForCurrentNamespace) {
                 String thisClassName = C501_MassMerge_SharedCode.class.getName();
@@ -60,7 +60,12 @@ global with sharing class C501_MassMerge_SharedCode {
         set;
     }   
 
-    global static String GetSafeSoqlList(List<String> strList) {
+    // Legacy supported global method - managed package
+    global String GetSafeSoqlList(List<String> strList) {
+        return C501_MassMerge_SharedCode.GetSafeSoqlList_v2(strList);
+    }
+
+    public static String GetSafeSoqlList_v2(List<String> strList) {
 
         List<String> strCleanList = new List<String>();
         for (String strToken :strList) {
@@ -81,7 +86,12 @@ global with sharing class C501_MassMerge_SharedCode {
         return safeSoqlList;
     }
 
-    global static String GetSafeSoqlList(Set<String> strSet) {
+    // Legacy supported global method - managed package
+    global String GetSafeSoqlList(Set<String> strSet) {
+        return C501_MassMerge_SharedCode.GetSafeSoqlList_v2(strSet);
+    }
+
+    public static String GetSafeSoqlList_v2(Set<String> strSet) {
 
         if (strSet.isEmpty()) {
             return '(\'\')';
@@ -92,10 +102,15 @@ global with sharing class C501_MassMerge_SharedCode {
             strList.add(String.valueOf(strToken));
         }
 
-        return C501_MassMerge_SharedCode.GetSafeSoqlList(strList);
+        return C501_MassMerge_SharedCode.GetSafeSoqlList_v2(strList);
     }
 
-    global static String GetSafeSoqlList(Set<Id> idSet) {
+    // Legacy supported global method - managed package
+    global String GetSafeSoqlList(Set<Id> idSet) {
+        return C501_MassMerge_SharedCode.GetSafeSoqlList_v2(idSet);
+    }
+
+    public static String GetSafeSoqlList_v2(Set<Id> idSet) {
 
         if (idSet.isEmpty()) {
             return '(\'\')';
@@ -106,7 +121,7 @@ global with sharing class C501_MassMerge_SharedCode {
             strList.add(String.valueOf(idToken));
         }
 
-        return C501_MassMerge_SharedCode.GetSafeSoqlList(strList);
+        return C501_MassMerge_SharedCode.GetSafeSoqlList_v2(strList);
     }
 
     /*******************************************************************************************************
@@ -114,7 +129,11 @@ global with sharing class C501_MassMerge_SharedCode {
     * of our deprecated or system fields
     * @return boolean true if should be treated as hidden, false if not.
     */
-    global static boolean isNPSPHiddenField(string strField) {
+    global boolean isNPSPHiddenField(string strField) {
+        return C501_MassMerge_SharedCode.isNPSPHiddenField_v2(strField);
+    }
+    
+    public static boolean isNPSPHiddenField_v2(string strField) {
         list<string> listStrField = new list<string>{
             'npe01__SystemAccountProcessor__c',
             'npo02__SystemHouseholdProcessor__c',
@@ -129,7 +148,12 @@ global with sharing class C501_MassMerge_SharedCode {
         return false;
     }
 
+    // Legacy supported global method - managed package
     global String GetAllIterableFields(String sObjectType) {
+        return C501_MassMerge_SharedCode.GetAllIterableFields_v2(sObjectType);
+    }
+
+    public static String GetAllIterableFields_v2(String sObjectType) {
 
         Set<String> fieldNames = schema.describeSObjects(new String[] { sObjectType })[0].fields.getMap().keyset();
         List<String> iterableFields = new List<String>(fieldNames);
@@ -137,7 +161,12 @@ global with sharing class C501_MassMerge_SharedCode {
         return String.join(iterableFields, ',');
     }
 
-    global static String GetC501MergeMetricQuery() {
+    // Legacy supported global method - managed package
+    global String GetC501MergeMetricQuery() {
+        return C501_MassMerge_SharedCode.GetC501MergeMetricQuery_v2();
+    }
+
+    public static String GetC501MergeMetricQuery_v2() {
 
         String strSoql = 'SELECT';
         strSoql += ' Id, Name, Confidence__c,';
@@ -156,7 +185,12 @@ global with sharing class C501_MassMerge_SharedCode {
         return strSoql;
     }
 
-    global static String GetC501AccountMergeQuery() {
+    // Legacy supported global method - managed package
+    global String GetC501AccountMergeQuery() {
+        return C501_MassMerge_SharedCode.GetC501AccountMergeQuery_v2();
+    }
+
+    public static String GetC501AccountMergeQuery_v2() {
 
         String strSoql = 'SELECT';
         strSoql += ' Id, Unique_Id__c,';
@@ -174,7 +208,12 @@ global with sharing class C501_MassMerge_SharedCode {
         return strSoql;
     }
 
-    global static String GetC501ContactMergeQuery() {
+    // Legacy supported global method - managed package
+    global String GetC501ContactMergeQuery() {
+        return C501_MassMerge_SharedCode.GetC501ContactMergeQuery_v2();
+    }
+
+    public static String GetC501ContactMergeQuery_v2() {
 
         String strSoql = 'SELECT';
         strSoql += ' Id, Unique_Id__c,';
@@ -192,16 +231,21 @@ global with sharing class C501_MassMerge_SharedCode {
         return strSoql;
     }
 
-    global static void InitializeMassMergeInstances() {
+    // Legacy supported global method - managed package
+    global void InitializeMassMergeInstances() {
+        C501_MassMerge_SharedCode.InitializeMassMergeInstances_v2();
+    }
 
-        C501_MassMerge_SharedCode.ScheduleJobs();
+    public static void InitializeMassMergeInstances_v2() {
+
+        C501_MassMerge_SharedCode.ScheduleJobs_v2();
 
         String reportFolder = 'Mass Merge Rules';
         if (Test.isRunningTest()) {
             reportFolder = 'Mass Merge Tests';
         }
         
-        String strSoql = C501_MassMerge_SharedCode.GetC501MergeMetricQuery();
+        String strSoql = C501_MassMerge_SharedCode.GetC501MergeMetricQuery_v2();
 
         System.debug('*****C501_MassMerge_SharedCode::InitializeMassMergeInstances strSoql: ' + strSoql);
 
@@ -243,10 +287,20 @@ global with sharing class C501_MassMerge_SharedCode {
         }
     }
 
-    global static void ObjectsMerge_Account(Account masterAccount, List<Account> duplicateAccounts) {
+    // Legacy supported global method - managed package
+    global void ObjectsMerge_Account(Account masterAccount, List<Account> duplicateAccounts) {
+        C501_MassMerge_SharedCode.ObjectsMerge_Account_v2(masterAccount, duplicateAccounts);
     }
 
-    global static void ObjectsMerge_Contact(Contact masterContact, List<Contact> duplicateContacts) {
+    public static void ObjectsMerge_Account_v2(Account masterAccount, List<Account> duplicateAccounts) {
+    }
+
+    // Legacy supported global method - managed package
+    global void ObjectsMerge_Contact(Contact masterContact, List<Contact> duplicateContacts) {
+        C501_MassMerge_SharedCode.ObjectsMerge_Contact_v2(masterContact, duplicateContacts);
+    }
+
+    public static void ObjectsMerge_Contact_v2(Contact masterContact, List<Contact> duplicateContacts) {
 
         if (masterContact == null || duplicateContacts == null || duplicateContacts.isEmpty()) {
             return;
@@ -254,7 +308,7 @@ global with sharing class C501_MassMerge_SharedCode {
 
         // Merge contacts into master
         String mergeMetricName = 'User Merge Rule Account No Contacts';
-        String strSoql = C501_MassMerge_SharedCode.GetC501MergeMetricQuery();
+        String strSoql = C501_MassMerge_SharedCode.GetC501MergeMetricQuery_v2();
         strSoql += ' AND Name = \'' + mergeMetricName + '\'';
 
         System.debug('*****C501_MassMerge_SharedCode::ObjectsMerge_Contact strSoql: ' + strSoql);
@@ -322,9 +376,9 @@ global with sharing class C501_MassMerge_SharedCode {
         }
 
         // Delete any account merges for accounts where contact was merged
-        strSoql = C501_MassMerge_SharedCode.GetC501AccountMergeQuery();
+        strSoql = C501_MassMerge_SharedCode.GetC501AccountMergeQuery_v2();
         
-        strSoql += ' AND (Account__c = null OR Merge_Target_Account__c = null OR Account__c in ' + C501_MassMerge_SharedCode.GetSafeSoqlList(contactAccounts.values()) + ' OR Merge_Target_Account__c in ' + C501_MassMerge_SharedCode.GetSafeSoqlList(contactAccounts.values()) + ')';
+        strSoql += ' AND (Account__c = null OR Merge_Target_Account__c = null OR Account__c in ' + C501_MassMerge_SharedCode.GetSafeSoqlList_v2(contactAccounts.values()) + ' OR Merge_Target_Account__c in ' + C501_MassMerge_SharedCode.GetSafeSoqlList_v2(contactAccounts.values()) + ')';
 
         System.debug('*****C501_MassMerge_SharedCode::ObjectsMerge_Contact strSoql: ' + strSoql);
 
@@ -344,7 +398,13 @@ global with sharing class C501_MassMerge_SharedCode {
         @Param:List of selectOption to be sort.
         @Return: Sorted list of selectOptions by Label
     */
-    global static List<selectOption> SelectOptionSortByLabel(List<selectOption> selectOptionsToSort) {
+
+    // Legacy supported global method - managed package
+    global List<selectOption> SelectOptionSortByLabel(List<selectOption> selectOptionsToSort) {
+        return C501_MassMerge_SharedCode.SelectOptionSortByLabel_v2(selectOptionsToSort);
+    }
+
+    public static List<selectOption> SelectOptionSortByLabel_v2(List<selectOption> selectOptionsToSort) {
 
         if (selectOptionsToSort == null || selectOptionsToSort.size() <= 1) {
             return selectOptionsToSort;
@@ -366,14 +426,18 @@ global with sharing class C501_MassMerge_SharedCode {
         }
 
         List<selectOption> sortedSelectOptions = new List<selectOption>(); 
-        sortedSelectOptions.addAll(SelectOptionSortByLabel(lessSelectOption));
+        sortedSelectOptions.addAll(SelectOptionSortByLabel_v2(lessSelectOption));
         sortedSelectOptions.add(pivotValue);
-        sortedSelectOptions.addAll(SelectOptionSortByLabel(greaterSelectOption));
+        sortedSelectOptions.addAll(SelectOptionSortByLabel_v2(greaterSelectOption));
 
         return SortedSelectOptions;
     }
 
     global void ProcessMergeCandidates(C501_Merge_Metric__c mergeMetric, List<C501_Account_Merge__c> mergeAccounts) {
+        C501_MassMerge_SharedCode.ProcessMergeCandidates_v2(mergeMetric, mergeAccounts);
+    }
+
+    public static void ProcessMergeCandidates_v2(C501_Merge_Metric__c mergeMetric, List<C501_Account_Merge__c> mergeAccounts) {
 
         C501_MassMerge_SharedCode_Account c501MassMerge_SharedCode_Account = new C501_MassMerge_SharedCode_Account();
         c501MassMerge_SharedCode_Account.InsertObjectMergeCandidates(mergeMetric, mergeAccounts);
@@ -381,7 +445,12 @@ global with sharing class C501_MassMerge_SharedCode {
         c501MassMerge_SharedCode_Account.ProcessObjectMergeCandidates(mergeMetric);
     }
 
-    global static Integer ProcessObjectMergeCandidates_Account(C501_Merge_Metric__c mergeMetric, List<C501_Account_Merge__c> pendingAutoMerges, Map<Id, Id> contactHouseholdMap) {
+    // Legacy supported global method - managed package
+    global Integer ProcessObjectMergeCandidates_Account(C501_Merge_Metric__c mergeMetric, List<C501_Account_Merge__c> pendingAutoMerges, Map<Id, Id> contactHouseholdMap) {
+        return C501_MassMerge_SharedCode.ProcessObjectMergeCandidates_Account_v2(mergeMetric, pendingAutoMerges, contactHouseholdMap);
+    }
+
+    public static Integer ProcessObjectMergeCandidates_Account_v2(C501_Merge_Metric__c mergeMetric, List<C501_Account_Merge__c> pendingAutoMerges, Map<Id, Id> contactHouseholdMap) {
 
         System.debug('*****C501_MassMerge_SharedCode::ProcessObjectMergeCandidates_Account pendingAutoMerges: ' + pendingAutoMerges);
 
@@ -409,7 +478,12 @@ global with sharing class C501_MassMerge_SharedCode {
         return 0;
     }
 
-    global static Integer ProcessObjectMergeCandidates_Contact(C501_Merge_Metric__c mergeMetric, List<C501_Contact_Merge__c> pendingAutoMerges, Map<Id, Id> contactHouseholdMap) {
+    // Legacy supported global method - managed package
+    global Integer ProcessObjectMergeCandidates_Contact(C501_Merge_Metric__c mergeMetric, List<C501_Contact_Merge__c> pendingAutoMerges, Map<Id, Id> contactHouseholdMap) {
+        return C501_MassMerge_SharedCode.ProcessObjectMergeCandidates_Contact_v2(mergeMetric, pendingAutoMerges, contactHouseholdMap);
+    }
+
+    public static Integer ProcessObjectMergeCandidates_Contact_v2(C501_Merge_Metric__c mergeMetric, List<C501_Contact_Merge__c> pendingAutoMerges, Map<Id, Id> contactHouseholdMap) {
 
         if (String.isBlank(mergeMetric.AutoMerge_Objects__c)) {
             return 0;
@@ -449,7 +523,12 @@ global with sharing class C501_MassMerge_SharedCode {
         return 0;
     }
 
-    global static void ScheduleJobs() {
+    // Legacy supported global method - managed package
+    global void ScheduleJobs() {
+        C501_MassMerge_SharedCode.ScheduleJobs_v2();
+    }
+
+    public static void ScheduleJobs_v2() {
 
         List<CronJobDetail> cronJobDetails = [SELECT Id, JobType, Name FROM CronJobDetail];
         Set<String> scheduledJobs = new Set<String>();
@@ -492,9 +571,14 @@ global with sharing class C501_MassMerge_SharedCode {
         }
     }
 
-    global static void TestSetupMerge() {
+    // Legacy supported global method - managed package
+    global void TestSetupMerge() {
+        C501_MassMerge_SharedCode.TestSetupMerge_v2();
+    }
 
-        C501_MassMerge_SharedCode.InitializeMassMergeInstances();
+    public static void TestSetupMerge_v2() {
+
+        C501_MassMerge_SharedCode.InitializeMassMergeInstances_v2();
 
         List<Account> listAccounts = new List<Account>();   
         Integer cAccounts = 10;     
@@ -573,7 +657,7 @@ global with sharing class C501_MassMerge_SharedCode {
         insert listOpportunityHouseholds.values();
         insert listContacts;
 
-        //C501_MassMerge_SharedCode.PrintSalesforceStructure();
+        //C501_MassMerge_SharedCode.PrintSalesforceStructure_v2();
     }
 
     // Legacy Method for Managed Package
@@ -581,14 +665,14 @@ global with sharing class C501_MassMerge_SharedCode {
         C501_MassMerge_SharedCode.TestDiscoverHelper_v2(queryNameCriteria);
     }
 
-    global static List<C501_Merge_Metric__c> TestDiscoverHelper_v2(String queryNameCriteria) {
+    public static List<C501_Merge_Metric__c> TestDiscoverHelper_v2(String queryNameCriteria) {
 
-        C501_MassMerge_SharedCode.TestSetupMerge();
+        C501_MassMerge_SharedCode.TestSetupMerge_v2();
 
         // Reset report change detected during a merge process call
         C501_MM_Rule_Merge.get().execute(null);
 
-        String strSoql = C501_MassMerge_SharedCode.GetC501MergeMetricQuery();
+        String strSoql = C501_MassMerge_SharedCode.GetC501MergeMetricQuery_v2();
         strSoql += ' AND Name LIKE \'%' + queryNameCriteria + '%\'';
 
         System.debug('*****C501_MassMerge_SharedCode::TestDiscoverHelper_v2 strSoql: ' + strSoql);
@@ -603,12 +687,17 @@ global with sharing class C501_MassMerge_SharedCode {
 
         update mergeMetrics;
 
-        C501_MassMerge_SharedCode.PrintSalesforceStructure();
+        C501_MassMerge_SharedCode.PrintSalesforceStructure_v2();
 
         return mergeMetrics;
     }
 
-    global static String TestHelperAutoMergeObjects(String sourceObject, String autoMergeType) {
+    // Legacy supported global method - managed package
+    global String TestHelperAutoMergeObjects(String sourceObject, String autoMergeType) {
+        return C501_MassMerge_SharedCode.TestHelperAutoMergeObjects_v2(sourceObject, autoMergeType);
+    }
+
+    public static String TestHelperAutoMergeObjects_v2(String sourceObject, String autoMergeType) {
 
         if (sourceObject.equals('Account')) {
             if (autoMergeType.equals('Object')) {
@@ -627,7 +716,12 @@ global with sharing class C501_MassMerge_SharedCode {
         return null;
     }
 
-    global static void PrintSalesforceLimits() {
+    // Legacy supported global method - managed package
+    global void PrintSalesforceLimits() {
+        C501_MassMerge_SharedCode.PrintSalesforceLimits_v2();
+    }
+
+    public static void PrintSalesforceLimits_v2() {
 
         System.debug('***** C501_MassMerge_SharedCode::NearSalesforceLimits - Aggregate Queries ' + Limits.getAggregateQueries() + ' of ' + Limits.getLimitAggregateQueries());
         System.debug('***** C501_MassMerge_SharedCode::NearSalesforceLimits - DML Rows ' + Limits.getDMLRows() + ' of ' + Limits.getLimitDMLRows());
@@ -637,7 +731,12 @@ global with sharing class C501_MassMerge_SharedCode {
         System.debug('***** C501_MassMerge_SharedCode::NearSalesforceLimits - Sosl Queries ' + Limits.getSoslQueries() + ' of ' + Limits.getLimitSoslQueries());
     }
 
-    global static Integer GetMaximumLimitSize(Integer groupByNumberFields) {
+    // Legacy supported global method - managed package
+    global Integer GetMaximumLimitSize(Integer groupByNumberFields) {
+        return C501_MassMerge_SharedCode.GetMaximumLimitSize_v2(groupByNumberFields);
+    }
+
+    public static Integer GetMaximumLimitSize_v2(Integer groupByNumberFields) {
 
         Integer percentageMultiple = 9;
         // Add 100 to allow just more than 90% to make sure to trip the NearSalesforceLimits check
@@ -652,7 +751,12 @@ global with sharing class C501_MassMerge_SharedCode {
         return maximumLimitSize;
     }
 
-    global static Boolean NearSalesforceLimits() {
+    // Legacy supported global method - managed package
+    global Boolean NearSalesforceLimits() {
+        return C501_MassMerge_SharedCode.NearSalesforceLimits_v2();
+    }
+
+    public static Boolean NearSalesforceLimits_v2() {
 
         Boolean nearLimit = false;
         Integer percentageMultiple = 9;
@@ -687,11 +791,16 @@ global with sharing class C501_MassMerge_SharedCode {
         return nearLimit;
     }
 
-    global static void PrintSalesforceStructure() {
+    // Legacy supported global method - managed package
+    global void PrintSalesforceStructure() {
+        C501_MassMerge_SharedCode.PrintSalesforceStructure_v2();
+    }
+
+    public static void PrintSalesforceStructure_v2() {
 
         System.debug('***** C501_MassMerge_SharedCode::PrintSalesforceStructure');
 
-        C501_MassMerge_SharedCode.PrintSalesforceLimits();
+        C501_MassMerge_SharedCode.PrintSalesforceLimits_v2();
 
 /*
         for (Account account :[select Id, Name, Website, BillingStreet from Account WHERE Name LIKE 'TESTDATA%']) {
@@ -704,9 +813,9 @@ global with sharing class C501_MassMerge_SharedCode {
             System.debug('***** C501_MassMerge_SharedCode::PrintSalesforceStructure - ' + String.valueOf(opportunity));
         }
 */       
-        String strSoql = C501_MassMerge_SharedCode.GetC501MergeMetricQuery();
-        String strSoqlAccountMerges = C501_MassMerge_SharedCode.GetC501AccountMergeQuery();
-        String strSoqlContactMerges = C501_MassMerge_SharedCode.GetC501ContactMergeQuery();
+        String strSoql = C501_MassMerge_SharedCode.GetC501MergeMetricQuery_v2();
+        String strSoqlAccountMerges = C501_MassMerge_SharedCode.GetC501AccountMergeQuery_v2();
+        String strSoqlContactMerges = C501_MassMerge_SharedCode.GetC501ContactMergeQuery_v2();
 
         System.debug('*****C501_MassMerge_SharedCode::PrintSalesforceStructure strSoql: ' + strSoql);
 

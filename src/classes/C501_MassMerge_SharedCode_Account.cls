@@ -104,7 +104,7 @@ global with sharing class C501_MassMerge_SharedCode_Account {
         }
 
         List<SelectOption> listSOSorted = new List<SelectOption>();
-        listSOSorted = C501_MassMerge_SharedCode.SelectOptionSortByLabel(listSO);
+        listSOSorted = C501_MassMerge_SharedCode.SelectOptionSortByLabel_v2(listSO);
 
         return listSOSorted;
     }
@@ -126,7 +126,7 @@ global with sharing class C501_MassMerge_SharedCode_Account {
             isSandbox = Boolean.valueOf(organizations[0].IsSandbox);
         }
 
-        String strSoql = C501_MassMerge_SharedCode.GetC501AccountMergeQuery();
+        String strSoql = C501_MassMerge_SharedCode.GetC501AccountMergeQuery_v2();
         strSoql += ' AND Merge_Metric__r.Name = \'' + mergeMetricName + '\'';
 
         System.debug('***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::InsertObjectMergeCandidates strSoql: ' + strSoql);
@@ -214,7 +214,7 @@ global with sharing class C501_MassMerge_SharedCode_Account {
 
         Map<Id, Id> AccountHouseholdMap = new Map<Id, Id>();
 
-        String strSoql = C501_MassMerge_SharedCode.GetC501AccountMergeQuery();
+        String strSoql = C501_MassMerge_SharedCode.GetC501AccountMergeQuery_v2();
         strSoql += ' AND Merge_Metric__r.Name = :mergeMetricName AND Merge_Action__c <> \'Ignore\'';
 
         System.debug('***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::ProcessObjectMergeCandidates strSoql: ' + strSoql);
@@ -256,7 +256,7 @@ global with sharing class C501_MassMerge_SharedCode_Account {
             return 0;
         }
 
-        return C501_MassMerge_SharedCode.ProcessObjectMergeCandidates_Account(mergeMetric, pendingAutoMerges, AccountHouseholdMap);
+        return C501_MassMerge_SharedCode.ProcessObjectMergeCandidates_Account_v2(mergeMetric, pendingAutoMerges, AccountHouseholdMap);
     }
 
     // Legacy Method for Managed Package
@@ -307,7 +307,7 @@ global with sharing class C501_MassMerge_SharedCode_Account {
 
             // Check Automerge Percentage
             if (!mergeMetricMap.containsKey(mergeCandidate.Merge_Metric__c)) {
-                String strSoql = C501_MassMerge_SharedCode.GetC501MergeMetricQuery();
+                String strSoql = C501_MassMerge_SharedCode.GetC501MergeMetricQuery_v2();
 
                 System.debug('***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::ProcessObjectMerges strSoql: ' + strSoql);
 
@@ -401,7 +401,7 @@ global with sharing class C501_MassMerge_SharedCode_Account {
             }
 */
             // Only include the fields which are updateable and accessible and not hidden, unique, or externalid
-            if (fResult.isUpdateable() && fResult.isAccessible() && !C501_MassMerge_SharedCode.isNPSPHiddenField(fieldname)) {
+            if (fResult.isUpdateable() && fResult.isAccessible() && !C501_MassMerge_SharedCode.isNPSPHiddenField_v2(fieldname)) {
 
                 // If the field is type lookup, then ignore in the merge fields because is handled during the object merge
                 string relName = fResult.getRelationshipName();
@@ -419,7 +419,7 @@ global with sharing class C501_MassMerge_SharedCode_Account {
             }
         }
 
-        strSoql += ' Id from Account where Id IN ' + C501_MassMerge_SharedCode.GetSafeSoqlList(mergeCandidates);
+        strSoql += ' Id from Account where Id IN ' + C501_MassMerge_SharedCode.GetSafeSoqlList_v2(mergeCandidates);
         //System.debug('***** C501_MassMerge_SharedCode::ObjectsFieldMerge - The Account query is: ' + query);
         
         List<Account> objectList;
@@ -521,7 +521,7 @@ global with sharing class C501_MassMerge_SharedCode_Account {
             return;
         }
 
-        C501_MassMerge_SharedCode.ObjectsMerge_Account(masterObject, duplicateObjects);
+        C501_MassMerge_SharedCode.ObjectsMerge_Account_v2(masterObject, duplicateObjects);
  
         // Merge fields into master
         ObjectsFieldMerge(masterObject, duplicateObjects);
@@ -543,8 +543,8 @@ global with sharing class C501_MassMerge_SharedCode_Account {
             objectIds.add(duplicateObject.Id);
         }
 
-        String strSoql = C501_MassMerge_SharedCode.GetC501AccountMergeQuery();
-        strSoql += ' AND (Account__c = null OR Merge_Target_Account__c = null OR Account__c in ' + C501_MassMerge_SharedCode.GetSafeSoqlList(objectIds) + ' OR Merge_Target_Account__c in ' + C501_MassMerge_SharedCode.GetSafeSoqlList(objectIds) + ')';
+        String strSoql = C501_MassMerge_SharedCode.GetC501AccountMergeQuery_v2();
+        strSoql += ' AND (Account__c = null OR Merge_Target_Account__c = null OR Account__c in ' + C501_MassMerge_SharedCode.GetSafeSoqlList_v2(objectIds) + ' OR Merge_Target_Account__c in ' + C501_MassMerge_SharedCode.GetSafeSoqlList_v2(objectIds) + ')';
 
         System.debug('***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::ObjectsMerge strSoql: ' + strSoql);
         

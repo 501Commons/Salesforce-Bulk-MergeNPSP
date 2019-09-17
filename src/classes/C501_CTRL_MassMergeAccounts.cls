@@ -236,7 +236,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
         
             System.debug('***** C501_CTRL_MassMergeAccounts::FillListAccounts objectFilter.Id: ' + objectFilter.Id);
 
-            String strSoql = C501_MassMerge_SharedCode.GetC501AccountMergeQuery();
+            String strSoql = C501_MassMerge_SharedCode.GetC501AccountMergeQuery_v2();
             strSoql += ' AND (Account__c = \'' + objectFilter.Id + '\' OR Merge_Target_Account__c = \'' + objectFilter.Id + '\') AND Merge_Action__c = null';
             strSoql += ' LIMIT 1';
 
@@ -292,8 +292,8 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
                 strRuleSoql = ' and Merge_Metric__r.Name = \'' + mergeRule + '\'';
             }
 
-            String strSoql = C501_MassMerge_SharedCode.GetC501AccountMergeQuery();
-            strSoql += ' AND (Account__c in ' + C501_MassMerge_SharedCode.GetSafeSoqlList(objectIds) + ' OR Merge_Target_Account__c in ' + C501_MassMerge_SharedCode.GetSafeSoqlList(objectIds) + ') AND Merge_Action__c = null';
+            String strSoql = C501_MassMerge_SharedCode.GetC501AccountMergeQuery_v2();
+            strSoql += ' AND (Account__c in ' + C501_MassMerge_SharedCode.GetSafeSoqlList_v2(objectIds) + ' OR Merge_Target_Account__c in ' + C501_MassMerge_SharedCode.GetSafeSoqlList_v2(objectIds) + ') AND Merge_Action__c = null';
             strSoql += strRuleSoql;
             strSoql += ' ORDER BY Account__r.Name ASC';
 
@@ -340,7 +340,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
 
         Set<Id> accountsMergeIds = accountsMerge.keySet();
 
-        strSoql += ' FROM Account WHERE Id in ' + C501_MassMerge_SharedCode.GetSafeSoqlList(accountsMergeIds);
+        strSoql += ' FROM Account WHERE Id in ' + C501_MassMerge_SharedCode.GetSafeSoqlList_v2(accountsMergeIds);
         strSoql += ' order by C501_Merge_Metric_Name__c ASC NULLS FIRST';
         
         System.debug('***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::FillListAccounts strSoql: ' + strSoql);

@@ -260,7 +260,7 @@ public class C501_CTRL_MassMergeContacts_TEST {
 
         List<C501_Merge_Metric__c> mergeMetrics = C501_MassMerge_SharedCode.TestDiscoverHelper_v2('Contact Test');
 
-        String strSoql = C501_MassMerge_SharedCode.GetC501ContactMergeQuery();
+        String strSoql = C501_MassMerge_SharedCode.GetC501ContactMergeQuery_v2();
         strSoql += ' AND Merge_Metric__r.Name LIKE \'TESTDATA%\'';
 
         List<C501_Contact_Merge__c> objectMergesBefore = Database.query(strSoql);
@@ -292,7 +292,7 @@ public class C501_CTRL_MassMergeContacts_TEST {
 
         List<C501_Merge_Metric__c> mergeMetrics = C501_MassMerge_SharedCode.TestDiscoverHelper_v2('Contact Test');
 
-        String strSoql = C501_MassMerge_SharedCode.GetC501ContactMergeQuery();
+        String strSoql = C501_MassMerge_SharedCode.GetC501ContactMergeQuery_v2();
         strSoql += ' AND Merge_Metric__r.Name LIKE \'TESTDATA%\'';
 
         List<C501_Contact_Merge__c> objectMergesBefore = Database.query(strSoql);
@@ -323,7 +323,7 @@ public class C501_CTRL_MassMergeContacts_TEST {
 
         List<C501_Merge_Metric__c> mergeMetrics = C501_MassMerge_SharedCode.TestDiscoverHelper_v2('Contact Test');
 
-        String strSoql = C501_MassMerge_SharedCode.GetC501ContactMergeQuery();
+        String strSoql = C501_MassMerge_SharedCode.GetC501ContactMergeQuery_v2();
         strSoql += ' AND Merge_Metric__r.Name LIKE \'TESTDATA%\'';
 
         List<C501_Contact_Merge__c> objectMergesBefore = Database.query(strSoql);
@@ -354,7 +354,7 @@ public class C501_CTRL_MassMergeContacts_TEST {
 
         List<C501_Merge_Metric__c> mergeMetrics = C501_MassMerge_SharedCode.TestDiscoverHelper_v2('Contact Test');
 
-        String strSoql = C501_MassMerge_SharedCode.GetC501ContactMergeQuery();
+        String strSoql = C501_MassMerge_SharedCode.GetC501ContactMergeQuery_v2();
         strSoql += ' AND Merge_Metric__r.Name LIKE \'TESTDATA%\'';
 
         List<C501_Contact_Merge__c> objectMergesBefore = Database.query(strSoql);
@@ -383,14 +383,14 @@ public class C501_CTRL_MassMergeContacts_TEST {
     @isTest(SeeAllData='true')
     public static void ProcessObjectMerges_AutoMergeObjectsByObject() {
 
-        String autoMergeObjects = C501_MassMerge_SharedCode.TestHelperAutoMergeObjects('Contact', 'Object');
+        String autoMergeObjects = C501_MassMerge_SharedCode.TestHelperAutoMergeObjects_v2('Contact', 'Object');
         if (String.isBlank(autoMergeObjects)) {
             return;
         }
 
         List<C501_Merge_Metric__c> mergeMetrics = C501_MassMerge_SharedCode.TestDiscoverHelper_v2('Contact Test');
 
-        String strSoql = C501_MassMerge_SharedCode.GetC501ContactMergeQuery();
+        String strSoql = C501_MassMerge_SharedCode.GetC501ContactMergeQuery_v2();
         strSoql += ' AND Merge_Metric__r.Name LIKE \'TESTDATA%\'';
 
         List<C501_Contact_Merge__c> objectMergesBefore = Database.query(strSoql);
@@ -419,14 +419,14 @@ public class C501_CTRL_MassMergeContacts_TEST {
     @isTest(SeeAllData='true')
     public static void ProcessObjectMerges_AutoMergeObjectsByObjectsWithinObject() {
 
-        String autoMergeObjects = C501_MassMerge_SharedCode.TestHelperAutoMergeObjects('Contact', 'ObjectsWithinObject');
+        String autoMergeObjects = C501_MassMerge_SharedCode.TestHelperAutoMergeObjects_v2('Contact', 'ObjectsWithinObject');
         if (String.isBlank(autoMergeObjects)) {
             return;
         }
 
         List<C501_Merge_Metric__c> mergeMetrics = C501_MassMerge_SharedCode.TestDiscoverHelper_v2('Contact Test');
 
-        String strSoql = C501_MassMerge_SharedCode.GetC501ContactMergeQuery();
+        String strSoql = C501_MassMerge_SharedCode.GetC501ContactMergeQuery_v2();
         strSoql += ' AND Merge_Metric__r.Name LIKE \'TESTDATA%\'';
 
         List<C501_Contact_Merge__c> objectMergesBefore = Database.query(strSoql);
@@ -455,14 +455,14 @@ public class C501_CTRL_MassMergeContacts_TEST {
     @isTest(SeeAllData='true')
     public static void ProcessObjectMerges_AutoMergeObjectsByObjectsAcrossObjects() {
 
-        String autoMergeObjects = C501_MassMerge_SharedCode.TestHelperAutoMergeObjects('Contact', 'ObjectsAccrossObjects');
+        String autoMergeObjects = C501_MassMerge_SharedCode.TestHelperAutoMergeObjects_v2('Contact', 'ObjectsAccrossObjects');
         if (String.isBlank(autoMergeObjects)) {
             return;
         }
 
         List<C501_Merge_Metric__c> mergeMetrics = C501_MassMerge_SharedCode.TestDiscoverHelper_v2('Contact Test');
 
-        String strSoql = C501_MassMerge_SharedCode.GetC501ContactMergeQuery();
+        String strSoql = C501_MassMerge_SharedCode.GetC501ContactMergeQuery_v2();
         strSoql += ' AND Merge_Metric__r.Name LIKE \'TESTDATA%\'';
 
         List<C501_Contact_Merge__c> objectMergesBefore = Database.query(strSoql);

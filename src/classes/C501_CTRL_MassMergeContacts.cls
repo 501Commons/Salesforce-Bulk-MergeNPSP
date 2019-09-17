@@ -234,7 +234,7 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
 
         if (objectFilter.Id <> null) {
         
-            String strSoql = C501_MassMerge_SharedCode.GetC501ContactMergeQuery();
+            String strSoql = C501_MassMerge_SharedCode.GetC501ContactMergeQuery_v2();
             strSoql += ' AND (Contact__c = \'' + objectFilter.Id + '\' OR Merge_Target_Contact__c = \'' + objectFilter.Id + '\') AND Merge_Action__c = null';
             strSoql += ' LIMIT 1';
 
@@ -288,8 +288,8 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
                 strRuleSoql = ' and Merge_Metric__r.Name = \'' + mergeRule + '\'';
             }
 
-            String strSoql = C501_MassMerge_SharedCode.GetC501ContactMergeQuery();
-            strSoql += ' AND (Contact__c in ' + C501_MassMerge_SharedCode.GetSafeSoqlList(objectIds) + ' OR Merge_Target_Contact__c in ' + C501_MassMerge_SharedCode.GetSafeSoqlList(objectIds) + ') AND Merge_Action__c = null';
+            String strSoql = C501_MassMerge_SharedCode.GetC501ContactMergeQuery_v2();
+            strSoql += ' AND (Contact__c in ' + C501_MassMerge_SharedCode.GetSafeSoqlList_v2(objectIds) + ' OR Merge_Target_Contact__c in ' + C501_MassMerge_SharedCode.GetSafeSoqlList_v2(objectIds) + ') AND Merge_Action__c = null';
             strSoql += strRuleSoql;
             strSoql += ' ORDER BY Contact__r.Name ASC';
 
@@ -336,7 +336,7 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
 
         Set<Id> contactsMergeIds = contactsMerge.keySet();
         
-        strSoql += ' FROM Contact WHERE Id in ' + C501_MassMerge_SharedCode.GetSafeSoqlList(contactsMergeIds);
+        strSoql += ' FROM Contact WHERE Id in ' + C501_MassMerge_SharedCode.GetSafeSoqlList_v2(contactsMergeIds);
         strSoql += ' order by C501_Merge_Metric_Name__c ASC NULLS FIRST';
         
         System.debug('***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::FillListContacts strSoql: ' + strSoql);

@@ -62,19 +62,19 @@ public class C501_MM_Rule_Discover_ContactsAccount implements Schedulable {
     @future
     public static void executeFuture() {
 
-        String strSoql = C501_MassMerge_SharedCode.GetC501MergeMetricQuery();
+        String strSoql = C501_MassMerge_SharedCode.GetC501MergeMetricQuery_v2();
         C501_MM_Rule_Discover_ContactsAccount.get().ProcessMergeMetrics(strSoql);
     }
 
     public void execute(SchedulableContext SC) {
 
-        String strSoql = C501_MassMerge_SharedCode.GetC501MergeMetricQuery();
+        String strSoql = C501_MassMerge_SharedCode.GetC501MergeMetricQuery_v2();
         this.ProcessMergeMetrics(strSoql);
     }
 
     public void executeMetricById(Id mergeMetricId) {
 
-        String strSoql = C501_MassMerge_SharedCode.GetC501MergeMetricQuery();
+        String strSoql = C501_MassMerge_SharedCode.GetC501MergeMetricQuery_v2();
 
         // Add in specific Id query
         strSoql += ' AND Id = \'' + mergeMetricId + '\'';

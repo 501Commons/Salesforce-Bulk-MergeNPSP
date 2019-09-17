@@ -104,7 +104,7 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
         }
 
         List<SelectOption> listSOSorted = new List<SelectOption>();
-        listSOSorted = C501_MassMerge_SharedCode.SelectOptionSortByLabel(listSO);
+        listSOSorted = C501_MassMerge_SharedCode.SelectOptionSortByLabel_v2(listSO);
 
         return listSOSorted;
     }
@@ -126,7 +126,7 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
             isSandbox = Boolean.valueOf(organizations[0].IsSandbox);
         }
 
-        String strSoql = C501_MassMerge_SharedCode.GetC501ContactMergeQuery();
+        String strSoql = C501_MassMerge_SharedCode.GetC501ContactMergeQuery_v2();
         strSoql += ' AND Merge_Metric__r.Name = \'' + mergeMetricName + '\'';
 
         System.debug('***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::InsertObjectMergeCandidates strSoql: ' + strSoql);
@@ -214,7 +214,7 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
 
         Map<Id, Id> ContactHouseholdMap = new Map<Id, Id>();
 
-        String strSoql = C501_MassMerge_SharedCode.GetC501ContactMergeQuery();
+        String strSoql = C501_MassMerge_SharedCode.GetC501ContactMergeQuery_v2();
         strSoql += ' AND Merge_Metric__r.Name = :mergeMetricName AND Merge_Action__c <> \'Ignore\'';
 
         System.debug('***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::ProcessObjectMergeCandidates strSoql: ' + strSoql);
@@ -256,7 +256,7 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
             return 0;
         }
 
-        return C501_MassMerge_SharedCode.ProcessObjectMergeCandidates_Contact(mergeMetric, pendingAutoMerges, ContactHouseholdMap);
+        return C501_MassMerge_SharedCode.ProcessObjectMergeCandidates_Contact_v2(mergeMetric, pendingAutoMerges, ContactHouseholdMap);
     }
 
     // Legacy Method for Managed Package
@@ -307,7 +307,7 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
 
             // Check Automerge Percentage
             if (!mergeMetricMap.containsKey(mergeCandidate.Merge_Metric__c)) {
-                String strSoql = C501_MassMerge_SharedCode.GetC501MergeMetricQuery();
+                String strSoql = C501_MassMerge_SharedCode.GetC501MergeMetricQuery_v2();
 
                 System.debug('***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::ProcessObjectMerges strSoql: ' + strSoql);
 
@@ -401,7 +401,7 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
             }
 */
             // Only include the fields which are updateable and accessible and not hidden, unique, or externalid
-            if (fResult.isUpdateable() && fResult.isAccessible() && !C501_MassMerge_SharedCode.isNPSPHiddenField(fieldname)) {
+            if (fResult.isUpdateable() && fResult.isAccessible() && !C501_MassMerge_SharedCode.isNPSPHiddenField_v2(fieldname)) {
 
                 // If the field is type lookup, then ignore in the merge fields because is handled during the object merge
                 string relName = fResult.getRelationshipName();
@@ -419,7 +419,7 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
             }
         }
 
-        strSoql += ' Id from Contact where Id IN ' + C501_MassMerge_SharedCode.GetSafeSoqlList(mergeCandidates);
+        strSoql += ' Id from Contact where Id IN ' + C501_MassMerge_SharedCode.GetSafeSoqlList_v2(mergeCandidates);
         //System.debug('***** C501_MassMerge_SharedCode::ObjectsFieldMerge - The Contact query is: ' + query);
         
         List<Contact> objectList;
@@ -521,7 +521,7 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
             return;
         }
 
-        C501_MassMerge_SharedCode.ObjectsMerge_Contact(masterObject, duplicateObjects);
+        C501_MassMerge_SharedCode.ObjectsMerge_Contact_v2(masterObject, duplicateObjects);
  
         // Merge fields into master
         ObjectsFieldMerge(masterObject, duplicateObjects);
@@ -543,8 +543,8 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
             objectIds.add(duplicateObject.Id);
         }
 
-        String strSoql = C501_MassMerge_SharedCode.GetC501ContactMergeQuery();
-        strSoql += ' AND (Contact__c = null OR Merge_Target_Contact__c = null OR Contact__c in ' + C501_MassMerge_SharedCode.GetSafeSoqlList(objectIds) + ' OR Merge_Target_Contact__c in ' + C501_MassMerge_SharedCode.GetSafeSoqlList(objectIds) + ')';
+        String strSoql = C501_MassMerge_SharedCode.GetC501ContactMergeQuery_v2();
+        strSoql += ' AND (Contact__c = null OR Merge_Target_Contact__c = null OR Contact__c in ' + C501_MassMerge_SharedCode.GetSafeSoqlList_v2(objectIds) + ' OR Merge_Target_Contact__c in ' + C501_MassMerge_SharedCode.GetSafeSoqlList_v2(objectIds) + ')';
 
         System.debug('***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::ObjectsMerge strSoql: ' + strSoql);
         

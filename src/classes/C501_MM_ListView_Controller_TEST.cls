@@ -36,7 +36,7 @@ public class C501_MM_ListView_Controller_TEST {
     @isTest(SeeAllData='true')
     public static void DiscoverTests() {
 
-        String strSoql = C501_MassMerge_SharedCode.GetC501MergeMetricQuery();
+        String strSoql = C501_MassMerge_SharedCode.GetC501MergeMetricQuery_v2();
         List<C501_Merge_Metric__c> mergeMetrics = Database.Query(strSoql);
 
         Test.StartTest();
@@ -52,7 +52,7 @@ public class C501_MM_ListView_Controller_TEST {
     @isTest(SeeAllData='true')
     public static void MergeTests() {
 
-        String strSoql = C501_MassMerge_SharedCode.GetC501MergeMetricQuery();
+        String strSoql = C501_MassMerge_SharedCode.GetC501MergeMetricQuery_v2();
         List<C501_Merge_Metric__c> mergeMetrics = Database.Query(strSoql);
 
         Test.StartTest();
