@@ -37,14 +37,6 @@
         <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
-        <apexClass>C501_MM_MergeMetric_Trigger</apexClass>
-        <enabled>true</enabled>
-    </classAccesses>
-    <classAccesses>
-        <apexClass>C501_MM_MergeMetric_Trigger_TEST</apexClass>
-        <enabled>true</enabled>
-    </classAccesses>
-    <classAccesses>
         <apexClass>C501_MM_Rule_Discover</apexClass>
         <enabled>true</enabled>
     </classAccesses>
@@ -62,10 +54,6 @@
     </classAccesses>
     <classAccesses>
         <apexClass>C501_MM_Rule_Merge</apexClass>
-        <enabled>true</enabled>
-    </classAccesses>
-    <classAccesses>
-        <apexClass>C501_MassMerge_AccountWrapper</apexClass>
         <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
@@ -632,19 +620,11 @@
         <enabled>true</enabled>
     </pageAccesses>
     <pageAccesses>
-        <apexPage>C501_MassMergeDiscover</apexPage>
-        <enabled>true</enabled>
-    </pageAccesses>
-    <pageAccesses>
         <apexPage>C501_MassMergeListView</apexPage>
         <enabled>true</enabled>
     </pageAccesses>
     <pageAccesses>
         <apexPage>C501_MassMergeListViewMerge</apexPage>
-        <enabled>true</enabled>
-    </pageAccesses>
-    <pageAccesses>
-        <apexPage>C501_MassMergeMerge</apexPage>
         <enabled>true</enabled>
     </pageAccesses>
     <tabSettings>
