@@ -10,7 +10,6 @@
             <operator>startsWith</operator>
             <value>Anonymous</value>
         </criteriaItems>
-        <language>en_US</language>
     </filter>
     <format>Tabular</format>
     <name>Merge Rule Account No Contacts</name>

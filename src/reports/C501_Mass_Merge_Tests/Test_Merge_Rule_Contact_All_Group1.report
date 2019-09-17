@@ -55,7 +55,6 @@
             <operator>startsWith</operator>
             <value>TESTDATA</value>
         </criteriaItems>
-        <language>en_US</language>
     </filter>
     <format>Tabular</format>
     <name>Test Merge Rule Contact All Group1</name>

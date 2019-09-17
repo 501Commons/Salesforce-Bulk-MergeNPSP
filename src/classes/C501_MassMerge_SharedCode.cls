@@ -32,7 +32,7 @@ global with sharing class C501_MassMerge_SharedCode {
 
     // global utility used to detect whether the Non Profit Starter Pack is installed in this instance.
     private static boolean fCheckedForNPSP = false;
-    public static boolean IsNPSPInstalled {
+    global static boolean IsNPSPInstalled {
         get {
             if (!fCheckedForNPSP) {
                 Schema.SObjectType token = Schema.getGlobalDescribe().get('npe01__OppPayment__c');
@@ -46,7 +46,7 @@ global with sharing class C501_MassMerge_SharedCode {
 
     // global utility used to get current namespace
     private static boolean fCheckedForCurrentNamespace = false;
-    public static String CurrentNamespace {
+    global static String CurrentNamespace {
         get {
             if (!fCheckedForCurrentNamespace) {
                 String thisClassName = C501_MassMerge_SharedCode.class.getName();
@@ -576,7 +576,7 @@ global with sharing class C501_MassMerge_SharedCode {
         C501_MassMerge_SharedCode.TestSetupMerge_v2();
     }
 
-    public static void TestSetupMerge_v2() {
+    global static void TestSetupMerge_v2() {
 
         C501_MassMerge_SharedCode.InitializeMassMergeInstances_v2();
 
@@ -660,12 +660,15 @@ global with sharing class C501_MassMerge_SharedCode {
         //C501_MassMerge_SharedCode.PrintSalesforceStructure_v2();
     }
 
-    // Legacy Method for Managed Package
+    // Legacy Methods for Managed Package
     global void TestDiscoverHelper(String queryNameCriteria) {
-        C501_MassMerge_SharedCode.TestDiscoverHelper_v2(queryNameCriteria);
+        C501_MassMerge_SharedCode.TestDiscoverHelper_v3(queryNameCriteria);
+    }
+    global List<C501_Merge_Metric__c> TestDiscoverHelper_v2(String queryNameCriteria) {
+        return C501_MassMerge_SharedCode.TestDiscoverHelper_v3(queryNameCriteria);
     }
 
-    public static List<C501_Merge_Metric__c> TestDiscoverHelper_v2(String queryNameCriteria) {
+    global static List<C501_Merge_Metric__c> TestDiscoverHelper_v3(String queryNameCriteria) {
 
         C501_MassMerge_SharedCode.TestSetupMerge_v2();
 
@@ -675,7 +678,7 @@ global with sharing class C501_MassMerge_SharedCode {
         String strSoql = C501_MassMerge_SharedCode.GetC501MergeMetricQuery_v2();
         strSoql += ' AND Name LIKE \'%' + queryNameCriteria + '%\'';
 
-        System.debug('*****C501_MassMerge_SharedCode::TestDiscoverHelper_v2 strSoql: ' + strSoql);
+        System.debug('*****C501_MassMerge_SharedCode::TestDiscoverHelper_v3 strSoql: ' + strSoql);
 
         List<C501_Merge_Metric__c> mergeMetrics = Database.Query(strSoql);
         System.Assert(mergeMetrics.size() > 0);

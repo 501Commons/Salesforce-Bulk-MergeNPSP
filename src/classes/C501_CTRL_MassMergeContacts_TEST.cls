@@ -47,7 +47,7 @@ public class C501_CTRL_MassMergeContacts_TEST {
     public static void AllFields_General_DiscoverTest() {
 
         Test.StartTest();
-        C501_MassMerge_SharedCode.TestDiscoverHelper_v2('Contact All General');
+        C501_MassMerge_SharedCode.TestDiscoverHelper_v3('Contact All General');
         Test.StopTest();
     }
 
@@ -55,7 +55,7 @@ public class C501_CTRL_MassMergeContacts_TEST {
     public static void AllFields_Group1_DiscoverTest() {
 
         Test.StartTest();
-        C501_MassMerge_SharedCode.TestDiscoverHelper_v2('Contact All Group1');
+        C501_MassMerge_SharedCode.TestDiscoverHelper_v3('Contact All Group1');
         Test.StopTest();
     }
 
@@ -63,7 +63,7 @@ public class C501_CTRL_MassMergeContacts_TEST {
     public static void AllFields_Group2_DiscoverTest() {
 
         Test.StartTest();
-        C501_MassMerge_SharedCode.TestDiscoverHelper_v2('Contact All Group2');
+        C501_MassMerge_SharedCode.TestDiscoverHelper_v3('Contact All Group2');
         Test.StopTest();
     }
 
@@ -71,14 +71,14 @@ public class C501_CTRL_MassMergeContacts_TEST {
     public static void Contact_Address_DiscoverTest() {
 
         Test.StartTest();
-        C501_MassMerge_SharedCode.TestDiscoverHelper_v2('Contact Test');
+        C501_MassMerge_SharedCode.TestDiscoverHelper_v3('Contact Test');
         Test.StopTest();
     }
 
     @isTest(SeeAllData='true')
     public static void ProcessObjectMerges_BatchTest() {
 
-        List<C501_Merge_Metric__c> mergeMetrics = C501_MassMerge_SharedCode.TestDiscoverHelper_v2('Contact Test');
+        List<C501_Merge_Metric__c> mergeMetrics = C501_MassMerge_SharedCode.TestDiscoverHelper_v3('Contact Test');
         List<Contact> listContacts = [SELECT Id FROM Contact WHERE Name LIKE '%TESTDATA%'];
 
         C501_Contact_Merge__c objectMerge = new C501_Contact_Merge__c(
@@ -121,7 +121,7 @@ public class C501_CTRL_MassMergeContacts_TEST {
     @isTest(SeeAllData='true')
     public static void ProcessObjectMerges_SyncTest() {
 
-        List<C501_Merge_Metric__c> mergeMetrics = C501_MassMerge_SharedCode.TestDiscoverHelper_v2('Contact Test');
+        List<C501_Merge_Metric__c> mergeMetrics = C501_MassMerge_SharedCode.TestDiscoverHelper_v3('Contact Test');
         List<Contact> listContacts = [SELECT Id FROM Contact WHERE Name LIKE '%TESTDATA%'];
 
         C501_Contact_Merge__c objectMerge = new C501_Contact_Merge__c(
@@ -145,7 +145,7 @@ public class C501_CTRL_MassMergeContacts_TEST {
     @isTest(SeeAllData='true')
     public static void CodeCoverageTests() {
 
-        List<C501_Merge_Metric__c> mergeMetrics = C501_MassMerge_SharedCode.TestDiscoverHelper_v2('Contact Test');
+        List<C501_Merge_Metric__c> mergeMetrics = C501_MassMerge_SharedCode.TestDiscoverHelper_v3('Contact Test');
 
         Id masterObjectId = [SELECT Id FROM Contact WHERE Name LIKE '%TESTDATA%' ORDER BY Id ASC LIMIT 1].Id;
 
@@ -225,7 +225,7 @@ public class C501_CTRL_MassMergeContacts_TEST {
     @isTest(SeeAllData='true')
     public static void testPageMessagesController() {
 
-        C501_MassMerge_SharedCode.TestDiscoverHelper_v2('Contact Test');
+        C501_MassMerge_SharedCode.TestDiscoverHelper_v3('Contact Test');
 
         Test.StartTest();
 
@@ -258,7 +258,7 @@ public class C501_CTRL_MassMergeContacts_TEST {
     @isTest(SeeAllData='true')
     public static void ProcessObjectMerges_NoMergeBlankAutoMergeObjectsTest() {
 
-        List<C501_Merge_Metric__c> mergeMetrics = C501_MassMerge_SharedCode.TestDiscoverHelper_v2('Contact Test');
+        List<C501_Merge_Metric__c> mergeMetrics = C501_MassMerge_SharedCode.TestDiscoverHelper_v3('Contact Test');
 
         String strSoql = C501_MassMerge_SharedCode.GetC501ContactMergeQuery_v2();
         strSoql += ' AND Merge_Metric__r.Name LIKE \'TESTDATA%\'';
@@ -290,7 +290,7 @@ public class C501_CTRL_MassMergeContacts_TEST {
     @isTest(SeeAllData='true')
     public static void ProcessObjectMerges_NoMergeBelowAutoMergePercentageTest() {
 
-        List<C501_Merge_Metric__c> mergeMetrics = C501_MassMerge_SharedCode.TestDiscoverHelper_v2('Contact Test');
+        List<C501_Merge_Metric__c> mergeMetrics = C501_MassMerge_SharedCode.TestDiscoverHelper_v3('Contact Test');
 
         String strSoql = C501_MassMerge_SharedCode.GetC501ContactMergeQuery_v2();
         strSoql += ' AND Merge_Metric__r.Name LIKE \'TESTDATA%\'';
@@ -321,7 +321,7 @@ public class C501_CTRL_MassMergeContacts_TEST {
     @isTest(SeeAllData='true')
     public static void ProcessObjectMerges_MergeAboveAutoMergePercentageTest() {
 
-        List<C501_Merge_Metric__c> mergeMetrics = C501_MassMerge_SharedCode.TestDiscoverHelper_v2('Contact Test');
+        List<C501_Merge_Metric__c> mergeMetrics = C501_MassMerge_SharedCode.TestDiscoverHelper_v3('Contact Test');
 
         String strSoql = C501_MassMerge_SharedCode.GetC501ContactMergeQuery_v2();
         strSoql += ' AND Merge_Metric__r.Name LIKE \'TESTDATA%\'';
@@ -352,7 +352,7 @@ public class C501_CTRL_MassMergeContacts_TEST {
     @isTest(SeeAllData='true')
     public static void ProcessObjectMerges_MergeEqualAutoMergePercentageTest() {
 
-        List<C501_Merge_Metric__c> mergeMetrics = C501_MassMerge_SharedCode.TestDiscoverHelper_v2('Contact Test');
+        List<C501_Merge_Metric__c> mergeMetrics = C501_MassMerge_SharedCode.TestDiscoverHelper_v3('Contact Test');
 
         String strSoql = C501_MassMerge_SharedCode.GetC501ContactMergeQuery_v2();
         strSoql += ' AND Merge_Metric__r.Name LIKE \'TESTDATA%\'';
@@ -388,7 +388,7 @@ public class C501_CTRL_MassMergeContacts_TEST {
             return;
         }
 
-        List<C501_Merge_Metric__c> mergeMetrics = C501_MassMerge_SharedCode.TestDiscoverHelper_v2('Contact Test');
+        List<C501_Merge_Metric__c> mergeMetrics = C501_MassMerge_SharedCode.TestDiscoverHelper_v3('Contact Test');
 
         String strSoql = C501_MassMerge_SharedCode.GetC501ContactMergeQuery_v2();
         strSoql += ' AND Merge_Metric__r.Name LIKE \'TESTDATA%\'';
@@ -424,7 +424,7 @@ public class C501_CTRL_MassMergeContacts_TEST {
             return;
         }
 
-        List<C501_Merge_Metric__c> mergeMetrics = C501_MassMerge_SharedCode.TestDiscoverHelper_v2('Contact Test');
+        List<C501_Merge_Metric__c> mergeMetrics = C501_MassMerge_SharedCode.TestDiscoverHelper_v3('Contact Test');
 
         String strSoql = C501_MassMerge_SharedCode.GetC501ContactMergeQuery_v2();
         strSoql += ' AND Merge_Metric__r.Name LIKE \'TESTDATA%\'';
@@ -460,7 +460,7 @@ public class C501_CTRL_MassMergeContacts_TEST {
             return;
         }
 
-        List<C501_Merge_Metric__c> mergeMetrics = C501_MassMerge_SharedCode.TestDiscoverHelper_v2('Contact Test');
+        List<C501_Merge_Metric__c> mergeMetrics = C501_MassMerge_SharedCode.TestDiscoverHelper_v3('Contact Test');
 
         String strSoql = C501_MassMerge_SharedCode.GetC501ContactMergeQuery_v2();
         strSoql += ' AND Merge_Metric__r.Name LIKE \'TESTDATA%\'';
