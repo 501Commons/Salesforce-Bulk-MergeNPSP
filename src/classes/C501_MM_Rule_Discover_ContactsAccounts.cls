@@ -82,8 +82,9 @@ public class C501_MM_Rule_Discover_ContactsAccounts implements Schedulable {
         this.ProcessMergeMetrics(strSoql);
     }
 
-    public void executeMetric(Id mergeMetricId) {
-        this.executeMetricById(mergeMetricId);
+    @future
+    public static void executeMetricFuture(Id mergeMetricId) {
+        C501_MM_Rule_Discover_ContactsAccounts.get().executeMetricById(mergeMetricId);
     }
 
     public void ProcessMergeMetrics(String strSoql) {

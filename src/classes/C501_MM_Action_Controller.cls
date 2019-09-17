@@ -43,7 +43,10 @@ public with sharing class C501_MM_Action_Controller {
     public PageReference discoverTrigger() {
 
         System.Debug('*****C501_MM_Action_Controller::discoverTrigger Id: ' + Id);
-        C501_MM_Rule_Discover.get().executeMetric(Id);
+        C501_MM_Rule_Discover_Accounts.executeMetricFuture(Id);
+        C501_MM_Rule_Discover_ContactsAccount.executeMetricFuture(Id);
+        C501_MM_Rule_Discover_ContactsAccounts.executeMetricFuture(Id);
+        C501_MM_Rule_Discover.executeMetricFuture(Id);
 
         System.Debug('*****C501_MM_Action_Controller::discoverTrigger After executeMetric');
 
