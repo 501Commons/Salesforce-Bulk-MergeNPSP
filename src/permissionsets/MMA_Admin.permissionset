@@ -174,6 +174,11 @@
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
+        <editable>false</editable>
+        <field>C501_Account_Merge_Member__c.Potential_Merges__c</field>
+        <readable>false</readable>
+    </fieldPermissions>
+    <fieldPermissions>
         <editable>true</editable>
         <field>C501_Account_Merge__c.Merge_Action__c</field>
         <readable>true</readable>

@@ -114,7 +114,7 @@ global with sharing class C501_MassMerge_SharedCode {
     * of our deprecated or system fields
     * @return boolean true if should be treated as hidden, false if not.
     */
-    global boolean isNPSPHiddenField(string strField) {
+    global static boolean isNPSPHiddenField(string strField) {
         list<string> listStrField = new list<string>{
             'npe01__SystemAccountProcessor__c',
             'npo02__SystemHouseholdProcessor__c',
@@ -137,7 +137,7 @@ global with sharing class C501_MassMerge_SharedCode {
         return String.join(iterableFields, ',');
     }
 
-    global String GetC501MergeMetricQuery() {
+    global static String GetC501MergeMetricQuery() {
 
         String strSoql = 'SELECT';
         strSoql += ' Id, Name, Confidence__c,';
@@ -156,7 +156,7 @@ global with sharing class C501_MassMerge_SharedCode {
         return strSoql;
     }
 
-    global String GetC501AccountMergeQuery() {
+    global static String GetC501AccountMergeQuery() {
 
         String strSoql = 'SELECT';
         strSoql += ' Id, Unique_Id__c,';
@@ -174,7 +174,7 @@ global with sharing class C501_MassMerge_SharedCode {
         return strSoql;
     }
 
-    global String GetC501ContactMergeQuery() {
+    global static String GetC501ContactMergeQuery() {
 
         String strSoql = 'SELECT';
         strSoql += ' Id, Unique_Id__c,';
@@ -192,18 +192,18 @@ global with sharing class C501_MassMerge_SharedCode {
         return strSoql;
     }
 
-    global void InitializeMassMergeInstances() {
+    global static void InitializeMassMergeInstances() {
 
-        this.ScheduleJobs();
+        C501_MassMerge_SharedCode.ScheduleJobs();
 
         String reportFolder = 'Mass Merge Rules';
         if (Test.isRunningTest()) {
             reportFolder = 'Mass Merge Tests';
         }
         
-        String strSoql = this.GetC501MergeMetricQuery();
+        String strSoql = C501_MassMerge_SharedCode.GetC501MergeMetricQuery();
 
-        System.debug('***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::InitializeMassMergeInstances strSoql: ' + strSoql);
+        System.debug('*****C501_MassMerge_SharedCode::InitializeMassMergeInstances strSoql: ' + strSoql);
 
         List<C501_Merge_Metric__c> mergeMetrics = Database.Query(strSoql);
 
@@ -243,10 +243,10 @@ global with sharing class C501_MassMerge_SharedCode {
         }
     }
 
-    global void ObjectsMerge_Account(Account masterAccount, List<Account> duplicateAccounts) {
+    global static void ObjectsMerge_Account(Account masterAccount, List<Account> duplicateAccounts) {
     }
 
-    global void ObjectsMerge_Contact(Contact masterContact, List<Contact> duplicateContacts) {
+    global static void ObjectsMerge_Contact(Contact masterContact, List<Contact> duplicateContacts) {
 
         if (masterContact == null || duplicateContacts == null || duplicateContacts.isEmpty()) {
             return;
@@ -254,10 +254,10 @@ global with sharing class C501_MassMerge_SharedCode {
 
         // Merge contacts into master
         String mergeMetricName = 'User Merge Rule Account No Contacts';
-        String strSoql = GetC501MergeMetricQuery();
+        String strSoql = C501_MassMerge_SharedCode.GetC501MergeMetricQuery();
         strSoql += ' AND Name = \'' + mergeMetricName + '\'';
 
-        System.debug('***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::ObjectsMerge_Contact strSoql: ' + strSoql);
+        System.debug('*****C501_MassMerge_SharedCode::ObjectsMerge_Contact strSoql: ' + strSoql);
 
         List<C501_Merge_Metric__c> mergeMetrics = Database.Query(strSoql);
 
@@ -322,11 +322,11 @@ global with sharing class C501_MassMerge_SharedCode {
         }
 
         // Delete any account merges for accounts where contact was merged
-        strSoql = this.GetC501AccountMergeQuery();
+        strSoql = C501_MassMerge_SharedCode.GetC501AccountMergeQuery();
         
         strSoql += ' AND (Account__c = null OR Merge_Target_Account__c = null OR Account__c in ' + C501_MassMerge_SharedCode.GetSafeSoqlList(contactAccounts.values()) + ' OR Merge_Target_Account__c in ' + C501_MassMerge_SharedCode.GetSafeSoqlList(contactAccounts.values()) + ')';
 
-        System.debug('***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::ObjectsMerge_Contact strSoql: ' + strSoql);
+        System.debug('*****C501_MassMerge_SharedCode::ObjectsMerge_Contact strSoql: ' + strSoql);
 
         List<C501_Account_Merge__c> deleteMerges = Database.query(strSoql);
 
@@ -344,7 +344,7 @@ global with sharing class C501_MassMerge_SharedCode {
         @Param:List of selectOption to be sort.
         @Return: Sorted list of selectOptions by Label
     */
-    global List<selectOption> SelectOptionSortByLabel(List<selectOption> selectOptionsToSort) {
+    global static List<selectOption> SelectOptionSortByLabel(List<selectOption> selectOptionsToSort) {
 
         if (selectOptionsToSort == null || selectOptionsToSort.size() <= 1) {
             return selectOptionsToSort;
@@ -381,7 +381,7 @@ global with sharing class C501_MassMerge_SharedCode {
         c501MassMerge_SharedCode_Account.ProcessObjectMergeCandidates(mergeMetric);
     }
 
-    global Integer ProcessObjectMergeCandidates_Account(C501_Merge_Metric__c mergeMetric, List<C501_Account_Merge__c> pendingAutoMerges, Map<Id, Id> contactHouseholdMap) {
+    global static Integer ProcessObjectMergeCandidates_Account(C501_Merge_Metric__c mergeMetric, List<C501_Account_Merge__c> pendingAutoMerges, Map<Id, Id> contactHouseholdMap) {
 
         System.debug('*****C501_MassMerge_SharedCode::ProcessObjectMergeCandidates_Account pendingAutoMerges: ' + pendingAutoMerges);
 
@@ -409,7 +409,7 @@ global with sharing class C501_MassMerge_SharedCode {
         return 0;
     }
 
-    global Integer ProcessObjectMergeCandidates_Contact(C501_Merge_Metric__c mergeMetric, List<C501_Contact_Merge__c> pendingAutoMerges, Map<Id, Id> contactHouseholdMap) {
+    global static Integer ProcessObjectMergeCandidates_Contact(C501_Merge_Metric__c mergeMetric, List<C501_Contact_Merge__c> pendingAutoMerges, Map<Id, Id> contactHouseholdMap) {
 
         if (String.isBlank(mergeMetric.AutoMerge_Objects__c)) {
             return 0;
@@ -449,7 +449,7 @@ global with sharing class C501_MassMerge_SharedCode {
         return 0;
     }
 
-    global void ScheduleJobs() {
+    global static void ScheduleJobs() {
 
         List<CronJobDetail> cronJobDetails = [SELECT Id, JobType, Name FROM CronJobDetail];
         Set<String> scheduledJobs = new Set<String>();
@@ -474,6 +474,7 @@ global with sharing class C501_MassMerge_SharedCode {
                 }
 
                 if (!Test.isRunningTest()) {
+                    System.schedule(scheduleJobName, cronExpression, new C501_MM_Rule_Discover_Accounts());
                     System.schedule(scheduleJobName, cronExpression, new C501_MM_Rule_Discover());
                 }
             }
@@ -491,9 +492,9 @@ global with sharing class C501_MassMerge_SharedCode {
         }
     }
 
-    global void TestSetupMerge() {
+    global static void TestSetupMerge() {
 
-        InitializeMassMergeInstances();
+        C501_MassMerge_SharedCode.InitializeMassMergeInstances();
 
         List<Account> listAccounts = new List<Account>();   
         Integer cAccounts = 10;     
@@ -572,25 +573,25 @@ global with sharing class C501_MassMerge_SharedCode {
         insert listOpportunityHouseholds.values();
         insert listContacts;
 
-        //this.PrintSalesforceStructure();
+        //C501_MassMerge_SharedCode.PrintSalesforceStructure();
     }
 
     // Legacy Method for Managed Package
     global void TestDiscoverHelper(String queryNameCriteria) {
-        this.TestDiscoverHelper_v2(queryNameCriteria);
+        C501_MassMerge_SharedCode.TestDiscoverHelper_v2(queryNameCriteria);
     }
 
-    global List<C501_Merge_Metric__c> TestDiscoverHelper_v2(String queryNameCriteria) {
+    global static List<C501_Merge_Metric__c> TestDiscoverHelper_v2(String queryNameCriteria) {
 
-        this.TestSetupMerge();
+        C501_MassMerge_SharedCode.TestSetupMerge();
 
         // Reset report change detected during a merge process call
         C501_MM_Rule_Merge.get().execute(null);
 
-        String strSoql = this.GetC501MergeMetricQuery();
+        String strSoql = C501_MassMerge_SharedCode.GetC501MergeMetricQuery();
         strSoql += ' AND Name LIKE \'%' + queryNameCriteria + '%\'';
 
-        System.debug('***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::TestDiscoverHelper_v2 strSoql: ' + strSoql);
+        System.debug('*****C501_MassMerge_SharedCode::TestDiscoverHelper_v2 strSoql: ' + strSoql);
 
         List<C501_Merge_Metric__c> mergeMetrics = Database.Query(strSoql);
         System.Assert(mergeMetrics.size() > 0);
@@ -602,12 +603,12 @@ global with sharing class C501_MassMerge_SharedCode {
 
         update mergeMetrics;
 
-        this.PrintSalesforceStructure();
+        C501_MassMerge_SharedCode.PrintSalesforceStructure();
 
         return mergeMetrics;
     }
 
-    global String TestHelperAutoMergeObjects(String sourceObject, String autoMergeType) {
+    global static String TestHelperAutoMergeObjects(String sourceObject, String autoMergeType) {
 
         if (sourceObject.equals('Account')) {
             if (autoMergeType.equals('Object')) {
@@ -626,7 +627,7 @@ global with sharing class C501_MassMerge_SharedCode {
         return null;
     }
 
-    global void PrintSalesforceLimits() {
+    global static void PrintSalesforceLimits() {
 
         System.debug('***** C501_MassMerge_SharedCode::NearSalesforceLimits - Aggregate Queries ' + Limits.getAggregateQueries() + ' of ' + Limits.getLimitAggregateQueries());
         System.debug('***** C501_MassMerge_SharedCode::NearSalesforceLimits - DML Rows ' + Limits.getDMLRows() + ' of ' + Limits.getLimitDMLRows());
@@ -636,7 +637,7 @@ global with sharing class C501_MassMerge_SharedCode {
         System.debug('***** C501_MassMerge_SharedCode::NearSalesforceLimits - Sosl Queries ' + Limits.getSoslQueries() + ' of ' + Limits.getLimitSoslQueries());
     }
 
-    global Integer GetMaximumLimitSize(Integer groupByNumberFields) {
+    global static Integer GetMaximumLimitSize(Integer groupByNumberFields) {
 
         Integer percentageMultiple = 9;
         // Add 100 to allow just more than 90% to make sure to trip the NearSalesforceLimits check
@@ -651,7 +652,7 @@ global with sharing class C501_MassMerge_SharedCode {
         return maximumLimitSize;
     }
 
-    global Boolean NearSalesforceLimits() {
+    global static Boolean NearSalesforceLimits() {
 
         Boolean nearLimit = false;
         Integer percentageMultiple = 9;
@@ -686,11 +687,11 @@ global with sharing class C501_MassMerge_SharedCode {
         return nearLimit;
     }
 
-    global void PrintSalesforceStructure() {
+    global static void PrintSalesforceStructure() {
 
         System.debug('***** C501_MassMerge_SharedCode::PrintSalesforceStructure');
 
-        PrintSalesforceLimits();
+        C501_MassMerge_SharedCode.PrintSalesforceLimits();
 
 /*
         for (Account account :[select Id, Name, Website, BillingStreet from Account WHERE Name LIKE 'TESTDATA%']) {
@@ -703,11 +704,11 @@ global with sharing class C501_MassMerge_SharedCode {
             System.debug('***** C501_MassMerge_SharedCode::PrintSalesforceStructure - ' + String.valueOf(opportunity));
         }
 */       
-        String strSoql = this.GetC501MergeMetricQuery();
-        String strSoqlAccountMerges = this.GetC501AccountMergeQuery();
-        String strSoqlContactMerges = this.GetC501ContactMergeQuery();
+        String strSoql = C501_MassMerge_SharedCode.GetC501MergeMetricQuery();
+        String strSoqlAccountMerges = C501_MassMerge_SharedCode.GetC501AccountMergeQuery();
+        String strSoqlContactMerges = C501_MassMerge_SharedCode.GetC501ContactMergeQuery();
 
-        System.debug('***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::PrintSalesforceStructure strSoql: ' + strSoql);
+        System.debug('*****C501_MassMerge_SharedCode::PrintSalesforceStructure strSoql: ' + strSoql);
 
         for (C501_Merge_Metric__c mergeMetric :Database.Query(strSoql)) {
 

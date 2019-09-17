@@ -152,6 +152,10 @@
         <fields>Merge_Confidence__c</fields>
         <relatedList>C501_Account_Merge__c.Merge_Metric__c</relatedList>
     </relatedLists>
+    <relatedLists>
+        <fields>NAME</fields>
+        <relatedList>C501_Account_Merge_Member__c.Merge_Metric__c</relatedList>
+    </relatedLists>
     <showEmailCheckbox>false</showEmailCheckbox>
     <showHighlightsPanel>false</showHighlightsPanel>
     <showInteractionLogPanel>false</showInteractionLogPanel>

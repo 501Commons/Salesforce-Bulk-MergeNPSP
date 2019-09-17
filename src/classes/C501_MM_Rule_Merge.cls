@@ -53,19 +53,17 @@ public class C501_MM_Rule_Merge implements Schedulable {
 
     public void execute(SchedulableContext SC) {
 
-        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
-        c501MassMerge_SharedCode.InitializeMassMergeInstances();
+        C501_MassMerge_SharedCode.InitializeMassMergeInstances();
 
-        String strSoql = c501MassMerge_SharedCode.GetC501MergeMetricQuery();
+        String strSoql = C501_MassMerge_SharedCode.GetC501MergeMetricQuery();
         this.ProcessMergeMetrics(strSoql);
     }
 
     public void executeMetricById(Id mergeMetricId) {
 
-        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
-        c501MassMerge_SharedCode.InitializeMassMergeInstances();
+        C501_MassMerge_SharedCode.InitializeMassMergeInstances();
 
-        String strSoql = c501MassMerge_SharedCode.GetC501MergeMetricQuery();
+        String strSoql = C501_MassMerge_SharedCode.GetC501MergeMetricQuery();
 
         // Add in specific Id query
         strSoql += ' AND Id = \'' + mergeMetricId + '\'';
@@ -105,10 +103,9 @@ public class C501_MM_Rule_Merge implements Schedulable {
         List<C501_Merge_Metric__c> mergeMetricsUpdate = new List<C501_Merge_Metric__c>();
 
         Integer batchMergesScheduled = 0;
-        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
         for (C501_Merge_Metric__c mergeMetric :mergeMetrics) {
 
-            if (c501MassMerge_SharedCode.NearSalesforceLimits()) {
+            if (C501_MassMerge_SharedCode.NearSalesforceLimits()) {
                 break;
             }
 
@@ -143,7 +140,7 @@ public class C501_MM_Rule_Merge implements Schedulable {
                 // Queue merge metric to delete children since report changed or report not found
                 //
 
-                String strSoqlAccountMergesDelete = c501MassMerge_SharedCode.GetC501AccountMergeQuery();
+                String strSoqlAccountMergesDelete = C501_MassMerge_SharedCode.GetC501AccountMergeQuery();
                 strSoqlAccountMergesDelete += ' AND Merge_Metric__c = \'' + mergeMetric.Id + '\'';
 
                 System.debug('***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::ProcessMergeMetrics strSoql: ' + strSoqlAccountMergesDelete);
@@ -153,7 +150,7 @@ public class C501_MM_Rule_Merge implements Schedulable {
                     delete accountMergesDelete;
                 }
 
-                String strSoqlContactMergesDelete = c501MassMerge_SharedCode.GetC501ContactMergeQuery();
+                String strSoqlContactMergesDelete = C501_MassMerge_SharedCode.GetC501ContactMergeQuery();
                 strSoqlContactMergesDelete += ' AND Merge_Metric__c = \'' + mergeMetric.Id + '\'';
 
                 System.debug('***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::ProcessMergeMetrics strSoql: ' + strSoqlContactMergesDelete);

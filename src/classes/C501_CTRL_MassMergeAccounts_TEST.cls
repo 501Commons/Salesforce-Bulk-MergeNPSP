@@ -46,48 +46,39 @@ public class C501_CTRL_MassMergeAccounts_TEST {
     @isTest(SeeAllData='true')
     public static void AllFields_General_DiscoverTest() {
 
-        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
-
         Test.StartTest();
-        c501MassMerge_SharedCode.TestDiscoverHelper_v2('Account All General');
+        C501_MassMerge_SharedCode.TestDiscoverHelper_v2('Account All General');
         Test.StopTest();
     }
 
     @isTest(SeeAllData='true')
     public static void AllFields_Group1_DiscoverTest() {
 
-        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
-
         Test.StartTest();
-        c501MassMerge_SharedCode.TestDiscoverHelper_v2('Account All Group1');
+        C501_MassMerge_SharedCode.TestDiscoverHelper_v2('Account All Group1');
         Test.StopTest();
     }
 
     @isTest(SeeAllData='true')
     public static void AllFields_Group2_DiscoverTest() {
 
-        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
-
         Test.StartTest();
-        c501MassMerge_SharedCode.TestDiscoverHelper_v2('Account All Group2');
+        C501_MassMerge_SharedCode.TestDiscoverHelper_v2('Account All Group2');
         Test.StopTest();
     }
 
     @isTest(SeeAllData='true')
     public static void Account_Address_DiscoverTest() {
 
-        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
-
         Test.StartTest();
-        c501MassMerge_SharedCode.TestDiscoverHelper_v2('Account Test');
+        C501_MassMerge_SharedCode.TestDiscoverHelper_v2('Account Test');
         Test.StopTest();
     }
 
     @isTest(SeeAllData='true')
     public static void ProcessObjectMerges_BatchTest() {
 
-        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
-        List<C501_Merge_Metric__c> mergeMetrics = c501MassMerge_SharedCode.TestDiscoverHelper_v2('Account Test');
+        List<C501_Merge_Metric__c> mergeMetrics = C501_MassMerge_SharedCode.TestDiscoverHelper_v2('Account Test');
         List<Account> listAccounts = [SELECT Id FROM Account WHERE Name LIKE '%TESTDATA%'];
 
         C501_Account_Merge__c objectMerge = new C501_Account_Merge__c(
@@ -130,8 +121,7 @@ public class C501_CTRL_MassMergeAccounts_TEST {
     @isTest(SeeAllData='true')
     public static void ProcessObjectMerges_SyncTest() {
 
-        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
-        List<C501_Merge_Metric__c> mergeMetrics = c501MassMerge_SharedCode.TestDiscoverHelper_v2('Account Test');
+        List<C501_Merge_Metric__c> mergeMetrics = C501_MassMerge_SharedCode.TestDiscoverHelper_v2('Account Test');
         List<Account> listAccounts = [SELECT Id FROM Account WHERE Name LIKE '%TESTDATA%'];
 
         C501_Account_Merge__c objectMerge = new C501_Account_Merge__c(
@@ -155,8 +145,7 @@ public class C501_CTRL_MassMergeAccounts_TEST {
     @isTest(SeeAllData='true')
     public static void CodeCoverageTests() {
 
-        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
-        List<C501_Merge_Metric__c> mergeMetrics = c501MassMerge_SharedCode.TestDiscoverHelper_v2('Account Test');
+        List<C501_Merge_Metric__c> mergeMetrics = C501_MassMerge_SharedCode.TestDiscoverHelper_v2('Account Test');
 
         Id masterObjectId = [SELECT Id FROM Account WHERE Name LIKE '%TESTDATA%' ORDER BY Id ASC LIMIT 1].Id;
 
@@ -236,8 +225,7 @@ public class C501_CTRL_MassMergeAccounts_TEST {
     @isTest(SeeAllData='true')
     public static void testPageMessagesController() {
 
-        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
-        c501MassMerge_SharedCode.TestDiscoverHelper_v2('Account Test');
+        C501_MassMerge_SharedCode.TestDiscoverHelper_v2('Account Test');
 
         Test.StartTest();
 
@@ -270,10 +258,9 @@ public class C501_CTRL_MassMergeAccounts_TEST {
     @isTest(SeeAllData='true')
     public static void ProcessObjectMerges_NoMergeBlankAutoMergeObjectsTest() {
 
-        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
-        List<C501_Merge_Metric__c> mergeMetrics = c501MassMerge_SharedCode.TestDiscoverHelper_v2('Account Test');
+        List<C501_Merge_Metric__c> mergeMetrics = C501_MassMerge_SharedCode.TestDiscoverHelper_v2('Account Test');
 
-        String strSoql = c501MassMerge_SharedCode.GetC501AccountMergeQuery();
+        String strSoql = C501_MassMerge_SharedCode.GetC501AccountMergeQuery();
         strSoql += ' AND Merge_Metric__r.Name LIKE \'TESTDATA%\'';
 
         List<C501_Account_Merge__c> objectMergesBefore = Database.query(strSoql);
@@ -303,10 +290,9 @@ public class C501_CTRL_MassMergeAccounts_TEST {
     @isTest(SeeAllData='true')
     public static void ProcessObjectMerges_NoMergeBelowAutoMergePercentageTest() {
 
-        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
-        List<C501_Merge_Metric__c> mergeMetrics = c501MassMerge_SharedCode.TestDiscoverHelper_v2('Account Test');
+        List<C501_Merge_Metric__c> mergeMetrics = C501_MassMerge_SharedCode.TestDiscoverHelper_v2('Account Test');
 
-        String strSoql = c501MassMerge_SharedCode.GetC501AccountMergeQuery();
+        String strSoql = C501_MassMerge_SharedCode.GetC501AccountMergeQuery();
         strSoql += ' AND Merge_Metric__r.Name LIKE \'TESTDATA%\'';
 
         List<C501_Account_Merge__c> objectMergesBefore = Database.query(strSoql);
@@ -335,10 +321,9 @@ public class C501_CTRL_MassMergeAccounts_TEST {
     @isTest(SeeAllData='true')
     public static void ProcessObjectMerges_MergeAboveAutoMergePercentageTest() {
 
-        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
-        List<C501_Merge_Metric__c> mergeMetrics = c501MassMerge_SharedCode.TestDiscoverHelper_v2('Account Test');
+        List<C501_Merge_Metric__c> mergeMetrics = C501_MassMerge_SharedCode.TestDiscoverHelper_v2('Account Test');
 
-        String strSoql = c501MassMerge_SharedCode.GetC501AccountMergeQuery();
+        String strSoql = C501_MassMerge_SharedCode.GetC501AccountMergeQuery();
         strSoql += ' AND Merge_Metric__r.Name LIKE \'TESTDATA%\'';
 
         List<C501_Account_Merge__c> objectMergesBefore = Database.query(strSoql);
@@ -367,10 +352,9 @@ public class C501_CTRL_MassMergeAccounts_TEST {
     @isTest(SeeAllData='true')
     public static void ProcessObjectMerges_MergeEqualAutoMergePercentageTest() {
 
-        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
-        List<C501_Merge_Metric__c> mergeMetrics = c501MassMerge_SharedCode.TestDiscoverHelper_v2('Account Test');
+        List<C501_Merge_Metric__c> mergeMetrics = C501_MassMerge_SharedCode.TestDiscoverHelper_v2('Account Test');
 
-        String strSoql = c501MassMerge_SharedCode.GetC501AccountMergeQuery();
+        String strSoql = C501_MassMerge_SharedCode.GetC501AccountMergeQuery();
         strSoql += ' AND Merge_Metric__r.Name LIKE \'TESTDATA%\'';
 
         List<C501_Account_Merge__c> objectMergesBefore = Database.query(strSoql);
@@ -399,15 +383,14 @@ public class C501_CTRL_MassMergeAccounts_TEST {
     @isTest(SeeAllData='true')
     public static void ProcessObjectMerges_AutoMergeObjectsByObject() {
 
-        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
-        String autoMergeObjects = c501MassMerge_SharedCode.TestHelperAutoMergeObjects('Account', 'Object');
+       String autoMergeObjects = C501_MassMerge_SharedCode.TestHelperAutoMergeObjects('Account', 'Object');
         if (String.isBlank(autoMergeObjects)) {
             return;
         }
 
-        List<C501_Merge_Metric__c> mergeMetrics = c501MassMerge_SharedCode.TestDiscoverHelper_v2('Account Test');
+        List<C501_Merge_Metric__c> mergeMetrics = C501_MassMerge_SharedCode.TestDiscoverHelper_v2('Account Test');
 
-        String strSoql = c501MassMerge_SharedCode.GetC501AccountMergeQuery();
+        String strSoql = C501_MassMerge_SharedCode.GetC501AccountMergeQuery();
         strSoql += ' AND Merge_Metric__r.Name LIKE \'TESTDATA%\'';
 
         List<C501_Account_Merge__c> objectMergesBefore = Database.query(strSoql);
@@ -436,15 +419,14 @@ public class C501_CTRL_MassMergeAccounts_TEST {
     @isTest(SeeAllData='true')
     public static void ProcessObjectMerges_AutoMergeObjectsByObjectsWithinObject() {
 
-        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
-        String autoMergeObjects = c501MassMerge_SharedCode.TestHelperAutoMergeObjects('Account', 'ObjectsWithinObject');
+        String autoMergeObjects = C501_MassMerge_SharedCode.TestHelperAutoMergeObjects('Account', 'ObjectsWithinObject');
         if (String.isBlank(autoMergeObjects)) {
             return;
         }
 
-        List<C501_Merge_Metric__c> mergeMetrics = c501MassMerge_SharedCode.TestDiscoverHelper_v2('Account Test');
+        List<C501_Merge_Metric__c> mergeMetrics = C501_MassMerge_SharedCode.TestDiscoverHelper_v2('Account Test');
 
-        String strSoql = c501MassMerge_SharedCode.GetC501AccountMergeQuery();
+        String strSoql = C501_MassMerge_SharedCode.GetC501AccountMergeQuery();
         strSoql += ' AND Merge_Metric__r.Name LIKE \'TESTDATA%\'';
 
         List<C501_Account_Merge__c> objectMergesBefore = Database.query(strSoql);
@@ -473,15 +455,14 @@ public class C501_CTRL_MassMergeAccounts_TEST {
     @isTest(SeeAllData='true')
     public static void ProcessObjectMerges_AutoMergeObjectsByObjectsAcrossObjects() {
 
-        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
-        String autoMergeObjects = c501MassMerge_SharedCode.TestHelperAutoMergeObjects('Account', 'ObjectsAccrossObjects');
+        String autoMergeObjects = C501_MassMerge_SharedCode.TestHelperAutoMergeObjects('Account', 'ObjectsAccrossObjects');
         if (String.isBlank(autoMergeObjects)) {
             return;
         }
 
-        List<C501_Merge_Metric__c> mergeMetrics = c501MassMerge_SharedCode.TestDiscoverHelper_v2('Account Test');
+        List<C501_Merge_Metric__c> mergeMetrics = C501_MassMerge_SharedCode.TestDiscoverHelper_v2('Account Test');
 
-        String strSoql = c501MassMerge_SharedCode.GetC501AccountMergeQuery();
+        String strSoql = C501_MassMerge_SharedCode.GetC501AccountMergeQuery();
         strSoql += ' AND Merge_Metric__r.Name LIKE \'TESTDATA%\'';
 
         List<C501_Account_Merge__c> objectMergesBefore = Database.query(strSoql);

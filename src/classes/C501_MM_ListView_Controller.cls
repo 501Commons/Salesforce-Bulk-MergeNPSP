@@ -35,7 +35,10 @@ public with sharing class C501_MM_ListView_Controller {
 
     public PageReference discoverTrigger() {
 
-        C501_MM_Rule_Discover.get().execute(null);
+        C501_MM_Rule_Discover_Accounts.executeFuture();
+        C501_MM_Rule_Discover_ContactsAccount.executeFuture();
+        C501_MM_Rule_Discover_ContactsAccounts.executeFuture();
+        C501_MM_Rule_Discover.executeFuture();
 
         return new ApexPages.Action('{!List}').invoke();
     }

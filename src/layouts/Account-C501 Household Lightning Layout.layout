@@ -428,6 +428,10 @@
         <fields>Ignore_Value__c</fields>
         <relatedList>C501_Merge_Account_History__c.Account__c</relatedList>
     </relatedLists>
+    <relatedLists>
+        <fields>NAME</fields>
+        <relatedList>C501_Account_Merge_Member__c.Account__c</relatedList>
+    </relatedLists>
     <relatedObjects>ParentId</relatedObjects>
     <showEmailCheckbox>false</showEmailCheckbox>
     <showHighlightsPanel>false</showHighlightsPanel>

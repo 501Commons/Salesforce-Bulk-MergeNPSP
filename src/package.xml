@@ -11,6 +11,9 @@
         <members>C501_MM_ListView_Controller</members>
         <members>C501_MM_ListView_Controller_TEST</members>
         <members>C501_MM_Rule_Discover</members>
+        <members>C501_MM_Rule_Discover_Accounts</members>
+        <members>C501_MM_Rule_Discover_ContactsAccount</members>
+        <members>C501_MM_Rule_Discover_ContactsAccounts</members>
         <members>C501_MM_Rule_Merge</members>
         <members>C501_MassMerge_Batch</members>
         <members>C501_MassMerge_Fx_Base</members>
@@ -55,6 +58,10 @@
         <members>Account.C501_Merge_Rule__c</members>
         <members>Account.C501_Merge_Target__c</members>
         <members>Account.C501_Shipping_Address__c</members>
+        <members>C501_Account_Merge_Member__c.Account__c</members>
+        <members>C501_Account_Merge_Member__c.Merge_Metric__c</members>
+        <members>C501_Account_Merge_Member__c.Potential_Merges__c</members>
+        <members>C501_Account_Merge_Member__c.Unique_Id__c</members>
         <members>C501_Account_Merge__c.Account__c</members>
         <members>C501_Account_Merge__c.Merge_Action__c</members>
         <members>C501_Account_Merge__c.Merge_Confidence__c</members>
@@ -133,6 +140,7 @@
         <name>CustomLabels</name>
     </types>
     <types>
+        <members>C501_Account_Merge_Member__c</members>
         <members>C501_Account_Merge__c</members>
         <members>C501_Contact_Merge__c</members>
         <members>C501_Merge_Account_History__c</members>

@@ -59,21 +59,28 @@ public class C501_MM_Rule_Discover implements Schedulable {
     public void C501_MM_Rule_Discover() {
     }
 
+    @future
+    public static void executeFuture() {
+
+        C501_MassMerge_SharedCode.InitializeMassMergeInstances();
+
+        String strSoql = C501_MassMerge_SharedCode.GetC501MergeMetricQuery();
+        C501_MM_Rule_Discover.get().ProcessMergeMetrics(strSoql);
+    }
+
     public void execute(SchedulableContext SC) {
 
-        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
-        c501MassMerge_SharedCode.InitializeMassMergeInstances();
+        C501_MassMerge_SharedCode.InitializeMassMergeInstances();
 
-        String strSoql = c501MassMerge_SharedCode.GetC501MergeMetricQuery();
+        String strSoql = C501_MassMerge_SharedCode.GetC501MergeMetricQuery();
         this.ProcessMergeMetrics(strSoql);
     }
 
     public void executeMetricById(Id mergeMetricId) {
 
-        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
-        c501MassMerge_SharedCode.InitializeMassMergeInstances();
+        C501_MassMerge_SharedCode.InitializeMassMergeInstances();
 
-        String strSoql = c501MassMerge_SharedCode.GetC501MergeMetricQuery();
+        String strSoql = C501_MassMerge_SharedCode.GetC501MergeMetricQuery();
 
         // Add in specific Id query
         strSoql += ' AND Id = \'' + mergeMetricId + '\'';
@@ -112,7 +119,6 @@ public class C501_MM_Rule_Discover implements Schedulable {
         // Walk through Merge Metrics
         List<C501_Merge_Metric__c> mergeMetricsUpdate = new List<C501_Merge_Metric__c>();
         Set<Id> mergeMetricDeleteChildren = new Set<Id>();
-        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
 
         // Delete all merge candidates where the linked report has been updated
         //
@@ -143,7 +149,7 @@ public class C501_MM_Rule_Discover implements Schedulable {
 
         if (!mergeMetricDeleteChildren.isEmpty()) {
 
-            String strSoqlAccountMergesDelete = c501MassMerge_SharedCode.GetC501AccountMergeQuery();
+            String strSoqlAccountMergesDelete = C501_MassMerge_SharedCode.GetC501AccountMergeQuery();
 
             strSoqlAccountMergesDelete += ' AND Merge_Metric__c in ' + C501_MassMerge_SharedCode.GetSafeSoqlList(mergeMetricDeleteChildren);
 
@@ -154,7 +160,7 @@ public class C501_MM_Rule_Discover implements Schedulable {
                 delete accountMergesDelete;
             }
 
-            String strSoqlContactMergesDelete = c501MassMerge_SharedCode.GetC501ContactMergeQuery();
+            String strSoqlContactMergesDelete = C501_MassMerge_SharedCode.GetC501ContactMergeQuery();
 
             strSoqlContactMergesDelete += ' AND Merge_Metric__c in ' + C501_MassMerge_SharedCode.GetSafeSoqlList(mergeMetricDeleteChildren);
 
@@ -170,42 +176,9 @@ public class C501_MM_Rule_Discover implements Schedulable {
 
             update mergeMetricsUpdate;
         }
-
-        // Discover any new merge candidates
-        //
-        for (C501_Merge_Metric__c mergeMetric : mergeMetrics) {
-
-            String reportId;
-            for (Report report :reports) {
-
-                if ((String)report.Id == mergeMetric.Source_Report__c || report.DeveloperName == mergeMetric.Source_Report__c) {
-
-                    reportId = (String)report.Id;
-
-                    break;
-                }
-            }
-
-            if (String.isBlank(reportId)) {
-                continue;
-            }
-
-            System.debug('***** C501_MM_Rule_Discover:execute - Merge Metric Discover: ' + String.valueOf(mergeMetric));
-            mergeMetric.Last_Discover_Date__c = System.now();
-            update mergeMetric;
-
-            this.ProcessReport(reportId, mergeMetric);
-
-            if (c501MassMerge_SharedCode.NearSalesforceLimits()) {
-
-                System.debug('***** C501_MM_Rule_Discover:execute - Merge Metric Near Salesforce Limits so kick out of continued discovery: ' + String.valueOf(mergeMetric));
-                
-                break;
-            }
-        }
     }
 
-    public void ProcessReport(String reportId, C501_Merge_Metric__c mergeMetric) {
+    public void ProcessReport(String reportId, C501_Merge_Metric__c mergeMetric, String processObjectType) {
 
         System.debug('***** C501_MM_Rule_Discover:ProcessReport reportId: ' + reportId + ' mergeMetric: ' + String.valueOf(mergeMetric));
 
@@ -260,7 +233,7 @@ public class C501_MM_Rule_Discover implements Schedulable {
         List<String> detailColumnsChecked = new List<String>();
         for (String column :detailColumns) {
 
-            if (column.contains('ACCOUNT.ADDRESS')) {
+            if (column.containsIgnoreCase('ADDRESS')) {
                 usingAddressColumns = true;
             }
 
@@ -271,11 +244,12 @@ public class C501_MM_Rule_Discover implements Schedulable {
         }
 
         // Discover merge candidates
-        this.ProcessReportDiscover(mergeMetric, foriegnKey, detailColumnsChecked, reportFilters);
+        this.ProcessReportDiscover(mergeMetric, foriegnKey, detailColumnsChecked, reportFilters, processObjectType);
 
         // Check for Address columns
-        //  When using address columns need to query both the Billing and Shipping address because regardless of
+        //  When using address columns need to query both address, Shipping or Billing, values because regardless of
         //  which you specify in the report the column name comes in as Address1 instead of Shipping or Billing
+        //  For contact just swapping Mailing and Other.
         if (usingAddressColumns) {
 
             List<String> detailColumnsCheckedAddressReverse = new List<String>();
@@ -286,30 +260,41 @@ public class C501_MM_Rule_Discover implements Schedulable {
                 else if (column.contains('Account.Shipping')) {
                     detailColumnsCheckedAddressReverse.add(column.replace('Account.Shipping', 'Account.Billing'));
                 }
+                else if (column.contains('Mailing')) {
+                    detailColumnsCheckedAddressReverse.add(column.replace('Mailing', 'Other'));
+                }
+                else if (column.contains('Other')) {
+                    detailColumnsCheckedAddressReverse.add(column.replace('Other', 'Mailing'));
+                }
                 else {
                     detailColumnsCheckedAddressReverse.add(column);
                 }
             }
 
             // Discover merge candidates
-            this.ProcessReportDiscover(mergeMetric, foriegnKey, detailColumnsChecked, reportFilters);
+            this.ProcessReportDiscover(mergeMetric, foriegnKey, detailColumnsCheckedAddressReverse, reportFilters, processObjectType);
         }
     }
 
-    public void ProcessReportDiscover(C501_Merge_Metric__c mergeMetric, String foriegnKey, List<String> detailColumnsChecked, List<Reports.ReportFilter> reportFilters) {
+    public void ProcessReportDiscover(C501_Merge_Metric__c mergeMetric, String foriegnKey, List<String> detailColumnsChecked, List<Reports.ReportFilter> reportFilters, String processObjectType) {
 
-        // Process by Accounts to find any potential Account merges
-        this.ProcessReportByAccounts(mergeMetric, foriegnKey, detailColumnsChecked, reportFilters);
+        if (processObjectType.equalsIgnoreCase('Account')) {
 
-        if (mergeMetric.Source_Object__c.equals('Contact')) {
+            // Process by Accounts to find any potential Account merges
+            this.ProcessReportByAccounts(mergeMetric, foriegnKey, detailColumnsChecked, reportFilters);
+        }
+        else if (processObjectType.equalsIgnoreCase('Contacts Across Accounts')) {
 
             // Process by Contacts different Accounts to find any potential contact merges across different accounts
             this.ProcessReportByContacts(mergeMetric, foriegnKey, detailColumnsChecked, reportFilters, null);
+        }
+        else if (processObjectType.equalsIgnoreCase('Contacts Within Account')) {
 
             // Process by Contacts same Account to find any potential contacts merges within same account
             this.ProcessReportByContacts(mergeMetric, foriegnKey, detailColumnsChecked, reportFilters, 'AccountId');
         }
     }
+    
     public void ProcessReportByAccounts(C501_Merge_Metric__c mergeMetric, String foriegnKey, List<String> detailColumnsChecked, List<Reports.ReportFilter> reportFilters) {
 
         // Find Contact matches across Accounts
@@ -339,7 +324,7 @@ public class C501_MM_Rule_Discover implements Schedulable {
         for (Reports.ReportFilter reportFilter :reportFilters) {
 
             // Check for full contact match
-            if (reportFilter.getValue().equals('Full Contact Match')) {
+            if (reportFilter.getValue().equalsIgnoreCase('Full Contact Match')) {
 
                 // Schedule Full Contact Match Processing
 //                C501_MassMerge_Fx_Base fxBase = new C501_MassMerge_Fx_FullContactMatch();
@@ -347,7 +332,7 @@ public class C501_MM_Rule_Discover implements Schedulable {
                 continue;
             }
             // Check for Partial Match - part of the field matches; Example Tom and Tomas would be considered a match
-            else if (reportFilter.getValue().equals('Partial Match')) {
+            else if (reportFilter.getValue().equalsIgnoreCase('Partial Match')) {
 
                 // Schedule Partial Match Processing
 //                C501_MassMerge_Fx_Base fxBase = new C501_MassMerge_Fx_PartialMatch();
@@ -374,7 +359,7 @@ public class C501_MM_Rule_Discover implements Schedulable {
         List<String> groupByFields = new List<String>();
         for (String column :detailColumnsChecked) {
 
-            if (column.contains(mergeMetric.Source_Object_Account_Id__c)) {
+            if (column.equalsIgnoreCase(mergeMetric.Source_Object_Account_Id__c)) {
                 continue;
             }
 
@@ -390,8 +375,7 @@ public class C501_MM_Rule_Discover implements Schedulable {
         String strSoqlHaving = ' HAVING Count(' + mergeMetric.Source_Object_Account_Id__c + ') > 1 ';
         String strSoqlOrderBy = ' ORDER BY Count(' + mergeMetric.Source_Object_Account_Id__c + ') DESC';
 
-        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
-        String strSoqlLimit = ' LIMIT ' + String.valueOf(c501MassMerge_SharedCode.GetMaximumLimitSize(groupByFields.size()));
+        String strSoqlLimit = ' LIMIT ' + String.valueOf(C501_MassMerge_SharedCode.GetMaximumLimitSize(groupByFields.size()));
 
         System.debug('***** C501_MM_Rule_Discover:ProcessReportByAccounts aggregate SOQL');
         System.debug(strSoqlSelect);
@@ -420,11 +404,10 @@ public class C501_MM_Rule_Discover implements Schedulable {
         // Filter out account ids already associated with merge metric
         Set<Id> existingAccountIds = new Set<Id>();
 
-        String strSoql = c501MassMerge_SharedCode.GetC501AccountMergeQuery();
+        String strSoql = C501_MassMerge_SharedCode.GetC501AccountMergeQuery();
         strSoql += ' AND Merge_Metric__c = \'' + mergeMetric.Id + '\'';
 
-        System.debug('mergeMetric.Id: ' + mergeMetric.Id);
-        System.debug('***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::FillListAccounts strSoql: ' + strSoql);
+        System.debug('***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::ProcessReportByAccounts strSoql: ' + strSoql);
 
         for(C501_Account_Merge__c existingMerge : Database.query(strSoql)) {
                 existingAccountIds.add(existingMerge.Account__c);
@@ -510,6 +493,8 @@ public class C501_MM_Rule_Discover implements Schedulable {
             }
         }
 
+        List<C501_Account_Merge_Member__c> insertMergeMembers = new List<C501_Account_Merge_Member__c>();
+
         Map<String, C501_Account_Merge__c> mergeAccounts = new Map<String, C501_Account_Merge__c>();
         String uniqueId, minId, maxId;
         for (AggregateResult result : allAggregatedByAccounts)  {
@@ -546,14 +531,61 @@ public class C501_MM_Rule_Discover implements Schedulable {
                 Merge_Metric__c = mergeMetric.Id
             ));
 
-            // Check to schedule additional processing if Matches > 2
+
             Integer matches = Integer.valueOf(result.get('Matches'));
 
-            if (matches > 2) {
-                System.debug('***** C501_MM_Rule_Discover:ProcessReportByAccounts queue additional process - matches: ' + matches);
-                // TBG - batch schedule - figure out how to get through all even if more than 100 by using a custom checked date or something to send some each time Discover call
-                //  Process - attempt to match every 2 Ids and if Odd size then at the end match the first and last together.
+            insertMergeMembers.add(
+                new C501_Account_Merge_Member__c(
+                    Account__c = minId,
+                    Merge_Metric__c = mergeMetric.Id,
+                    Unique_Id__c = mergeMetric.Id + minId,
+                    Potential_Merges__c = matches
+                ));
+
+            insertMergeMembers.add(
+                new C501_Account_Merge_Member__c(
+                    Account__c = maxId,
+                    Merge_Metric__c = mergeMetric.Id,
+                    Unique_Id__c = mergeMetric.Id + maxId,
+                    Potential_Merges__c = matches
+                ));
+        }
+
+        if (!insertMergeMembers.isEmpty()) {
+            Database.SaveResult[] insertResults = Database.insert(insertMergeMembers, false);
+
+            for (Database.SaveResult result : insertResults) {
+                if (!result.isSuccess()) {
+                    for(Database.Error resultError : result.getErrors()) {
+
+                        String statusCode = String.valueOf(resultError.getStatusCode());
+
+                        // Check DUPLICATE_VALUE which means already exists and add as update - let the DB find which ones to update vs insert to save SOQL queries
+                        if (statusCode.contains('DUPLICATE_VALUE')) {
+                            //result.getId();
+
+                            // Duplicate - I wonder if the insert insertMergeMembers is updated with the Id from SF or just ones that are actually inserted the Id is updated
+
+                            continue;
+                        }
+
+                        System.debug('***** C501_MM_Rule_Discover::ProcessReportByAccounts Database.SaveResult Error');
+                        System.debug(statusCode + ': ' + resultError.getMessage());
+                        System.debug('Fields that affected this error: ' + resultError.getFields());
+                    }                        
+                }
             }
+
+            // Call update which will update ones just inserted but will also update the Potential_Merges__c field for ones already in DB (Need to verify this if not use the result.getId)
+            Integer numberOfIds = 0;
+            for (C501_Account_Merge_Member__c mergeMember :insertMergeMembers) {
+                if (!String.isBlank(mergeMember.Id)) {
+                    numberOfIds++;
+                }
+            }
+
+            System.debug('***** C501_MM_Rule_Discover::ProcessReportByAccounts numberOfIds: ' + numberOfIds);
+            Database.update(insertMergeMembers, false);
         }
 
         C501_MassMerge_SharedCode_Account c501MassMerge_SharedCode_Account = new C501_MassMerge_SharedCode_Account();
@@ -593,7 +625,6 @@ public class C501_MM_Rule_Discover implements Schedulable {
                     whereInValues = reportFilter.getValue().split(',');
 
                     whereField = this.CheckReportColumnName(mergeMetric, foriegnKey, reportFilter.getColumn(), true) + ' in ' + C501_MassMerge_SharedCode.GetSafeSoqlList(whereInValues);
-                    System.Debug('***** 3 reportFilter.getColumn(): ' + reportFilter.getColumn() + ' whereField: ' + whereField);
                 }
 
                 whereFields.add(whereField);
@@ -622,8 +653,7 @@ public class C501_MM_Rule_Discover implements Schedulable {
         String strSoqlHaving = ' HAVING Count(' + mergeMetric.Source_Object_Contact_Id__c + ') > 1 ';
         String strSoqlOrderBy = ' ORDER BY Count(' + mergeMetric.Source_Object_Contact_Id__c + ') DESC';
 
-        C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
-        String strSoqlLimit = ' LIMIT ' + String.valueOf(c501MassMerge_SharedCode.GetMaximumLimitSize(groupByFields.size()));
+        String strSoqlLimit = ' LIMIT ' + String.valueOf(C501_MassMerge_SharedCode.GetMaximumLimitSize(groupByFields.size()));
 
         System.debug('***** C501_MM_Rule_Discover:ProcessReportByContacts aggregate SOQL');
         System.debug(strSoqlSelect);
@@ -686,17 +716,17 @@ public class C501_MM_Rule_Discover implements Schedulable {
         // Filter columns - some columns not supported except in filters (i.e., Group )
         //
         if (!filterColumn) {
-            if (columnFieldName.contains('npsp__')) {
+            if (columnFieldName.containsIgnoreCase('npsp__')) {
                 return null;
             }
-            else if (columnFieldName == 'LAST_UPDATE') {
+            else if (columnFieldName.equalsIgnoreCase('LAST_UPDATE')) {
                 return null;
             }
-            else if (columnFieldName == 'CREATED_DATE') {
+            else if (columnFieldName.equalsIgnoreCase('CREATED_DATE')) {
                 return null;
             }
-            else if (columnFieldName.equals('ACCOUNT_ID')) {
-                if (mergeMetric.Source_Object__c.equals('Account')) {
+            else if (columnFieldName.equalsIgnoreCase('ACCOUNT_ID')) {
+                if (mergeMetric.Source_Object__c.equalsIgnoreCase('Account')) {
                     return null;
                 }
                 else {
@@ -706,7 +736,7 @@ public class C501_MM_Rule_Discover implements Schedulable {
         }
 
         // Check for FK - Foriegn Key
-        if (columnFieldName.startsWith('FK_')) {
+        if (columnFieldName.startsWithIgnoreCase('FK_')) {
             List<String> foriegnKeyFields = columnFieldName.split('\\.');
             if (foriegnKeyFields.size() == 2) {
                 return foriegnKey + foriegnKeyFields[1];
@@ -716,189 +746,231 @@ public class C501_MM_Rule_Discover implements Schedulable {
         }
 
         // Check to add RecordTypeId
-        if (columnFieldName.endsWith('_RECORDTYPE')) {
+        if (columnFieldName.endsWithIgnoreCase('_RECORDTYPE')) {
 
             String fieldName = 'RecordTypeId';
-            if (mergeMetric.Source_Object__c.equals('Account')) {
+            if (mergeMetric.Source_Object__c.equalsIgnoreCase('Account')) {
 
                 Map<String, Schema.SObjectField> objectFields = Schema.SObjectType.Account.fields.getMap();
-                if (objectFields.keySet().contains(fieldName)) {
+                if (objectFields.keySet().contains(fieldName.toLowerCase())) {
                     Schema.SObjectField f = objectFields.get(fieldName);
                     Schema.DescribeFieldResult fResult = f.getDescribe();
 
                     if (fResult.isAccessible()) {
-                        return 'Account.RecordTypeId';
+                        if (columnFieldName.containsIgnoreCase('Account')) {
+                            return 'Account.RecordType.Name';
+                        }
                     }
                 }
             }
-            else if (mergeMetric.Source_Object__c.equals('Contact')) {
+            else if (mergeMetric.Source_Object__c.equalsIgnoreCase('Contact')) {
 
                 Map<String, Schema.SObjectField> objectFields = Schema.SObjectType.Contact.fields.getMap();
-                if (objectFields.keySet().contains(fieldName)) {
+                if (objectFields.keySet().contains(fieldName.toLowerCase())) {
                     Schema.SObjectField f = objectFields.get(fieldName);
                     Schema.DescribeFieldResult fResult = f.getDescribe();
 
                     if (fResult.isAccessible()) {
-                        return 'RecordTypeId';
+                        if (columnFieldName.containsIgnoreCase('Contact')) {
+                            return 'Contact.RecordType.Name';
+                        }
                     }
                 }
             }
-        }
-
-        // Check for Source Object in Column Name
-        else if (columnFieldName.startsWith(mergeMetric.Source_Object__c + '.')) {
-            return columnFieldName.replace(mergeMetric.Source_Object__c + '.', '');
         }
 
         // Contact General Columns
         //
-        else if (columnFieldName == 'NAME') {
+        else if (columnFieldName.equalsIgnoreCase('NAME')) {
             return 'Name';
         }
-        else if (columnFieldName == 'EMAIL') {
+        else if (columnFieldName.equalsIgnoreCase('EMAIL')) {
             return 'Email';
         }
-        else if (columnFieldName == 'FIRST_NAME') {
+        else if (columnFieldName.equalsIgnoreCase('FIRST_NAME')) {
             return 'FirstName';
         }
-        else if (columnFieldName == 'LAST_NAME') {
+        else if (columnFieldName.equalsIgnoreCase('LAST_NAME')) {
             return 'LastName';
         }
-        else if (columnFieldName == 'MIDDLE_NAME') {
+        else if (columnFieldName.equalsIgnoreCase('MIDDLE_NAME')) {
             return 'MiddleName';
         }
-        else if (columnFieldName == 'BIRTHDATE') {
+        else if (columnFieldName.equalsIgnoreCase('BIRTHDATE')) {
             return 'Birthdate';
         }
-        else if (columnFieldName == 'REPORTS_TO') {
+        else if (columnFieldName.equalsIgnoreCase('REPORTS_TO')) {
             return 'ReportsTo.Name';
         }
-        else if (columnFieldName == 'CONTACT_LAST_UPDATE_BY_ALIAS') {
+        else if (columnFieldName.equalsIgnoreCase('CONTACT_LAST_UPDATE_BY_ALIAS')) {
             return 'LastModifiedBy.Alias';
         }
-        else if (columnFieldName == 'CONTACT_LAST_UPDATE_BY') {
+        else if (columnFieldName.equalsIgnoreCase('CONTACT_LAST_UPDATE_BY')) {
             return 'LastModifiedBy.Name';
         }
-        else if (columnFieldName == 'CONTACT_CREATED_ALIAS') {
+        else if (columnFieldName.equalsIgnoreCase('CONTACT_CREATED_ALIAS')) {
             return 'CreatedBy.Alias';
         }
-        else if (columnFieldName == 'CONTACT_CREATED') {
+        else if (columnFieldName.equalsIgnoreCase('CONTACT_CREATED')) {
             return 'CreatedBy.Name';
         }
-        else if (columnFieldName == 'CONTACT_ALIAS') {
+        else if (columnFieldName.equalsIgnoreCase('CONTACT_ALIAS')) {
             return 'Owner.Alias';
         }
-        else if (columnFieldName == 'CONTACT_OWNER') {
+        else if (columnFieldName.equalsIgnoreCase('CONTACT_OWNER')) {
             return 'Owner.Name';
         }
 
         // Contact Address Columns
         //
-        else if (columnFieldName.startsWith('ADDRESS1_LINE')) {
+        else if (columnFieldName.startsWithIgnoreCase('ADDRESS1_LINE')) {
             return null;
         }
-        else if (columnFieldName.startsWith('ADDRESS2_LINE')) {
+        else if (columnFieldName.startsWithIgnoreCase('ADDRESS2_LINE')) {
             return null;
         }
-        else if (columnFieldName.startsWith('ADDRESS1_ZIP')) {
-            return columnFieldName.replace('ADDRESS1_ZIP', 'MailingPostalCode');
+        else if (columnFieldName.startsWithIgnoreCase('ADDRESS1_ZIP')) {
+            return 'MailingPostalCode';
         }
-        else if (columnFieldName.startsWith('ADDRESS2_ZIP')) {
-            return columnFieldName.replace('ADDRESS2_ZIP', 'OtherPostalCode');
+        else if (columnFieldName.startsWithIgnoreCase('ADDRESS2_ZIP')) {
+            return 'OtherPostalCode';
         }
-        else if (columnFieldName.startsWith('ADDRESS1_')) {
+        else if (columnFieldName.startsWithIgnoreCase('ADDRESS1_STATE')) {
+            return 'MailingState';
+        }
+        else if (columnFieldName.startsWithIgnoreCase('ADDRESS2_STATE')) {
+            return 'OtherState';
+        }
+        else if (columnFieldName.startsWithIgnoreCase('ADDRESS1_CITY')) {
+            return 'MailingCity';
+        }
+        else if (columnFieldName.startsWithIgnoreCase('ADDRESS2_CITY')) {
+            return 'OtherCity';
+        }
+        else if (columnFieldName.startsWithIgnoreCase('ADDRESS1_STREET')) {
+            return 'MailingStreet';
+        }
+        else if (columnFieldName.startsWithIgnoreCase('ADDRESS2_STREET')) {
+            return 'OtherStreet';
+        }
+        else if (columnFieldName.startsWithIgnoreCase('ADDRESS1_')) {
             return columnFieldName.replace('ADDRESS1_', 'Mailing');
         }
-        else if (columnFieldName.startsWith('ADDRESS2_')) {
+        else if (columnFieldName.startsWithIgnoreCase('ADDRESS2_')) {
             return columnFieldName.replace('ADDRESS2_', 'Other');
         }
 
         // Contact Other Columns
         //
-        else if (columnFieldName.equals('IS_EMAIL_BOUNCED')) {
+        else if (columnFieldName.equalsIgnoreCase('IS_EMAIL_BOUNCED')) {
             return 'IsEmailBounced';
         }
-        else if (columnFieldName.equals('FAX_OPT_OUT')) {
+        else if (columnFieldName.equalsIgnoreCase('FAX_OPT_OUT')) {
             return 'HasOptedOutOfFax';
         }
-        else if (columnFieldName.equals('EMAIL_OPT_OUT')) {
+        else if (columnFieldName.equalsIgnoreCase('EMAIL_OPT_OUT')) {
             return 'HasOptedOutOfEmail';
         }
-        else if (columnFieldName.equals('PHONE1')) {
+        else if (columnFieldName.equalsIgnoreCase('PHONE1')) {
             return 'Phone';
         }
-        else if (columnFieldName.startsWith('ASSISTANT_NAME')) {
+        else if (columnFieldName.startsWithIgnoreCase('ASSISTANT_NAME')) {
             return 'AssistantName';
         }
-        else if (columnFieldName.startsWith('LEAD_SOURCE')) {
+        else if (columnFieldName.startsWithIgnoreCase('LEAD_SOURCE')) {
             return 'LeadSource';
         }
 
         // Account General Columns
         //
-        else if (columnFieldName.equals('ACCOUNT_ID')) {
-            if (mergeMetric.Source_Object__c.equals('Contact')) {
+        else if (columnFieldName.equalsIgnoreCase('ACCOUNT_ID')) {
+            if (mergeMetric.Source_Object__c.equalsIgnoreCase('Contact')) {
                 return 'AccountId';
             }
         }
-        else if (columnFieldName.equals('ACCOUNT.NAME')) {
+        else if (columnFieldName.equalsIgnoreCase('ACCOUNT.NAME')) {
             return 'Account.Name';
         }
-        else if (columnFieldName.equals('ACCOUNT_NUMBER')) {
+        else if (columnFieldName.equalsIgnoreCase('ACCOUNT_NUMBER')) {
             return 'Account.AccountNumber';
         }
-        else if (columnFieldName.equals('ACCOUNT_SOURCE')) {
+        else if (columnFieldName.equalsIgnoreCase('ACCOUNT_SOURCE')) {
             return 'Account.AccountSource';
         }
-        else if (columnFieldName.equals('SIC_DESC')) {
+        else if (columnFieldName.equalsIgnoreCase('SIC_DESC')) {
             return 'Account.SicDesc';
         }        
-        else if (columnFieldName.equals('TICKER')) {
+        else if (columnFieldName.equalsIgnoreCase('TICKER')) {
             return 'Account.TickerSymbol';
         }        
-        else if (columnFieldName.equals('PARENT_ID')) {
+        else if (columnFieldName.equalsIgnoreCase('PARENT_ID')) {
             return 'Account.ParentId';
         }
-        else if (columnFieldName.equals('OWNER_FULL_NAME')) {
+        else if (columnFieldName.equalsIgnoreCase('OWNER_FULL_NAME')) {
             return 'Account.Owner.Name';
         }
-        else if (columnFieldName.equals('ALIAS')) {
+        else if (columnFieldName.equalsIgnoreCase('ALIAS')) {
             return 'Account.Owner.Alias';
         }
 
         // Account Address Columns
         //
-        else if (columnFieldName.startsWith('ACCOUNT.ADDRESS1_LINE')) {
+        else if (columnFieldName.startsWithIgnoreCase('ACCOUNT.ADDRESS1_LINE')) {
             return null;
         }
-        else if (columnFieldName.startsWith('ACCOUNT.ADDRESS2_LINE')) {
+        else if (columnFieldName.startsWithIgnoreCase('ACCOUNT.ADDRESS2_LINE')) {
             return null;
         }
-        else if (columnFieldName.startsWith('ACCOUNT.ADDRESS1_ZIP')) {
-            return columnFieldName.replace('ACCOUNT.ADDRESS1_ZIP', 'ACCOUNT.BillingPostalCode');
+        else if (columnFieldName.startsWithIgnoreCase('ACCOUNT.ADDRESS1_ZIP')) {
+            return 'Account.BillingPostalCode';
         }
-        else if (columnFieldName.startsWith('ACCOUNT.ADDRESS2_ZIP')) {
-            return columnFieldName.replace('ACCOUNT.ADDRESS2_ZIP', 'ACCOUNT.ShippingPostalCode');
+        else if (columnFieldName.startsWithIgnoreCase('ACCOUNT.ADDRESS2_ZIP')) {
+            return 'Account.ShippingPostalCode';
         }
-        else if (columnFieldName.startsWith('ACCOUNT.ADDRESS1_')) {
-            return columnFieldName.replace('ACCOUNT.ADDRESS1_', 'ACCOUNT.Billing');
+        else if (columnFieldName.startsWithIgnoreCase('ACCOUNT.ADDRESS1_STATE')) {
+            return 'Account.BillingState';
         }
-        else if (columnFieldName.startsWith('ACCOUNT.ADDRESS2_')) {
-            return columnFieldName.replace('ACCOUNT.ADDRESS2_', 'ACCOUNT.Shipping');
+        else if (columnFieldName.startsWithIgnoreCase('ACCOUNT.ADDRESS2_STATE')) {
+            return 'Account.ShippingState';
+        }
+        else if (columnFieldName.startsWithIgnoreCase('ACCOUNT.ADDRESS1_CITY')) {
+            return 'Account.BillingCity';
+        }
+        else if (columnFieldName.startsWithIgnoreCase('ACCOUNT.ADDRESS2_CITY')) {
+            return 'Account.ShippingCity';
+        }
+        else if (columnFieldName.startsWithIgnoreCase('ACCOUNT.ADDRESS1_STREET')) {
+            return 'Account.BillingStreet';
+        }
+        else if (columnFieldName.startsWithIgnoreCase('ACCOUNT.ADDRESS2_STREET')) {
+            return 'Account.ShippingStreet';
+        }
+        else if (columnFieldName.startsWithIgnoreCase('ACCOUNT.ADDRESS1_')) {
+            return columnFieldName.replace('ACCOUNT.ADDRESS1_', 'Account.Billing');
+        }
+        else if (columnFieldName.startsWithIgnoreCase('ACCOUNT.ADDRESS2_')) {
+            return columnFieldName.replace('ACCOUNT.ADDRESS2_', 'Account.Shipping');
         }
 
         // Account Other Columns
         //
-        else if (columnFieldName.equals('URL')) {
+        else if (columnFieldName.equalsIgnoreCase('URL')) {
             return 'Account.Website';
         }
-        else if (columnFieldName.equals('ACCOUNT.PHONE1')) {
+        else if (columnFieldName.equalsIgnoreCase('ACCOUNT.PHONE1')) {
             return 'Account.Phone';
         }
 
         // Check for Custom Field
-        else if (columnFieldName.endsWith('__c')) {
+        else if (columnFieldName.endsWithIgnoreCase('__c')) {
             return columnFieldName;
+        }
+
+        // Check for Source Object in Column Name
+        else if (columnFieldName.startsWithIgnoreCase(mergeMetric.Source_Object__c + '.')) {
+
+            String modifiedColumnFieldName = columnFieldName.split('\\.')[1];
+            return modifiedColumnFieldName;
         }
 
         return null;
@@ -913,31 +985,31 @@ public class C501_MM_Rule_Discover implements Schedulable {
 
         String checkedValue = (value.isNumeric() ? value : ('\'' + value + '\''));
 
-        if (operator == 'equals') {
+        if (operator.equalsIgnoreCase('equals')) {
             return columnName + ' = ' + checkedValue;
         }
-        else if (operator == 'notEqual') {
+        else if (operator.equalsIgnoreCase('notEqual')) {
             return columnName + ' != ' + checkedValue;
         }
-        else if (operator == 'lessThan') {
+        else if (operator.equalsIgnoreCase('lessThan')) {
             return columnName + ' < ' + checkedValue;
         }
-        else if (operator == 'greaterThan') {
+        else if (operator.equalsIgnoreCase('greaterThan')) {
             return columnName + ' > ' + checkedValue;
         }
-        else if (operator == 'lessOrEqual') {
+        else if (operator.equalsIgnoreCase('lessOrEqual')) {
             return columnName + ' <= ' + checkedValue;
         }
-        else if (operator == 'greaterOrEqual') {
+        else if (operator.equalsIgnoreCase('greaterOrEqual')) {
             return columnName + ' >= ' + checkedValue;
         }
-        else if (operator == 'contains') {
+        else if (operator.equalsIgnoreCase('contains')) {
             return columnName + ' LIKE \'%' + value + '%\'';
         }
-        else if (operator == 'notContain') {
+        else if (operator.equalsIgnoreCase('notContain')) {
             return ' (NOT ' + columnName + ' LIKE \'%' + value + '%\')';
         }
-        else if (operator == 'startsWith') {
+        else if (operator.equalsIgnoreCase('startsWith')) {
             return columnName + ' LIKE \'' + value + '%\'';
         }
 

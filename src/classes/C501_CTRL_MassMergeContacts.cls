@@ -55,36 +55,36 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
         }
 
         // Required fields
-        if (!ListPartialContains(listStrFields, 'Id')) {
+        if (!ListPartialcontains(listStrFields, 'Id')) {
             listStrFields.add('Id');
         }
-        if (!ListPartialContains(listStrFields, 'Name')) {
+        if (!ListPartialcontains(listStrFields, 'Name')) {
             listStrFields.add('Name');
         }
-        if (!ListPartialContains(listStrFields, 'C501_Merge_Metric_Name__c')) {
+        if (!ListPartialcontains(listStrFields, 'C501_Merge_Metric_Name__c')) {
             listStrFields.add('C501_Merge_Metric_Name__c');
         }
-        if (!ListPartialContains(listStrFields, 'C501_Merge_Metric__c')) {
+        if (!ListPartialcontains(listStrFields, 'C501_Merge_Metric__c')) {
             listStrFields.add('C501_Merge_Metric__c');
         }
-        if (!ListPartialContains(listStrFields, 'C501_Merge_Id__c')) {
+        if (!ListPartialcontains(listStrFields, 'C501_Merge_Id__c')) {
             listStrFields.add('C501_Merge_Id__c');
         }
-        if (!ListPartialContains(listStrFields, 'C501_Merge_Action__c')) {
+        if (!ListPartialcontains(listStrFields, 'C501_Merge_Action__c')) {
             listStrFields.add('C501_Merge_Action__c');
         }
-        if (!ListPartialContains(listStrFields, 'C501_Merge_Contact__c')) {
+        if (!ListPartialcontains(listStrFields, 'C501_Merge_Contact__c')) {
             listStrFields.add('C501_Merge_Contact__c');
         }
-        if (!ListPartialContains(listStrFields, 'C501_Merge_Target__c')) {
+        if (!ListPartialcontains(listStrFields, 'C501_Merge_Target__c')) {
             listStrFields.add('C501_Merge_Target__c');
         }
-        if (!ListPartialContains(listStrFields, 'C501_Merge_Confidence__c')) {
+        if (!ListPartialcontains(listStrFields, 'C501_Merge_Confidence__c')) {
             listStrFields.add('C501_Merge_Confidence__c');
         }
     }   
     
-    private Boolean ListPartialContains(List<String> listStrFields, String fieldValue) {
+    private Boolean ListPartialcontains(List<String> listStrFields, String fieldValue) {
 
         if (listStrFields == null) {
             return false;
@@ -234,8 +234,7 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
 
         if (objectFilter.Id <> null) {
         
-            C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
-            String strSoql = c501MassMerge_SharedCode.GetC501ContactMergeQuery();
+            String strSoql = C501_MassMerge_SharedCode.GetC501ContactMergeQuery();
             strSoql += ' AND (Contact__c = \'' + objectFilter.Id + '\' OR Merge_Target_Contact__c = \'' + objectFilter.Id + '\') AND Merge_Action__c = null';
             strSoql += ' LIMIT 1';
 
@@ -289,8 +288,7 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
                 strRuleSoql = ' and Merge_Metric__r.Name = \'' + mergeRule + '\'';
             }
 
-            C501_MassMerge_SharedCode c501MassMerge_SharedCode = new C501_MassMerge_SharedCode();
-            String strSoql = c501MassMerge_SharedCode.GetC501ContactMergeQuery();
+            String strSoql = C501_MassMerge_SharedCode.GetC501ContactMergeQuery();
             strSoql += ' AND (Contact__c in ' + C501_MassMerge_SharedCode.GetSafeSoqlList(objectIds) + ' OR Merge_Target_Contact__c in ' + C501_MassMerge_SharedCode.GetSafeSoqlList(objectIds) + ') AND Merge_Action__c = null';
             strSoql += strRuleSoql;
             strSoql += ' ORDER BY Contact__r.Name ASC';
