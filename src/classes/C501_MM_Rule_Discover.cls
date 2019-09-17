@@ -535,21 +535,25 @@ public class C501_MM_Rule_Discover implements Schedulable {
 
             Integer matches = Integer.valueOf(result.get('Matches'));
 
-            insertMergeMembers.add(
-                new C501_Account_Merge_Member__c(
-                    Account__c = minId,
-                    Merge_Metric__c = mergeMetric.Id,
-                    Unique_Id__c = mergeMetric.Id + minId,
-                    Potential_Merges__c = matches
-                ));
+            // Monitor matches greater than 2 because that means there are possibly some accounts between min/max that are not getting included in a merge candidate
+            // Investigate doing some post processing of the accounts between min/max to see if they can be included in merge candidates
+            if (matches > 2) {
+                insertMergeMembers.add(
+                    new C501_Account_Merge_Member__c(
+                        Account__c = minId,
+                        Merge_Metric__c = mergeMetric.Id,
+                        Unique_Id__c = mergeMetric.Id + minId,
+                        Potential_Merges__c = matches
+                    ));
 
-            insertMergeMembers.add(
-                new C501_Account_Merge_Member__c(
-                    Account__c = maxId,
-                    Merge_Metric__c = mergeMetric.Id,
-                    Unique_Id__c = mergeMetric.Id + maxId,
-                    Potential_Merges__c = matches
-                ));
+                insertMergeMembers.add(
+                    new C501_Account_Merge_Member__c(
+                        Account__c = maxId,
+                        Merge_Metric__c = mergeMetric.Id,
+                        Unique_Id__c = mergeMetric.Id + maxId,
+                        Potential_Merges__c = matches
+                    ));
+            }
         }
 
         if (!insertMergeMembers.isEmpty()) {
