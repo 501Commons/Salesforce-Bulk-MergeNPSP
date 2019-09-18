@@ -72,7 +72,7 @@
         <referenceTo>Account</referenceTo>
         <relationshipLabel>Account Merge Members</relationshipLabel>
         <relationshipName>Account_Merge_Members</relationshipName>
-        <relationshipOrder>1</relationshipOrder>
+        <relationshipOrder>0</relationshipOrder>
         <reparentableMasterDetail>false</reparentableMasterDetail>
         <trackTrending>false</trackTrending>
         <type>MasterDetail</type>
@@ -85,7 +85,7 @@
         <referenceTo>C501_Merge_Metric__c</referenceTo>
         <relationshipLabel>Account Merge Members</relationshipLabel>
         <relationshipName>Account_Merge_Members</relationshipName>
-        <relationshipOrder>0</relationshipOrder>
+        <relationshipOrder>1</relationshipOrder>
         <reparentableMasterDetail>true</reparentableMasterDetail>
         <trackTrending>false</trackTrending>
         <type>MasterDetail</type>
