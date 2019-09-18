@@ -627,10 +627,6 @@
         <apexPage>C501_MassMergeListViewMerge</apexPage>
         <enabled>true</enabled>
     </pageAccesses>
-    <pageAccesses>
-        <apexPage>C501_MassMergeMerge</apexPage>
-        <enabled>true</enabled>
-    </pageAccesses>
     <tabSettings>
         <tab>C501_Account_Merge__c</tab>
         <visibility>Visible</visibility>
