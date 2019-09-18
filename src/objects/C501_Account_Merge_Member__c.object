@@ -54,12 +54,25 @@
     <enableStreamingApi>true</enableStreamingApi>
     <fields>
         <fullName>Account_Id__c</fullName>
-        <deleteConstraint>SetNull</deleteConstraint>
+        <deleteConstraint>Restrict</deleteConstraint>
         <externalId>false</externalId>
         <label>Account</label>
         <referenceTo>Account</referenceTo>
-        <relationshipLabel>Account Merge Members</relationshipLabel>
+        <relationshipLabel>Account Merge Members (Account)</relationshipLabel>
         <relationshipName>Account_Merge_Members</relationshipName>
+        <required>true</required>
+        <trackTrending>false</trackTrending>
+        <type>Lookup</type>
+    </fields>
+    <fields>
+        <fullName>Account__c</fullName>
+        <businessStatus>DeprecateCandidate</businessStatus>
+        <deleteConstraint>SetNull</deleteConstraint>
+        <externalId>false</externalId>
+        <label>Account Old</label>
+        <referenceTo>Account</referenceTo>
+        <relationshipLabel>Account Merge Members Old</relationshipLabel>
+        <relationshipName>Account_Merge_Members_Old</relationshipName>
         <required>false</required>
         <trackTrending>false</trackTrending>
         <type>Lookup</type>

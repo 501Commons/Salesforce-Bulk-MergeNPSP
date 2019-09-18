@@ -58,9 +58,22 @@
         <externalId>false</externalId>
         <label>Account</label>
         <referenceTo>Account</referenceTo>
-        <relationshipLabel>Merge Account Histories</relationshipLabel>
+        <relationshipLabel>Merge Account Histories (Account)</relationshipLabel>
         <relationshipName>Merge_Account_Histories</relationshipName>
         <required>true</required>
+        <trackTrending>false</trackTrending>
+        <type>Lookup</type>
+    </fields>
+    <fields>
+        <fullName>Account__c</fullName>
+        <businessStatus>DeprecateCandidate</businessStatus>
+        <deleteConstraint>Restrict</deleteConstraint>
+        <externalId>false</externalId>
+        <label>Account Old</label>
+        <referenceTo>Account</referenceTo>
+        <relationshipLabel>Merge Account Histories Old</relationshipLabel>
+        <relationshipName>Merge_Account_Histories_Old</relationshipName>
+        <required>false</required>
         <trackTrending>false</trackTrending>
         <type>Lookup</type>
     </fields>

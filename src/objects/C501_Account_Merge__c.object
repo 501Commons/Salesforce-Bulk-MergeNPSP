@@ -58,9 +58,22 @@
         <externalId>false</externalId>
         <label>Account</label>
         <referenceTo>Account</referenceTo>
-        <relationshipLabel>Account Merges</relationshipLabel>
+        <relationshipLabel>Account Merges (Account)</relationshipLabel>
         <relationshipName>Account_Merges</relationshipName>
         <required>true</required>
+        <trackTrending>false</trackTrending>
+        <type>Lookup</type>
+    </fields>
+    <fields>
+        <fullName>Account__c</fullName>
+        <businessStatus>DeprecateCandidate</businessStatus>
+        <deleteConstraint>Restrict</deleteConstraint>
+        <externalId>false</externalId>
+        <label>Account Old</label>
+        <referenceTo>Account</referenceTo>
+        <relationshipLabel>Account Merges Old</relationshipLabel>
+        <relationshipName>Account_Merges_Old</relationshipName>
+        <required>false</required>
         <trackTrending>false</trackTrending>
         <type>Lookup</type>
     </fields>
@@ -145,16 +158,16 @@
     </nameField>
     <pluralLabel>Account Merges</pluralLabel>
     <searchLayouts>
-        <customTabListAdditionalFields>Account_Id__c</customTabListAdditionalFields>
+        <customTabListAdditionalFields>Account__c</customTabListAdditionalFields>
         <customTabListAdditionalFields>Merge_Target_Account__c</customTabListAdditionalFields>
         <customTabListAdditionalFields>Merge_Confidence__c</customTabListAdditionalFields>
-        <lookupDialogsAdditionalFields>Account_Id__c</lookupDialogsAdditionalFields>
+        <lookupDialogsAdditionalFields>Account__c</lookupDialogsAdditionalFields>
         <lookupDialogsAdditionalFields>Merge_Target_Account__c</lookupDialogsAdditionalFields>
         <lookupDialogsAdditionalFields>Merge_Confidence__c</lookupDialogsAdditionalFields>
-        <searchFilterFields>Account_Id__c</searchFilterFields>
+        <searchFilterFields>Account__c</searchFilterFields>
         <searchFilterFields>Merge_Target_Account__c</searchFilterFields>
         <searchFilterFields>Merge_Confidence__c</searchFilterFields>
-        <searchResultsAdditionalFields>Account_Id__c</searchResultsAdditionalFields>
+        <searchResultsAdditionalFields>Account__c</searchResultsAdditionalFields>
         <searchResultsAdditionalFields>Merge_Target_Account__c</searchResultsAdditionalFields>
         <searchResultsAdditionalFields>Merge_Confidence__c</searchResultsAdditionalFields>
     </searchLayouts>

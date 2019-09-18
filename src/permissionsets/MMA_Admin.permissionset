@@ -37,6 +37,14 @@
         <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
+        <apexClass>C501_MM_MergeMetric_Trigger</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
+    <classAccesses>
+        <apexClass>C501_MM_MergeMetric_Trigger_TEST</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
+    <classAccesses>
         <apexClass>C501_MM_Rule_Discover</apexClass>
         <enabled>true</enabled>
     </classAccesses>
@@ -54,6 +62,10 @@
     </classAccesses>
     <classAccesses>
         <apexClass>C501_MM_Rule_Merge</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
+    <classAccesses>
+        <apexClass>C501_MassMerge_AccountWrapper</apexClass>
         <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
@@ -263,13 +275,18 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
-        <field>C501_Account_Merge_Member__c.Account_Id__c</field>
+        <field>C501_Account_Merge_Member__c.Account__c</field>
         <readable>false</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>true</editable>
         <field>C501_Account_Merge_Member__c.Potential_Merges__c</field>
         <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>C501_Account_Merge__c.Account__c</field>
+        <readable>false</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>true</editable>
@@ -285,6 +302,11 @@
         <editable>true</editable>
         <field>C501_Account_Merge__c.Merge_Target_Account__c</field>
         <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>C501_Contact_Merge__c.Contact__c</field>
+        <readable>false</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>true</editable>
@@ -303,8 +325,18 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
+        <field>C501_Merge_Account_History__c.Account__c</field>
+        <readable>false</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
         <field>C501_Merge_Account_History__c.User__c</field>
         <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>C501_Merge_Contact_History__c.Contact__c</field>
+        <readable>false</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>

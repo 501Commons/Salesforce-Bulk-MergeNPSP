@@ -58,9 +58,22 @@
         <externalId>false</externalId>
         <label>Contact</label>
         <referenceTo>Contact</referenceTo>
-        <relationshipLabel>Contact Merges</relationshipLabel>
+        <relationshipLabel>Contact Merges (Contact)</relationshipLabel>
         <relationshipName>Contact_Merges</relationshipName>
         <required>true</required>
+        <trackTrending>false</trackTrending>
+        <type>Lookup</type>
+    </fields>
+    <fields>
+        <fullName>Contact__c</fullName>
+        <businessStatus>DeprecateCandidate</businessStatus>
+        <deleteConstraint>Restrict</deleteConstraint>
+        <externalId>false</externalId>
+        <label>Contact Old</label>
+        <referenceTo>Contact</referenceTo>
+        <relationshipLabel>Contact Merges Old</relationshipLabel>
+        <relationshipName>Contact_Merges_Old</relationshipName>
+        <required>false</required>
         <trackTrending>false</trackTrending>
         <type>Lookup</type>
     </fields>
@@ -145,16 +158,16 @@
     </nameField>
     <pluralLabel>Contact Merges</pluralLabel>
     <searchLayouts>
-        <customTabListAdditionalFields>Contact_Id__c</customTabListAdditionalFields>
+        <customTabListAdditionalFields>Contact__c</customTabListAdditionalFields>
         <customTabListAdditionalFields>Merge_Target_Contact__c</customTabListAdditionalFields>
         <customTabListAdditionalFields>Merge_Confidence__c</customTabListAdditionalFields>
-        <lookupDialogsAdditionalFields>Contact_Id__c</lookupDialogsAdditionalFields>
+        <lookupDialogsAdditionalFields>Contact__c</lookupDialogsAdditionalFields>
         <lookupDialogsAdditionalFields>Merge_Target_Contact__c</lookupDialogsAdditionalFields>
         <lookupDialogsAdditionalFields>Merge_Confidence__c</lookupDialogsAdditionalFields>
-        <searchFilterFields>Contact_Id__c</searchFilterFields>
+        <searchFilterFields>Contact__c</searchFilterFields>
         <searchFilterFields>Merge_Target_Contact__c</searchFilterFields>
         <searchFilterFields>Merge_Confidence__c</searchFilterFields>
-        <searchResultsAdditionalFields>Contact_Id__c</searchResultsAdditionalFields>
+        <searchResultsAdditionalFields>Contact__c</searchResultsAdditionalFields>
         <searchResultsAdditionalFields>Merge_Target_Contact__c</searchResultsAdditionalFields>
         <searchResultsAdditionalFields>Merge_Confidence__c</searchResultsAdditionalFields>
     </searchLayouts>
