@@ -16,10 +16,6 @@
                 <field>Merge_Metric_Name__c</field>
             </layoutItems>
             <layoutItems>
-                <behavior>Required</behavior>
-                <field>Account_Id__c</field>
-            </layoutItems>
-            <layoutItems>
                 <behavior>Edit</behavior>
                 <field>Merge_Target_Account__c</field>
             </layoutItems>

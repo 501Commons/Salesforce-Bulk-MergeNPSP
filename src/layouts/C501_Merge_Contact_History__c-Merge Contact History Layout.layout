@@ -8,16 +8,12 @@
         <label>Information</label>
         <layoutColumns>
             <layoutItems>
-                <behavior>Required</behavior>
-                <field>Contact__c</field>
-            </layoutItems>
-            <layoutItems>
                 <behavior>Readonly</behavior>
                 <field>Name</field>
             </layoutItems>
             <layoutItems>
                 <behavior>Required</behavior>
-                <field>Contact_Id__c</field>
+                <field>Contact__c</field>
             </layoutItems>
             <layoutItems>
                 <behavior>Required</behavior>

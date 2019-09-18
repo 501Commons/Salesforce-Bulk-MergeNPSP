@@ -194,7 +194,7 @@ global with sharing class C501_MassMerge_SharedCode {
 
         String strSoql = 'SELECT';
         strSoql += ' Id, Unique_Id__c,';
-        strSoql += ' Account_Id__c, Account__r.C501_Household_Id__c, Account__r.IsDeleted,';
+        strSoql += ' Account__c, Account__r.C501_Household_Id__c, Account__r.IsDeleted,';
         strSoql += ' Merge_Target_Account__c, Merge_Target_Account__r.C501_Household_Id__c, Merge_Target_Account__r.IsDeleted,';
         strSoql += ' Merge_Confidence__c, Merge_Action__c,';
         strSoql += ' Merge_Metric__c, Merge_Metric__r.Name';
@@ -217,7 +217,7 @@ global with sharing class C501_MassMerge_SharedCode {
 
         String strSoql = 'SELECT';
         strSoql += ' Id, Unique_Id__c,';
-        strSoql += ' Contact_Id__c, Contact__r.C501_Household_Id__c, Contact__r.IsDeleted,';
+        strSoql += ' Contact__c, Contact__r.C501_Household_Id__c, Contact__r.IsDeleted,';
         strSoql += ' Merge_Target_Contact__c, Merge_Target_Contact__r.C501_Household_Id__c, Merge_Target_Contact__r.IsDeleted,';
         strSoql += ' Merge_Confidence__c, Merge_Action__c,';
         strSoql += ' Merge_Metric__c, Merge_Metric__r.Name';
@@ -379,7 +379,7 @@ global with sharing class C501_MassMerge_SharedCode {
         // Delete any account merges for accounts where contact was merged
         strSoql = C501_MassMerge_SharedCode.GetC501AccountMergeQuery_v2();
         
-        strSoql += ' AND (Account_Id__c = null OR Merge_Target_Account__c = null OR Account_Id__c in ' + C501_MassMerge_SharedCode.GetSafeSoqlList_v2(contactAccounts.values()) + ' OR Merge_Target_Account__c in ' + C501_MassMerge_SharedCode.GetSafeSoqlList_v2(contactAccounts.values()) + ')';
+        strSoql += ' AND (Account__c = null OR Merge_Target_Account__c = null OR Account__c in ' + C501_MassMerge_SharedCode.GetSafeSoqlList_v2(contactAccounts.values()) + ' OR Merge_Target_Account__c in ' + C501_MassMerge_SharedCode.GetSafeSoqlList_v2(contactAccounts.values()) + ')';
 
         System.debug(LoggingLevel.DEBUG, '*****C501_MassMerge_SharedCode::ObjectsMerge_Contact strSoql: ' + strSoql);
 
@@ -500,15 +500,15 @@ global with sharing class C501_MassMerge_SharedCode {
             List<C501_Contact_Merge__c> pendingAutoMergeCandidates = new List<C501_Contact_Merge__c>();
             for (C501_Contact_Merge__c pendingAutoMerge :pendingAutoMerges) {
 
-                if (!contactHouseholdMap.containsKey(pendingAutoMerge.Contact_Id__c) || !contactHouseholdMap.containsKey(pendingAutoMerge.Merge_Target_Contact__c)) {
+                if (!contactHouseholdMap.containsKey(pendingAutoMerge.Contact__c) || !contactHouseholdMap.containsKey(pendingAutoMerge.Merge_Target_Contact__c)) {
                     continue;
                 }
 
-                if (automergeObjects.contains('Contacts Within Account') && contactHouseholdMap.get(pendingAutoMerge.Contact_Id__c) == contactHouseholdMap.get(pendingAutoMerge.Merge_Target_Contact__c)) {
+                if (automergeObjects.contains('Contacts Within Account') && contactHouseholdMap.get(pendingAutoMerge.Contact__c) == contactHouseholdMap.get(pendingAutoMerge.Merge_Target_Contact__c)) {
                     pendingAutoMergeCandidates.add(pendingAutoMerge);
                 }
                 
-                if (automergeObjects.contains('Contacts Across Accounts') && contactHouseholdMap.get(pendingAutoMerge.Contact_Id__c) != contactHouseholdMap.get(pendingAutoMerge.Merge_Target_Contact__c)) {
+                if (automergeObjects.contains('Contacts Across Accounts') && contactHouseholdMap.get(pendingAutoMerge.Contact__c) != contactHouseholdMap.get(pendingAutoMerge.Merge_Target_Contact__c)) {
                     pendingAutoMergeCandidates.add(pendingAutoMerge);
                 }
             }
@@ -667,7 +667,7 @@ global with sharing class C501_MassMerge_SharedCode {
 
         insert listOpportunityHouseholds.values();
         insert listContacts;
-        
+
 
         //C501_MassMerge_SharedCode.PrintSalesforceStructure_v2();
     }

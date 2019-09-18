@@ -237,7 +237,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
             System.debug(LoggingLevel.DEBUG, '***** C501_CTRL_MassMergeAccounts::FillListAccounts objectFilter.Id: ' + objectFilter.Id);
 
             String strSoql = C501_MassMerge_SharedCode.GetC501AccountMergeQuery_v2();
-            strSoql += ' AND (Account_Id__c = \'' + objectFilter.Id + '\' OR Merge_Target_Account__c = \'' + objectFilter.Id + '\') AND Merge_Action__c = null';
+            strSoql += ' AND (Account__c = \'' + objectFilter.Id + '\' OR Merge_Target_Account__c = \'' + objectFilter.Id + '\') AND Merge_Action__c = null';
             strSoql += ' LIMIT 1';
 
             System.debug(LoggingLevel.DEBUG, '***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::FillListAccounts strSoql: ' + strSoql);
@@ -247,13 +247,13 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
                     System.debug(LoggingLevel.DEBUG, '***** C501_CTRL_MassMergeAccounts::FillListAccounts accountMerge: ' + accountMerge);
 
                     accountsMerge.put(
-                        accountMerge.Account_Id__c,
+                        accountMerge.Account__c,
                         new C501_Account_Merge__c(
                             Id = accountMerge.Id,
                             Merge_Action__c = accountMerge.Merge_Action__c,
                             Merge_Confidence__c = null,
-                            Account__c = accountMerge.Account_Id__c,
-                            Account_Id__c = accountMerge.Account_Id__c,
+                            Account__c = accountMerge.Account__c,
+                            Account_Id__c = accountMerge.Account__c,
                             Merge_Target_Account__c = accountMerge.Merge_Target_Account__c,
                             Merge_Metric__c = accountMerge.Merge_Metric__c,
                             Merge_Metric_Name__c = 'Merge ' + accountMerge.Merge_Metric__r.Name
@@ -265,8 +265,8 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
                             Id = accountMerge.Id,
                             Merge_Action__c = accountMerge.Merge_Action__c,
                             Merge_Confidence__c = accountMerge.Merge_Confidence__c,
-                            Account__c = accountMerge.Account_Id__c,
-                            Account_Id__c = accountMerge.Account_Id__c,
+                            Account__c = accountMerge.Account__c,
+                            Account_Id__c = accountMerge.Account__c,
                             Merge_Target_Account__c = accountMerge.Merge_Target_Account__c,
                             Merge_Metric__c = accountMerge.Merge_Metric__c,
                             Merge_Metric_Name__c = 'Merge ' + accountMerge.Merge_Metric__r.Name
@@ -295,7 +295,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
             }
 
             String strSoql = C501_MassMerge_SharedCode.GetC501AccountMergeQuery_v2();
-            strSoql += ' AND (Account_Id__c in ' + C501_MassMerge_SharedCode.GetSafeSoqlList_v2(objectIds) + ' OR Merge_Target_Account__c in ' + C501_MassMerge_SharedCode.GetSafeSoqlList_v2(objectIds) + ') AND Merge_Action__c = null';
+            strSoql += ' AND (Account__c in ' + C501_MassMerge_SharedCode.GetSafeSoqlList_v2(objectIds) + ' OR Merge_Target_Account__c in ' + C501_MassMerge_SharedCode.GetSafeSoqlList_v2(objectIds) + ') AND Merge_Action__c = null';
             strSoql += strRuleSoql;
             strSoql += ' ORDER BY Account__r.Name ASC';
 
@@ -303,18 +303,18 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
 
             for(C501_Account_Merge__c accountMerge : Database.Query(strSoql)) {
 
-                    if (accountsMerge.containsKey(accountMerge.Account_Id__c) || accountsMerge.containsKey(accountMerge.Merge_Target_Account__c)) {
+                    if (accountsMerge.containsKey(accountMerge.Account__c) || accountsMerge.containsKey(accountMerge.Merge_Target_Account__c)) {
                         continue;
                     }
 
                     accountsMerge.put(
-                        accountMerge.Account_Id__c,
+                        accountMerge.Account__c,
                         new C501_Account_Merge__c(
                             Id = accountMerge.Id,
                             Merge_Action__c = accountMerge.Merge_Action__c,
                             Merge_Confidence__c = null,
-                            Account__c = accountMerge.Account_Id__c,
-                            Account_Id__c = accountMerge.Account_Id__c,
+                            Account__c = accountMerge.Account__c,
+                            Account_Id__c = accountMerge.Account__c,
                             Merge_Target_Account__c = accountMerge.Merge_Target_Account__c,
                             Merge_Metric__c = accountMerge.Merge_Metric__c,
                             Merge_Metric_Name__c = 'Merge ' + mergeBuffer + mergeIndex + ' ' + accountMerge.Merge_Metric__r.Name
@@ -326,8 +326,8 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
                             Id = accountMerge.Id,
                             Merge_Action__c = accountMerge.Merge_Action__c,
                             Merge_Confidence__c = accountMerge.Merge_Confidence__c,
-                            Account__c = accountMerge.Account_Id__c,
-                            Account_Id__c = accountMerge.Account_Id__c,
+                            Account__c = accountMerge.Account__c,
+                            Account_Id__c = accountMerge.Account__c,
                             Merge_Target_Account__c = accountMerge.Merge_Target_Account__c,
                             Merge_Metric__c = accountMerge.Merge_Metric__c,
                             Merge_Metric_Name__c = 'Merge ' + mergeBuffer + mergeIndex + ' ' + accountMerge.Merge_Metric__r.Name
@@ -357,7 +357,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
                 account.C501_Merge_Id__c = mergeAccount.Id;
                 account.C501_Merge_Action__c = mergeAccount.Merge_Action__c;
                 account.C501_Merge_Confidence__c = mergeAccount.Merge_Confidence__c;
-                account.C501_Merge_Account__c = mergeAccount.Account_Id__c;
+                account.C501_Merge_Account__c = mergeAccount.Account__c;
                 account.C501_Merge_Target__c = mergeAccount.Merge_Target_Account__c;
                 account.C501_Merge_Metric_Name__c = mergeAccount.Merge_Metric_Name__c;
                 account.C501_Merge_Metric__c = mergeAccount.Merge_Metric__c;

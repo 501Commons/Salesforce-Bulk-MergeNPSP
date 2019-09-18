@@ -413,7 +413,7 @@ public class C501_MM_Rule_Discover implements Schedulable {
         System.debug(LoggingLevel.DEBUG, '***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::ProcessReportByAccounts strSoql: ' + strSoql);
 
         for(C501_Account_Merge__c existingMerge : Database.query(strSoql)) {
-                existingAccountIds.add(existingMerge.Account_Id__c);
+                existingAccountIds.add(existingMerge.Account__c);
                 existingAccountIds.add(existingMerge.Merge_Target_Account__c);
         }
 

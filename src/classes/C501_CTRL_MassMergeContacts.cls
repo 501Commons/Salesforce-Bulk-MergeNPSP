@@ -235,7 +235,7 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
         if (objectFilter.Id <> null) {
         
             String strSoql = C501_MassMerge_SharedCode.GetC501ContactMergeQuery_v2();
-            strSoql += ' AND (Contact_Id__c = \'' + objectFilter.Id + '\' OR Merge_Target_Contact__c = \'' + objectFilter.Id + '\') AND Merge_Action__c = null';
+            strSoql += ' AND (Contact__c = \'' + objectFilter.Id + '\' OR Merge_Target_Contact__c = \'' + objectFilter.Id + '\') AND Merge_Action__c = null';
             strSoql += ' LIMIT 1';
 
             System.debug(LoggingLevel.DEBUG, '***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::FillListContacts strSoql: ' + strSoql);
@@ -243,13 +243,13 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
             for(C501_Contact_Merge__c contactMerge :Database.query(strSoql)) {
 
                     contactsMerge.put(
-                        contactMerge.Contact_Id__c,
+                        contactMerge.Contact__c,
                         new C501_Contact_Merge__c(
                             Id = contactMerge.Id,
                             Merge_Action__c = contactMerge.Merge_Action__c,
                             Merge_Confidence__c = null,
-                            Contact__c = contactMerge.Contact_Id__c,
-                            Contact_Id__c = contactMerge.Contact_Id__c,
+                            Contact__c = contactMerge.Contact__c,
+                            Contact_Id__c = contactMerge.Contact__c,
                             Merge_Target_Contact__c = contactMerge.Merge_Target_Contact__c,
                             Merge_Metric__c = contactMerge.Merge_Metric__c,
                             Merge_Metric_Name__c = 'Merge ' + contactMerge.Merge_Metric__r.Name
@@ -261,8 +261,8 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
                             Id = contactMerge.Id,
                             Merge_Action__c = contactMerge.Merge_Action__c,
                             Merge_Confidence__c = contactMerge.Merge_Confidence__c,
-                            Contact__c = contactMerge.Contact_Id__c,
-                            Contact_Id__c = contactMerge.Contact_Id__c,
+                            Contact__c = contactMerge.Contact__c,
+                            Contact_Id__c = contactMerge.Contact__c,
                             Merge_Target_Contact__c = contactMerge.Merge_Target_Contact__c,
                             Merge_Metric__c = contactMerge.Merge_Metric__c,
                             Merge_Metric_Name__c = 'Merge ' + contactMerge.Merge_Metric__r.Name
@@ -291,7 +291,7 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
             }
 
             String strSoql = C501_MassMerge_SharedCode.GetC501ContactMergeQuery_v2();
-            strSoql += ' AND (Contact_Id__c in ' + C501_MassMerge_SharedCode.GetSafeSoqlList_v2(objectIds) + ' OR Merge_Target_Contact__c in ' + C501_MassMerge_SharedCode.GetSafeSoqlList_v2(objectIds) + ') AND Merge_Action__c = null';
+            strSoql += ' AND (Contact__c in ' + C501_MassMerge_SharedCode.GetSafeSoqlList_v2(objectIds) + ' OR Merge_Target_Contact__c in ' + C501_MassMerge_SharedCode.GetSafeSoqlList_v2(objectIds) + ') AND Merge_Action__c = null';
             strSoql += strRuleSoql;
             strSoql += ' ORDER BY Contact__r.Name ASC';
 
@@ -299,18 +299,18 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
 
             for(C501_Contact_Merge__c contactMerge : Database.Query(strSoql)) {
 
-                    if (contactsMerge.containsKey(contactMerge.Contact_Id__c) || contactsMerge.containsKey(contactMerge.Merge_Target_Contact__c)) {
+                    if (contactsMerge.containsKey(contactMerge.Contact__c) || contactsMerge.containsKey(contactMerge.Merge_Target_Contact__c)) {
                         continue;
                     }
 
                     contactsMerge.put(
-                        contactMerge.Contact_Id__c,
+                        contactMerge.Contact__c,
                         new C501_Contact_Merge__c(
                             Id = contactMerge.Id,
                             Merge_Action__c = contactMerge.Merge_Action__c,
                             Merge_Confidence__c = null,
-                            Contact__c = contactMerge.Contact_Id__c,
-                            Contact_Id__c = contactMerge.Contact_Id__c,
+                            Contact__c = contactMerge.Contact__c,
+                            Contact_Id__c = contactMerge.Contact__c,
                             Merge_Target_Contact__c = contactMerge.Merge_Target_Contact__c,
                             Merge_Metric__c = contactMerge.Merge_Metric__c,
                             Merge_Metric_Name__c = 'Merge ' + mergeBuffer + mergeIndex + ' ' + contactMerge.Merge_Metric__r.Name
@@ -322,8 +322,8 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
                             Id = contactMerge.Id,
                             Merge_Action__c = contactMerge.Merge_Action__c,
                             Merge_Confidence__c = contactMerge.Merge_Confidence__c,
-                            Contact__c = contactMerge.Contact_Id__c,
-                            Contact_Id__c = contactMerge.Contact_Id__c,
+                            Contact__c = contactMerge.Contact__c,
+                            Contact_Id__c = contactMerge.Contact__c,
                             Merge_Target_Contact__c = contactMerge.Merge_Target_Contact__c,
                             Merge_Metric__c = contactMerge.Merge_Metric__c,
                             Merge_Metric_Name__c = 'Merge ' + mergeBuffer + mergeIndex + ' ' + contactMerge.Merge_Metric__r.Name
@@ -353,7 +353,7 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
                 contact.C501_Merge_Id__c = mergeContact.Id;
                 contact.C501_Merge_Action__c = mergeContact.Merge_Action__c;
                 contact.C501_Merge_Confidence__c = mergeContact.Merge_Confidence__c;
-                contact.C501_Merge_Contact__c = mergeContact.Contact_Id__c;
+                contact.C501_Merge_Contact__c = mergeContact.Contact__c;
                 contact.C501_Merge_Target__c = mergeContact.Merge_Target_Contact__c;
                 contact.C501_Merge_Metric_Name__c = mergeContact.Merge_Metric_Name__c;
                 contact.C501_Merge_Metric__c = mergeContact.Merge_Metric__c;

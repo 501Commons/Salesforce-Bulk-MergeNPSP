@@ -55,22 +55,22 @@ global with sharing class C501_MassMerge_SharedCode_Account {
 
         if (String.isBlank(mergeRule)) {
             for (AggregateResult result : [
-                SELECT Account_Id__c, Account__r.Name
+                SELECT Account__c, Account__r.Name
                 FROM C501_Account_Merge__c
                 WHERE Merge_Confidence__c >= :fromMergeConfidence
                     and Merge_Confidence__c <= :toMergeConfidence
                     and Merge_Action__c = null 
                     and isDeleted = false
-                GROUP BY Account_Id__c, Account__r.Name
+                GROUP BY Account__c, Account__r.Name
                 LIMIT 999]) {
 
                     // Attempt to get based on Namespace
                     String objectFieldValue;
                     try {
-                        objectFieldValue = result.get(C501_MassMerge_SharedCode.CurrentNamespace + 'Account_Id__c').toString();
+                        objectFieldValue = result.get(C501_MassMerge_SharedCode.CurrentNamespace + 'Account__c').toString();
                     }
                     catch (System.SObjectException objectException) {
-                        objectFieldValue = result.get('Account_Id__c').toString();
+                        objectFieldValue = result.get('Account__c').toString();
                     }
 
                     listSO.add(new SelectOption(objectFieldValue,
@@ -79,23 +79,23 @@ global with sharing class C501_MassMerge_SharedCode_Account {
         }
         else {
             for (AggregateResult result : [
-                SELECT Account_Id__c, Account__r.Name
+                SELECT Account__c, Account__r.Name
                 FROM C501_Account_Merge__c
                 WHERE Merge_Confidence__c >= :fromMergeConfidence
                     and Merge_Confidence__c <= :toMergeConfidence
                     and Merge_Action__c = null
                     and isDeleted = false
                     and Merge_Metric__r.Name = :mergeRule
-                GROUP BY Account_Id__c, Account__r.Name
+                GROUP BY Account__c, Account__r.Name
                 LIMIT 999]) {
 
                     // Attempt to get based on Namespace
                     String objectFieldValue;
                     try {
-                        objectFieldValue = result.get(C501_MassMerge_SharedCode.CurrentNamespace + 'Account_Id__c').toString();
+                        objectFieldValue = result.get(C501_MassMerge_SharedCode.CurrentNamespace + 'Account__c').toString();
                     }
                     catch (System.SObjectException objectException) {
-                        objectFieldValue = result.get('Account_Id__c').toString();
+                        objectFieldValue = result.get('Account__c').toString();
                     }
 
                     listSO.add(new SelectOption(objectFieldValue,
@@ -133,7 +133,7 @@ global with sharing class C501_MassMerge_SharedCode_Account {
 
         for (C501_Account_Merge__c mergeObject :Database.query(strSoql)) {
 
-            if (mergeObject.Account_Id__c == null || mergeObject.Merge_Target_Account__c == null) {
+            if (mergeObject.Account__c == null || mergeObject.Merge_Target_Account__c == null) {
 
                 invalidMerges.add(mergeObject);
                 continue;
@@ -221,7 +221,7 @@ global with sharing class C501_MassMerge_SharedCode_Account {
 
         for(C501_Account_Merge__c mergeObject : Database.Query(strSoql)) {
 
-            if (mergeObject.Account_Id__c == null || mergeObject.Merge_Target_Account__c == null ||
+            if (mergeObject.Account__c == null || mergeObject.Merge_Target_Account__c == null ||
                 mergeObject.Account__r.IsDeleted || mergeObject.Merge_Target_Account__r.IsDeleted ||
                 String.isBlank(mergeObject.Account__r.C501_Household_Id__c) || String.isBlank(mergeObject.Merge_Target_Account__r.C501_Household_Id__c)) {
 
@@ -229,7 +229,7 @@ global with sharing class C501_MassMerge_SharedCode_Account {
                 continue;
             }
 
-            AccountHouseholdMap.put(mergeObject.Account_Id__c, mergeObject.Account__r.C501_Household_Id__c);
+            AccountHouseholdMap.put(mergeObject.Account__c, mergeObject.Account__r.C501_Household_Id__c);
             AccountHouseholdMap.put(mergeObject.Merge_Target_Account__c, mergeObject.Merge_Target_Account__r.C501_Household_Id__c);
 
             if (mergeObject.Merge_Action__c == 'Master') {
@@ -285,21 +285,21 @@ global with sharing class C501_MassMerge_SharedCode_Account {
         for (C501_Account_Merge__c mergeCandidate : objectMerges) {
 
             // Check Account and Target Account valid
-            if (String.isBlank(mergeCandidate.Account_Id__c) || String.isBlank(mergeCandidate.Merge_Target_Account__c)) {
+            if (String.isBlank(mergeCandidate.Account__c) || String.isBlank(mergeCandidate.Merge_Target_Account__c)) {
 
                 deleteMergeCandidates.add(mergeCandidate);
                 continue;
             }
 
             // Check Account and Target Account same Id
-            if (mergeCandidate.Account_Id__c == mergeCandidate.Merge_Target_Account__c) {
+            if (mergeCandidate.Account__c == mergeCandidate.Merge_Target_Account__c) {
 
                 deleteMergeCandidates.add(mergeCandidate);
                 continue;
             }
 
             // Check whether Account or Target Account Id merge already attempted
-            if (objectsProcessed.contains(mergeCandidate.Account_Id__c) || objectsProcessed.contains(mergeCandidate.Merge_Target_Account__c)) {
+            if (objectsProcessed.contains(mergeCandidate.Account__c) || objectsProcessed.contains(mergeCandidate.Merge_Target_Account__c)) {
 
                 deleteMergeCandidates.add(mergeCandidate);
                 continue;
@@ -332,7 +332,7 @@ global with sharing class C501_MassMerge_SharedCode_Account {
                 continue;
             }
 
-            objectsProcessed.add(mergeCandidate.Account_Id__c);
+            objectsProcessed.add(mergeCandidate.Account__c);
             objectsProcessed.add(mergeCandidate.Merge_Target_Account__c);
 
             if (batchMerge) {
@@ -345,7 +345,7 @@ global with sharing class C501_MassMerge_SharedCode_Account {
                 // https://github.com/SalesforceFoundation/Cumulus/issues/4178                
 
                 // Schedule Batch Job in Flex Queue (can schedule up to 100 jobs)
-                List<String> objectsMergeIds = new List<String> { mergeCandidate.Account_Id__c, mergeCandidate.Merge_Target_Account__c };
+                List<String> objectsMergeIds = new List<String> { mergeCandidate.Account__c, mergeCandidate.Merge_Target_Account__c };
                 C501_MassMerge_Batch batchMergeRequest = new C501_MassMerge_Batch();
                 batchMergeRequest.query = 'SELECT Id FROM Account WHERE Id in (\'' + String.join(objectsMergeIds, '\',\'') + '\') ORDER BY CreatedDate DESC';
                 batchMergeRequest.AccountMerge = true;
@@ -355,7 +355,7 @@ global with sharing class C501_MassMerge_SharedCode_Account {
 
                 ObjectsMerge( 
                     new Account(
-                        Id = mergeCandidate.Account_Id__c
+                        Id = mergeCandidate.Account__c
                     ),
                     new List<Account> { new Account(
                         Id = mergeCandidate.Merge_Target_Account__c
@@ -461,6 +461,7 @@ global with sharing class C501_MassMerge_SharedCode_Account {
                         String.valueOf(masterRecord.get(fieldName)) <> String.valueOf(objectItem.get(fieldName))) {
                             
                         insertMergeHistories.add(new C501_Merge_Account_History__c(
+                            Account__c = masterRecord.Id,
                             Account_Id__c = masterRecord.Id,
                             Merge_Value__c = String.valueOf(masterRecord.get(fieldName)),
                             Ignore_Value__c = String.valueOf(objectItem.get(fieldName)),
@@ -483,6 +484,7 @@ global with sharing class C501_MassMerge_SharedCode_Account {
                         String.valueOf(masterRecord.get(fieldName)) <> String.valueOf(objectItem.get(fieldName))) {
 
                         insertMergeHistories.add(new C501_Merge_Account_History__c(
+                            Account__c = masterRecord.Id,
                             Account_Id__c = masterRecord.Id,
                             Merge_Value__c = String.valueOf(masterRecord.get(fieldName)),
                             Ignore_Value__c = String.valueOf(objectItem.get(fieldName)),
@@ -544,7 +546,7 @@ global with sharing class C501_MassMerge_SharedCode_Account {
         }
 
         String strSoql = C501_MassMerge_SharedCode.GetC501AccountMergeQuery_v2();
-        strSoql += ' AND (Account_Id__c = null OR Merge_Target_Account__c = null OR Account_Id__c in ' + C501_MassMerge_SharedCode.GetSafeSoqlList_v2(objectIds) + ' OR Merge_Target_Account__c in ' + C501_MassMerge_SharedCode.GetSafeSoqlList_v2(objectIds) + ')';
+        strSoql += ' AND (Account__c = null OR Merge_Target_Account__c = null OR Account__c in ' + C501_MassMerge_SharedCode.GetSafeSoqlList_v2(objectIds) + ' OR Merge_Target_Account__c in ' + C501_MassMerge_SharedCode.GetSafeSoqlList_v2(objectIds) + ')';
 
         System.debug(LoggingLevel.DEBUG, '***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::ObjectsMerge strSoql: ' + strSoql);
         
