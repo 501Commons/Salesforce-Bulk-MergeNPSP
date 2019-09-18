@@ -84,7 +84,7 @@ public class C501_CTRL_MassMergeAccounts_TEST {
         C501_Account_Merge__c objectMerge = new C501_Account_Merge__c(
                 Unique_Id__c = 'TESTDATA Name ' + listAccounts[0].Id,
                 Merge_Metric__c = mergeMetrics[0].Id,
-                Account__c = listAccounts[0].Id,
+                Account_Id__c = listAccounts[0].Id,
                 Merge_Target_Account__c = listAccounts[1].Id,
                 Merge_Confidence__c = 100.0,
                 Merge_Action__c = 'Master');
@@ -127,7 +127,7 @@ public class C501_CTRL_MassMergeAccounts_TEST {
         C501_Account_Merge__c objectMerge = new C501_Account_Merge__c(
                 Unique_Id__c = 'TESTDATA Name ' + listAccounts[0].Id,
                 Merge_Metric__c = mergeMetrics[0].Id,
-                Account__c = listAccounts[0].Id,
+                Account_Id__c = listAccounts[0].Id,
                 Merge_Target_Account__c = listAccounts[1].Id,
                 Merge_Confidence__c = 100.0,
                 Merge_Action__c = 'Master');

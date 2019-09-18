@@ -84,7 +84,7 @@ public class C501_CTRL_MassMergeContacts_TEST {
         C501_Contact_Merge__c objectMerge = new C501_Contact_Merge__c(
                 Unique_Id__c = 'TESTDATA Name ' + listContacts[0].Id,
                 Merge_Metric__c = mergeMetrics[0].Id,
-                Contact__c = listContacts[0].Id,
+                Contact_Id__c = listContacts[0].Id,
                 Merge_Target_Contact__c = listContacts[1].Id,
                 Merge_Confidence__c = 100.0,
                 Merge_Action__c = 'Master');
@@ -127,7 +127,7 @@ public class C501_CTRL_MassMergeContacts_TEST {
         C501_Contact_Merge__c objectMerge = new C501_Contact_Merge__c(
                 Unique_Id__c = 'TESTDATA Name ' + listContacts[0].Id,
                 Merge_Metric__c = mergeMetrics[0].Id,
-                Contact__c = listContacts[0].Id,
+                Contact_Id__c = listContacts[0].Id,
                 Merge_Target_Contact__c = listContacts[1].Id,
                 Merge_Confidence__c = 100.0,
                 Merge_Action__c = 'Master');

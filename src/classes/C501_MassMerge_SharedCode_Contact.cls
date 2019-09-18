@@ -55,22 +55,22 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
 
         if (String.isBlank(mergeRule)) {
             for (AggregateResult result : [
-                SELECT Contact__c, Contact__r.Name
+                SELECT Contact_Id__c, Contact__r.Name
                 FROM C501_Contact_Merge__c
                 WHERE Merge_Confidence__c >= :fromMergeConfidence
                     and Merge_Confidence__c <= :toMergeConfidence
                     and Merge_Action__c = null 
                     and isDeleted = false
-                GROUP BY Contact__c, Contact__r.Name
+                GROUP BY Contact_Id__c, Contact__r.Name
                 LIMIT 999]) {
 
                     // Attempt to get based on Namespace
                     String objectFieldValue;
                     try {
-                        objectFieldValue = result.get(C501_MassMerge_SharedCode.CurrentNamespace + 'Contact__c').toString();
+                        objectFieldValue = result.get(C501_MassMerge_SharedCode.CurrentNamespace + 'Contact_Id__c').toString();
                     }
                     catch (System.SObjectException objectException) {
-                        objectFieldValue = result.get('Contact__c').toString();
+                        objectFieldValue = result.get('Contact_Id__c').toString();
                     }
 
                     listSO.add(new SelectOption(objectFieldValue,
@@ -79,23 +79,23 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
         }
         else {
             for (AggregateResult result : [
-                SELECT Contact__c, Contact__r.Name
+                SELECT Contact_Id__c, Contact__r.Name
                 FROM C501_Contact_Merge__c
                 WHERE Merge_Confidence__c >= :fromMergeConfidence
                     and Merge_Confidence__c <= :toMergeConfidence
                     and Merge_Action__c = null
                     and isDeleted = false
                     and Merge_Metric__r.Name = :mergeRule
-                GROUP BY Contact__c, Contact__r.Name
+                GROUP BY Contact_Id__c, Contact__r.Name
                 LIMIT 999]) {
 
                     // Attempt to get based on Namespace
                     String objectFieldValue;
                     try {
-                        objectFieldValue = result.get(C501_MassMerge_SharedCode.CurrentNamespace + 'Contact__c').toString();
+                        objectFieldValue = result.get(C501_MassMerge_SharedCode.CurrentNamespace + 'Contact_Id__c').toString();
                     }
                     catch (System.SObjectException objectException) {
-                        objectFieldValue = result.get('Contact__c').toString();
+                        objectFieldValue = result.get('Contact_Id__c').toString();
                     }
 
                     listSO.add(new SelectOption(objectFieldValue,
@@ -133,7 +133,7 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
 
         for (C501_Contact_Merge__c mergeObject :Database.query(strSoql)) {
 
-            if (mergeObject.Contact__c == null || mergeObject.Merge_Target_Contact__c == null) {
+            if (mergeObject.Contact_Id__c == null || mergeObject.Merge_Target_Contact__c == null) {
 
                 invalidMerges.add(mergeObject);
                 continue;
@@ -221,7 +221,7 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
 
         for(C501_Contact_Merge__c mergeObject : Database.Query(strSoql)) {
 
-            if (mergeObject.Contact__c == null || mergeObject.Merge_Target_Contact__c == null ||
+            if (mergeObject.Contact_Id__c == null || mergeObject.Merge_Target_Contact__c == null ||
                 mergeObject.Contact__r.IsDeleted || mergeObject.Merge_Target_Contact__r.IsDeleted ||
                 String.isBlank(mergeObject.Contact__r.C501_Household_Id__c) || String.isBlank(mergeObject.Merge_Target_Contact__r.C501_Household_Id__c)) {
 
@@ -229,7 +229,7 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
                 continue;
             }
 
-            ContactHouseholdMap.put(mergeObject.Contact__c, mergeObject.Contact__r.C501_Household_Id__c);
+            ContactHouseholdMap.put(mergeObject.Contact_Id__c, mergeObject.Contact__r.C501_Household_Id__c);
             ContactHouseholdMap.put(mergeObject.Merge_Target_Contact__c, mergeObject.Merge_Target_Contact__r.C501_Household_Id__c);
 
             if (mergeObject.Merge_Action__c == 'Master') {
@@ -285,21 +285,21 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
         for (C501_Contact_Merge__c mergeCandidate : objectMerges) {
 
             // Check Contact and Target Contact valid
-            if (String.isBlank(mergeCandidate.Contact__c) || String.isBlank(mergeCandidate.Merge_Target_Contact__c)) {
+            if (String.isBlank(mergeCandidate.Contact_Id__c) || String.isBlank(mergeCandidate.Merge_Target_Contact__c)) {
 
                 deleteMergeCandidates.add(mergeCandidate);
                 continue;
             }
 
             // Check Contact and Target Contact same Id
-            if (mergeCandidate.Contact__c == mergeCandidate.Merge_Target_Contact__c) {
+            if (mergeCandidate.Contact_Id__c == mergeCandidate.Merge_Target_Contact__c) {
 
                 deleteMergeCandidates.add(mergeCandidate);
                 continue;
             }
 
             // Check whether Contact or Target Contact Id merge already attempted
-            if (objectsProcessed.contains(mergeCandidate.Contact__c) || objectsProcessed.contains(mergeCandidate.Merge_Target_Contact__c)) {
+            if (objectsProcessed.contains(mergeCandidate.Contact_Id__c) || objectsProcessed.contains(mergeCandidate.Merge_Target_Contact__c)) {
 
                 deleteMergeCandidates.add(mergeCandidate);
                 continue;
@@ -332,7 +332,7 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
                 continue;
             }
 
-            objectsProcessed.add(mergeCandidate.Contact__c);
+            objectsProcessed.add(mergeCandidate.Contact_Id__c);
             objectsProcessed.add(mergeCandidate.Merge_Target_Contact__c);
 
             if (batchMerge) {
@@ -345,7 +345,7 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
                 // https://github.com/SalesforceFoundation/Cumulus/issues/4178                
 
                 // Schedule Batch Job in Flex Queue (can schedule up to 100 jobs)
-                List<String> objectsMergeIds = new List<String> { mergeCandidate.Contact__c, mergeCandidate.Merge_Target_Contact__c };
+                List<String> objectsMergeIds = new List<String> { mergeCandidate.Contact_Id__c, mergeCandidate.Merge_Target_Contact__c };
                 C501_MassMerge_Batch batchMergeRequest = new C501_MassMerge_Batch();
                 batchMergeRequest.query = 'SELECT Id FROM Contact WHERE Id in (\'' + String.join(objectsMergeIds, '\',\'') + '\') ORDER BY CreatedDate DESC';
                 batchMergeRequest.ContactMerge = true;
@@ -355,7 +355,7 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
 
                 ObjectsMerge( 
                     new Contact(
-                        Id = mergeCandidate.Contact__c
+                        Id = mergeCandidate.Contact_Id__c
                     ),
                     new List<Contact> { new Contact(
                         Id = mergeCandidate.Merge_Target_Contact__c
@@ -461,7 +461,7 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
                         String.valueOf(masterRecord.get(fieldName)) <> String.valueOf(objectItem.get(fieldName))) {
                             
                         insertMergeHistories.add(new C501_Merge_Contact_History__c(
-                            Contact__c = masterRecord.Id,
+                            Contact_Id__c = masterRecord.Id,
                             Merge_Value__c = String.valueOf(masterRecord.get(fieldName)),
                             Ignore_Value__c = String.valueOf(objectItem.get(fieldName)),
                             Field__c =  fieldName
@@ -483,7 +483,7 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
                         String.valueOf(masterRecord.get(fieldName)) <> String.valueOf(objectItem.get(fieldName))) {
 
                         insertMergeHistories.add(new C501_Merge_Contact_History__c(
-                            Contact__c = masterRecord.Id,
+                            Contact_Id__c = masterRecord.Id,
                             Merge_Value__c = String.valueOf(masterRecord.get(fieldName)),
                             Ignore_Value__c = String.valueOf(objectItem.get(fieldName)),
                             Field__c =  fieldName
@@ -544,7 +544,7 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
         }
 
         String strSoql = C501_MassMerge_SharedCode.GetC501ContactMergeQuery_v2();
-        strSoql += ' AND (Contact__c = null OR Merge_Target_Contact__c = null OR Contact__c in ' + C501_MassMerge_SharedCode.GetSafeSoqlList_v2(objectIds) + ' OR Merge_Target_Contact__c in ' + C501_MassMerge_SharedCode.GetSafeSoqlList_v2(objectIds) + ')';
+        strSoql += ' AND (Contact_Id__c = null OR Merge_Target_Contact__c = null OR Contact_Id__c in ' + C501_MassMerge_SharedCode.GetSafeSoqlList_v2(objectIds) + ' OR Merge_Target_Contact__c in ' + C501_MassMerge_SharedCode.GetSafeSoqlList_v2(objectIds) + ')';
 
         System.debug('***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::ObjectsMerge strSoql: ' + strSoql);
         

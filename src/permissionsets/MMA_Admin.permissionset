@@ -263,7 +263,7 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>false</editable>
-        <field>C501_Account_Merge_Member__c.Account__c</field>
+        <field>C501_Account_Merge_Member__c.Account_Id__c</field>
         <readable>false</readable>
     </fieldPermissions>
     <fieldPermissions>

@@ -8,7 +8,7 @@
         <layoutColumns>
             <layoutItems>
                 <behavior>Required</behavior>
-                <field>Account__c</field>
+                <field>Account_Id__c</field>
             </layoutItems>
             <layoutItems>
                 <behavior>Required</behavior>
@@ -64,7 +64,7 @@
         <style>CustomLinks</style>
     </layoutSections>
     <miniLayout>
-        <fields>Account__c</fields>
+        <fields>Account_Id__c</fields>
         <fields>Field__c</fields>
         <fields>Ignore_Value__c</fields>
         <fields>Merge_Value__c</fields>

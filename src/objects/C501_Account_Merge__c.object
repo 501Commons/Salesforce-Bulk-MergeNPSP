@@ -53,7 +53,7 @@
     <enableSharing>true</enableSharing>
     <enableStreamingApi>true</enableStreamingApi>
     <fields>
-        <fullName>Account__c</fullName>
+        <fullName>Account_Id__c</fullName>
         <deleteConstraint>Restrict</deleteConstraint>
         <externalId>false</externalId>
         <label>Account</label>
@@ -145,16 +145,16 @@
     </nameField>
     <pluralLabel>Account Merges</pluralLabel>
     <searchLayouts>
-        <customTabListAdditionalFields>Account__c</customTabListAdditionalFields>
+        <customTabListAdditionalFields>Account_Id__c</customTabListAdditionalFields>
         <customTabListAdditionalFields>Merge_Target_Account__c</customTabListAdditionalFields>
         <customTabListAdditionalFields>Merge_Confidence__c</customTabListAdditionalFields>
-        <lookupDialogsAdditionalFields>Account__c</lookupDialogsAdditionalFields>
+        <lookupDialogsAdditionalFields>Account_Id__c</lookupDialogsAdditionalFields>
         <lookupDialogsAdditionalFields>Merge_Target_Account__c</lookupDialogsAdditionalFields>
         <lookupDialogsAdditionalFields>Merge_Confidence__c</lookupDialogsAdditionalFields>
-        <searchFilterFields>Account__c</searchFilterFields>
+        <searchFilterFields>Account_Id__c</searchFilterFields>
         <searchFilterFields>Merge_Target_Account__c</searchFilterFields>
         <searchFilterFields>Merge_Confidence__c</searchFilterFields>
-        <searchResultsAdditionalFields>Account__c</searchResultsAdditionalFields>
+        <searchResultsAdditionalFields>Account_Id__c</searchResultsAdditionalFields>
         <searchResultsAdditionalFields>Merge_Target_Account__c</searchResultsAdditionalFields>
         <searchResultsAdditionalFields>Merge_Confidence__c</searchResultsAdditionalFields>
     </searchLayouts>

@@ -53,7 +53,7 @@
     <enableSharing>true</enableSharing>
     <enableStreamingApi>true</enableStreamingApi>
     <fields>
-        <fullName>Contact__c</fullName>
+        <fullName>Contact_Id__c</fullName>
         <deleteConstraint>Restrict</deleteConstraint>
         <externalId>false</externalId>
         <label>Contact</label>
@@ -145,16 +145,16 @@
     </nameField>
     <pluralLabel>Contact Merges</pluralLabel>
     <searchLayouts>
-        <customTabListAdditionalFields>Contact__c</customTabListAdditionalFields>
+        <customTabListAdditionalFields>Contact_Id__c</customTabListAdditionalFields>
         <customTabListAdditionalFields>Merge_Target_Contact__c</customTabListAdditionalFields>
         <customTabListAdditionalFields>Merge_Confidence__c</customTabListAdditionalFields>
-        <lookupDialogsAdditionalFields>Contact__c</lookupDialogsAdditionalFields>
+        <lookupDialogsAdditionalFields>Contact_Id__c</lookupDialogsAdditionalFields>
         <lookupDialogsAdditionalFields>Merge_Target_Contact__c</lookupDialogsAdditionalFields>
         <lookupDialogsAdditionalFields>Merge_Confidence__c</lookupDialogsAdditionalFields>
-        <searchFilterFields>Contact__c</searchFilterFields>
+        <searchFilterFields>Contact_Id__c</searchFilterFields>
         <searchFilterFields>Merge_Target_Contact__c</searchFilterFields>
         <searchFilterFields>Merge_Confidence__c</searchFilterFields>
-        <searchResultsAdditionalFields>Contact__c</searchResultsAdditionalFields>
+        <searchResultsAdditionalFields>Contact_Id__c</searchResultsAdditionalFields>
         <searchResultsAdditionalFields>Merge_Target_Contact__c</searchResultsAdditionalFields>
         <searchResultsAdditionalFields>Merge_Confidence__c</searchResultsAdditionalFields>
     </searchLayouts>

@@ -411,7 +411,7 @@ public class C501_MM_Rule_Discover implements Schedulable {
         System.debug('***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::ProcessReportByAccounts strSoql: ' + strSoql);
 
         for(C501_Account_Merge__c existingMerge : Database.query(strSoql)) {
-                existingAccountIds.add(existingMerge.Account__c);
+                existingAccountIds.add(existingMerge.Account_Id__c);
                 existingAccountIds.add(existingMerge.Merge_Target_Account__c);
         }
 
@@ -527,7 +527,7 @@ public class C501_MM_Rule_Discover implements Schedulable {
             mergeAccounts.put(uniqueId, new C501_Account_Merge__c(
                 Unique_Id__c = uniqueId,
                 Merge_Confidence__c = mergeMetric.Confidence__c,
-                Account__c = minId,
+                Account_Id__c = minId,
                 Merge_Target_Account__c = maxId,
                 Merge_Metric__c = mergeMetric.Id
             ));
@@ -540,7 +540,7 @@ public class C501_MM_Rule_Discover implements Schedulable {
             if (matches > 2) {
                 insertMergeMembers.add(
                     new C501_Account_Merge_Member__c(
-                        Account__c = minId,
+                        Account_Id__c = minId,
                         Merge_Metric__c = mergeMetric.Id,
                         Unique_Id__c = mergeMetric.Id + minId,
                         Potential_Merges__c = matches
@@ -548,7 +548,7 @@ public class C501_MM_Rule_Discover implements Schedulable {
 
                 insertMergeMembers.add(
                     new C501_Account_Merge_Member__c(
-                        Account__c = maxId,
+                        Account_Id__c = maxId,
                         Merge_Metric__c = mergeMetric.Id,
                         Unique_Id__c = mergeMetric.Id + maxId,
                         Potential_Merges__c = matches
@@ -698,7 +698,7 @@ public class C501_MM_Rule_Discover implements Schedulable {
             mergeContacts.put(uniqueId, new C501_Contact_Merge__c(
                 Unique_Id__c = uniqueId,
                 Merge_Confidence__c = mergeMetric.Confidence__c,
-                Contact__c = minId,
+                Contact_Id__c = minId,
                 Merge_Target_Contact__c = maxId,
                 Merge_Metric__c = mergeMetric.Id
             ));
