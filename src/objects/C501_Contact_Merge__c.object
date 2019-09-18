@@ -67,6 +67,8 @@
     <fields>
         <fullName>Contact__c</fullName>
         <businessStatus>DeprecateCandidate</businessStatus>
+        <description>Contact__c is the Master-Detail so these related records get deleted when master deleted
+Contact_Id__c is the Lookup which can be added to permission set to show on contact standard object which isn&apos;t supported for Master-Detail</description>
         <externalId>false</externalId>
         <label>Contact</label>
         <referenceTo>Contact</referenceTo>

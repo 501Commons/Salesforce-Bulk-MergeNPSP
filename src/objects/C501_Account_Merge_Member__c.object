@@ -67,6 +67,8 @@
     <fields>
         <fullName>Account__c</fullName>
         <businessStatus>DeprecateCandidate</businessStatus>
+        <description>Account__c is the Master-Detail so these related records get deleted when master deleted
+Account_Id__c is the Lookup which can be added to permission set to show on contact standard object which isn&apos;t supported for Master-Detail</description>
         <externalId>false</externalId>
         <label>Account</label>
         <referenceTo>Account</referenceTo>
