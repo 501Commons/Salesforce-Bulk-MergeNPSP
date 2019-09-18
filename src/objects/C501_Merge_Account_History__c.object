@@ -67,15 +67,16 @@
     <fields>
         <fullName>Account__c</fullName>
         <businessStatus>DeprecateCandidate</businessStatus>
-        <deleteConstraint>Restrict</deleteConstraint>
         <externalId>false</externalId>
         <label>Account Old</label>
         <referenceTo>Account</referenceTo>
         <relationshipLabel>Merge Account Histories Old</relationshipLabel>
         <relationshipName>Merge_Account_Histories_Old</relationshipName>
-        <required>false</required>
+        <relationshipOrder>0</relationshipOrder>
+        <reparentableMasterDetail>false</reparentableMasterDetail>
         <trackTrending>false</trackTrending>
-        <type>Lookup</type>
+        <type>MasterDetail</type>
+        <writeRequiresMasterRead>false</writeRequiresMasterRead>
     </fields>
     <fields>
         <fullName>Field__c</fullName>
@@ -128,6 +129,6 @@
     </nameField>
     <pluralLabel>Merge Account Histories</pluralLabel>
     <searchLayouts/>
-    <sharingModel>ReadWrite</sharingModel>
+    <sharingModel>ControlledByParent</sharingModel>
     <visibility>Public</visibility>
 </CustomObject>

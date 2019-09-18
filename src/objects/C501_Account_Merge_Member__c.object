@@ -67,15 +67,16 @@
     <fields>
         <fullName>Account__c</fullName>
         <businessStatus>DeprecateCandidate</businessStatus>
-        <deleteConstraint>SetNull</deleteConstraint>
         <externalId>false</externalId>
         <label>Account Old</label>
         <referenceTo>Account</referenceTo>
         <relationshipLabel>Account Merge Members Old</relationshipLabel>
         <relationshipName>Account_Merge_Members_Old</relationshipName>
-        <required>false</required>
+        <relationshipOrder>1</relationshipOrder>
+        <reparentableMasterDetail>false</reparentableMasterDetail>
         <trackTrending>false</trackTrending>
-        <type>Lookup</type>
+        <type>MasterDetail</type>
+        <writeRequiresMasterRead>false</writeRequiresMasterRead>
     </fields>
     <fields>
         <fullName>Merge_Metric__c</fullName>
