@@ -620,10 +620,6 @@
         <enabled>true</enabled>
     </pageAccesses>
     <pageAccesses>
-        <apexPage>C501_MassMergeDiscover</apexPage>
-        <enabled>true</enabled>
-    </pageAccesses>
-    <pageAccesses>
         <apexPage>C501_MassMergeListView</apexPage>
         <enabled>true</enabled>
     </pageAccesses>
