@@ -59,19 +59,20 @@
         <label>Contact</label>
         <referenceTo>Contact</referenceTo>
         <relationshipLabel>Contact Merges (Contact)</relationshipLabel>
-        <relationshipName>Contact_Merges</relationshipName>
+        <relationshipName>Contact_Id_Merges</relationshipName>
         <required>true</required>
         <trackTrending>false</trackTrending>
         <type>Lookup</type>
     </fields>
     <fields>
         <fullName>Contact__c</fullName>
+        <deprecated>true</deprecated>
         <businessStatus>DeprecateCandidate</businessStatus>
         <externalId>false</externalId>
-        <label>Contact Old</label>
+        <label>Contact</label>
         <referenceTo>Contact</referenceTo>
-        <relationshipLabel>Contact Merges Old</relationshipLabel>
-        <relationshipName>Contact_Merges_Old</relationshipName>
+        <relationshipLabel>Contact Merges</relationshipLabel>
+        <relationshipName>Contact_Merges</relationshipName>
         <relationshipOrder>1</relationshipOrder>
         <reparentableMasterDetail>false</reparentableMasterDetail>
         <trackTrending>false</trackTrending>

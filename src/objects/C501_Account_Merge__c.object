@@ -59,19 +59,20 @@
         <label>Account</label>
         <referenceTo>Account</referenceTo>
         <relationshipLabel>Account Merges (Account)</relationshipLabel>
-        <relationshipName>Account_Merges</relationshipName>
+        <relationshipName>Account_Id_Merges</relationshipName>
         <required>true</required>
         <trackTrending>false</trackTrending>
         <type>Lookup</type>
     </fields>
     <fields>
         <fullName>Account__c</fullName>
+        <deprecated>true</deprecated>
         <businessStatus>DeprecateCandidate</businessStatus>
         <externalId>false</externalId>
-        <label>Account Old</label>
+        <label>Account</label>
         <referenceTo>Account</referenceTo>
-        <relationshipLabel>Account Merges Old</relationshipLabel>
-        <relationshipName>Account_Merges_Old</relationshipName>
+        <relationshipLabel>Account Merges</relationshipLabel>
+        <relationshipName>Account_Merges</relationshipName>
         <relationshipOrder>1</relationshipOrder>
         <reparentableMasterDetail>false</reparentableMasterDetail>
         <trackTrending>false</trackTrending>
