@@ -35,7 +35,7 @@ global class C501_MassMerge_Batch implements Database.Batchable<sObject> {
   global Boolean ContactMerge = false;
 
   global Database.querylocator start(Database.BatchableContext BC) {
-    System.debug('***** C501_MassMerge_Batch::start - query: ' + query);
+    System.debug(LoggingLevel.DEBUG, '***** C501_MassMerge_Batch::start - query: ' + query);
     return Database.getQueryLocator(query);
   }
 
@@ -53,8 +53,8 @@ global class C501_MassMerge_Batch implements Database.Batchable<sObject> {
         }
       }
 
-      System.debug('***** C501_MassMerge_Batch::execute - masterAccount: ' + String.valueOf(masterAccount));
-      System.debug('***** C501_MassMerge_Batch::execute - accountDuplicates: ' + String.valueOf(accountDuplicates));
+      System.debug(LoggingLevel.DEBUG, '***** C501_MassMerge_Batch::execute - masterAccount: ' + String.valueOf(masterAccount));
+      System.debug(LoggingLevel.DEBUG, '***** C501_MassMerge_Batch::execute - accountDuplicates: ' + String.valueOf(accountDuplicates));
       C501_MassMerge_SharedCode_Account c501MassMerge_SharedCode_Account = new C501_MassMerge_SharedCode_Account();
 
       try
@@ -63,13 +63,13 @@ global class C501_MassMerge_Batch implements Database.Batchable<sObject> {
       }
       catch (C501_MassMerge_SharedCode_Account.C501_MassMerge_SharedCode_AccountException customException)
       {
-        System.debug('***** C501_MassMerge_Batch::execute - C501_MassMerge_SharedCode_AccountException: ' + String.valueOf(customException.getMessage()));
+        System.debug(LoggingLevel.ERROR, '***** C501_MassMerge_Batch::execute - C501_MassMerge_SharedCode_AccountException: ' + String.valueOf(customException.getMessage()));
       }
       catch (System.DmlException dmlException) {
-        System.debug('***** C501_MassMerge_Batch::execute - System.DmlException: ' + String.valueOf(dmlException.getMessage()));
+        System.debug(LoggingLevel.DEBUG, '***** C501_MassMerge_Batch::execute - System.DmlException: ' + String.valueOf(dmlException.getMessage()));
       }
       catch (Exception generalException) {
-        System.debug('***** C501_MassMerge_Batch::execute - Exception: ' + String.valueOf(generalException.getMessage()));
+        System.debug(LoggingLevel.DEBUG, '***** C501_MassMerge_Batch::execute - Exception: ' + String.valueOf(generalException.getMessage()));
       }
     }
     else if (ContactMerge) {
@@ -84,8 +84,8 @@ global class C501_MassMerge_Batch implements Database.Batchable<sObject> {
         }
       }
 
-      System.debug('***** C501_MassMerge_Batch::execute - masterContact: ' + String.valueOf(masterContact));
-      System.debug('***** C501_MassMerge_Batch::execute - contactDuplicates: ' + String.valueOf(contactDuplicates));
+      System.debug(LoggingLevel.DEBUG, '***** C501_MassMerge_Batch::execute - masterContact: ' + String.valueOf(masterContact));
+      System.debug(LoggingLevel.DEBUG, '***** C501_MassMerge_Batch::execute - contactDuplicates: ' + String.valueOf(contactDuplicates));
       C501_MassMerge_SharedCode_Contact c501MassMerge_SharedCode_Contact = new C501_MassMerge_SharedCode_Contact();
       c501MassMerge_SharedCode_Contact.ObjectsMerge(masterContact, contactDuplicates);
     }

@@ -84,6 +84,7 @@ public class C501_CTRL_MassMergeContacts_TEST {
         C501_Contact_Merge__c objectMerge = new C501_Contact_Merge__c(
                 Unique_Id__c = 'TESTDATA Name ' + listContacts[0].Id,
                 Merge_Metric__c = mergeMetrics[0].Id,
+                Contact__c = listContacts[0].Id,
                 Contact_Id__c = listContacts[0].Id,
                 Merge_Target_Contact__c = listContacts[1].Id,
                 Merge_Confidence__c = 100.0,
@@ -127,6 +128,7 @@ public class C501_CTRL_MassMergeContacts_TEST {
         C501_Contact_Merge__c objectMerge = new C501_Contact_Merge__c(
                 Unique_Id__c = 'TESTDATA Name ' + listContacts[0].Id,
                 Merge_Metric__c = mergeMetrics[0].Id,
+                Contact__c = listContacts[0].Id,
                 Contact_Id__c = listContacts[0].Id,
                 Merge_Target_Contact__c = listContacts[1].Id,
                 Merge_Confidence__c = 100.0,
@@ -149,7 +151,7 @@ public class C501_CTRL_MassMergeContacts_TEST {
 
         Id masterObjectId = [SELECT Id FROM Contact WHERE Name LIKE '%TESTDATA%' ORDER BY Id ASC LIMIT 1].Id;
 
-        System.Debug('*****CodeCoverageTests - masterObjectId: ' + masterObjectId);
+        System.debug(LoggingLevel.DEBUG, '*****CodeCoverageTests - masterObjectId: ' + masterObjectId);
         Test.StartTest();
 
         //point to our VF page
@@ -209,7 +211,7 @@ public class C501_CTRL_MassMergeContacts_TEST {
 
         ctrl.SaveContacts();
 
-        System.debug('***** C501_CTRL_MassMergeContacts_TEST::CodeCoverageTests' + ctrl.strSaveResults);
+        System.debug(LoggingLevel.DEBUG, '***** C501_CTRL_MassMergeContacts_TEST::CodeCoverageTests' + ctrl.strSaveResults);
         //System.Assert(ctrl.strSaveResults.startsWith('Error'));
         ctrl.ChangeRule();
         ctrl.SaveContacts();      

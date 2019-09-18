@@ -101,7 +101,7 @@ public class C501_MM_Rule_Discover implements Schedulable {
 
         strSoql += ' ORDER BY Last_Discover_Date__c ASC NULLS FIRST';
 
-        System.debug('***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::ProcessMergeMetrics strSoql: ' + strSoql);
+        System.debug(LoggingLevel.DEBUG, '***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::ProcessMergeMetrics strSoql: ' + strSoql);
 
         List<C501_Merge_Metric__c> mergeMetrics = Database.Query(strSoql);
 
@@ -133,7 +133,7 @@ public class C501_MM_Rule_Discover implements Schedulable {
                     // Check for report change
                     if (mergeMetric.Source_Report_LastModifiedDate__c == null || mergeMetric.Source_Report_LastModifiedDate__c <> report.LastModifiedDate) {
 
-                        System.debug('***** C501_MM_Rule_Discover:execute - Merge Metric linked Report changed so clear out all merge candidates: ' + String.valueOf(mergeMetric));
+                        System.debug(LoggingLevel.DEBUG, '***** C501_MM_Rule_Discover:execute - Merge Metric linked Report changed so clear out all merge candidates: ' + String.valueOf(mergeMetric));
                         mergeMetric.Source_Report_LastModifiedDate__c = report.LastModifiedDate;
                         mergeMetricsUpdate.add(mergeMetric);
 
@@ -154,7 +154,7 @@ public class C501_MM_Rule_Discover implements Schedulable {
 
             strSoqlAccountMergesDelete += ' AND Merge_Metric__c in ' + C501_MassMerge_SharedCode.GetSafeSoqlList_v2(mergeMetricDeleteChildren);
 
-            System.debug('***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::ProcessMergeMetrics strSoql: ' + strSoqlAccountMergesDelete);
+            System.debug(LoggingLevel.DEBUG, '***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::ProcessMergeMetrics strSoql: ' + strSoqlAccountMergesDelete);
 
             List<C501_Account_Merge__c> accountMergesDelete = Database.query(strSoqlAccountMergesDelete);
             if (!accountMergesDelete.isEmpty()) {
@@ -165,7 +165,7 @@ public class C501_MM_Rule_Discover implements Schedulable {
 
             strSoqlContactMergesDelete += ' AND Merge_Metric__c in ' + C501_MassMerge_SharedCode.GetSafeSoqlList_v2(mergeMetricDeleteChildren);
 
-            System.debug('***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::ProcessMergeMetrics strSoql: ' + strSoqlContactMergesDelete);
+            System.debug(LoggingLevel.DEBUG, '***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::ProcessMergeMetrics strSoql: ' + strSoqlContactMergesDelete);
 
             List<C501_Contact_Merge__c> contactMergesDelete = Database.query(strSoqlContactMergesDelete);
             if (!contactMergesDelete.isEmpty()) {
@@ -181,44 +181,44 @@ public class C501_MM_Rule_Discover implements Schedulable {
 
     public void ProcessReport(String reportId, C501_Merge_Metric__c mergeMetric, String processObjectType) {
 
-        System.debug('***** C501_MM_Rule_Discover:ProcessReport reportId: ' + reportId + ' mergeMetric: ' + String.valueOf(mergeMetric));
+        System.debug(LoggingLevel.DEBUG, '***** C501_MM_Rule_Discover:ProcessReport reportId: ' + reportId + ' mergeMetric: ' + String.valueOf(mergeMetric));
 
         // Get the report metadata
         Reports.ReportMetadata reportMetadata = Reports.ReportManager.describeReport(reportId).getReportMetadata();
 
-        System.debug('***** C501_MM_Rule_Discover:ProcessReport Name: ' + reportMetadata.getName());
-        System.debug('***** C501_MM_Rule_Discover:ProcessReport ID: ' + reportMetadata.getId());
+        System.debug(LoggingLevel.DEBUG, '***** C501_MM_Rule_Discover:ProcessReport Name: ' + reportMetadata.getName());
+        System.debug(LoggingLevel.DEBUG, '***** C501_MM_Rule_Discover:ProcessReport ID: ' + reportMetadata.getId());
         if (String.isNotBlank(reportMetadata.getDescription())) {
-            System.debug('***** C501_MM_Rule_Discover:ProcessReport Description: ' + reportMetadata.getDescription());
+            System.debug(LoggingLevel.DEBUG, '***** C501_MM_Rule_Discover:ProcessReport Description: ' + reportMetadata.getDescription());
         }
-        System.debug('***** C501_MM_Rule_Discover:ProcessReport Developer name: ' + reportMetadata.getDeveloperName());
-        System.debug('***** C501_MM_Rule_Discover:ProcessReport Report format: ' + reportMetadata.getReportFormat());
-        System.debug('***** C501_MM_Rule_Discover:ProcessReport Report Type - Label: ' + reportMetadata.getReportType().getLabel());
-        System.debug('***** C501_MM_Rule_Discover:ProcessReport Report Type - Type: ' + reportMetadata.getReportType().getType());
-        System.debug('***** C501_MM_Rule_Discover:ProcessReport Scope: ' + reportMetadata.getScope());
+        System.debug(LoggingLevel.DEBUG, '***** C501_MM_Rule_Discover:ProcessReport Developer name: ' + reportMetadata.getDeveloperName());
+        System.debug(LoggingLevel.DEBUG, '***** C501_MM_Rule_Discover:ProcessReport Report format: ' + reportMetadata.getReportFormat());
+        System.debug(LoggingLevel.DEBUG, '***** C501_MM_Rule_Discover:ProcessReport Report Type - Label: ' + reportMetadata.getReportType().getLabel());
+        System.debug(LoggingLevel.DEBUG, '***** C501_MM_Rule_Discover:ProcessReport Report Type - Type: ' + reportMetadata.getReportType().getType());
+        System.debug(LoggingLevel.DEBUG, '***** C501_MM_Rule_Discover:ProcessReport Scope: ' + reportMetadata.getScope());
         if (String.isNotBlank(reportMetadata.getReportBooleanFilter())) {
-            System.debug('***** C501_MM_Rule_Discover:ProcessReport Boolean filter: ' + reportMetadata.getReportBooleanFilter());
+            System.debug(LoggingLevel.DEBUG, '***** C501_MM_Rule_Discover:ProcessReport Boolean filter: ' + reportMetadata.getReportBooleanFilter());
         }
         Reports.StandardDateFilter standardDateFilter = reportMetadata.getStandardDateFilter();
         if (standardDateFilter <> null) {
-            System.debug('***** C501_MM_Rule_Discover:ProcessReport Standard Filters: ' + String.valueOf(standardDateFilter));
+            System.debug(LoggingLevel.DEBUG, '***** C501_MM_Rule_Discover:ProcessReport Standard Filters: ' + String.valueOf(standardDateFilter));
         }
 
         List<String> detailColumns = reportMetadata.getDetailColumns();
         if (detailColumns.size() > 0) {
-            System.debug('***** C501_MM_Rule_Discover:ProcessReport getDetailColumns: ' + String.valueOf(detailColumns));
+            System.debug(LoggingLevel.DEBUG, '***** C501_MM_Rule_Discover:ProcessReport getDetailColumns: ' + String.valueOf(detailColumns));
         }
         List<Reports.ReportFilter> reportFilters = reportMetadata.getReportFilters();
         if (reportFilters.size() > 0) {
-            System.debug('***** C501_MM_Rule_Discover:ProcessReport getReportFilters: ' + String.valueOf(reportFilters));
+            System.debug(LoggingLevel.DEBUG, '***** C501_MM_Rule_Discover:ProcessReport getReportFilters: ' + String.valueOf(reportFilters));
         }
         List<Reports.CrossFilter> crossFilters = reportMetadata.getCrossFilters();
         if (crossFilters.size() > 0) {
-            System.debug('***** C501_MM_Rule_Discover:ProcessReport Cross filters: ' + String.valueOf(crossFilters));
+            System.debug(LoggingLevel.DEBUG, '***** C501_MM_Rule_Discover:ProcessReport Cross filters: ' + String.valueOf(crossFilters));
         }
         List<Reports.StandardFilter> standardFilters = reportMetadata.getStandardFilters();
         if (standardFilters.size() > 0) {
-            System.debug('***** C501_MM_Rule_Discover:ProcessReport Standard Filters: ' + String.valueOf(standardFilters));
+            System.debug(LoggingLevel.DEBUG, '***** C501_MM_Rule_Discover:ProcessReport Standard Filters: ' + String.valueOf(standardFilters));
         }
 
         // Translate Report columns to Soql fields
@@ -378,27 +378,29 @@ public class C501_MM_Rule_Discover implements Schedulable {
 
         String strSoqlLimit = ' LIMIT ' + String.valueOf(C501_MassMerge_SharedCode.GetMaximumLimitSize_v2(groupByFields.size()));
 
-        System.debug('***** C501_MM_Rule_Discover:ProcessReportByAccounts aggregate SOQL');
-        System.debug(strSoqlSelect);
-        System.debug(strSoqlFrom);
-        System.debug(strSoqlWhere);
-        System.debug(strSoqlGroupBy);
-        System.debug(strSoqlHaving);
-        System.debug(strSoqlOrderBy);
-        System.debug(strSoqlLimit);
+        System.debug(LoggingLevel.DEBUG, '***** C501_MM_Rule_Discover:ProcessReportByAccounts aggregate SOQL');
+        System.debug(LoggingLevel.DEBUG, strSoqlSelect);
+        System.debug(LoggingLevel.DEBUG, strSoqlFrom);
+        System.debug(LoggingLevel.DEBUG, strSoqlWhere);
+        System.debug(LoggingLevel.DEBUG, strSoqlGroupBy);
+        System.debug(LoggingLevel.DEBUG, strSoqlHaving);
+        System.debug(LoggingLevel.DEBUG, strSoqlOrderBy);
+        System.debug(LoggingLevel.DEBUG, strSoqlLimit);
 
         AggregateResult[] allAggregatedByAccounts;
         try {
-            System.debug('***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::ProcessReportByAccounts strSoql: ' + strSoqlSelect + strSoqlFrom + strSoqlWhere + strSoqlGroupBy + strSoqlHaving + strSoqlOrderBy + strSoqlLimit);
+            System.debug(LoggingLevel.DEBUG, '***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::ProcessReportByAccounts strSoql: ' + strSoqlSelect + strSoqlFrom + strSoqlWhere + strSoqlGroupBy + strSoqlHaving + strSoqlOrderBy + strSoqlLimit);
 
 		    allAggregatedByAccounts = Database.Query(strSoqlSelect + strSoqlFrom + strSoqlWhere + strSoqlGroupBy + strSoqlHaving + strSoqlOrderBy + strSoqlLimit);
         }
         catch (System.LimitException exLimit) {
-            System.debug('***** C501_MM_Rule_Discover:ProcessReportByAccounts SOQL System.LimitException Error: ' + exLimit.getMessage());
+            System.debug(LoggingLevel.ERROR, '***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::ProcessReportByAccounts strSoql: ' + strSoqlSelect + strSoqlFrom + strSoqlWhere + strSoqlGroupBy + strSoqlHaving + strSoqlOrderBy + strSoqlLimit);
+            System.debug(LoggingLevel.ERROR, '***** C501_MM_Rule_Discover:ProcessReportByAccounts SOQL System.LimitException Error: ' + exLimit.getMessage());
             return;
         }
         catch (Exception ex) {
-            System.debug('***** C501_MM_Rule_Discover:ProcessReportByAccounts SOQL Error: ' + ex.getMessage());
+            System.debug(LoggingLevel.ERROR, '***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::ProcessReportByAccounts strSoql: ' + strSoqlSelect + strSoqlFrom + strSoqlWhere + strSoqlGroupBy + strSoqlHaving + strSoqlOrderBy + strSoqlLimit);
+            System.debug(LoggingLevel.ERROR, '***** C501_MM_Rule_Discover:ProcessReportByAccounts SOQL Error: ' + ex.getMessage());
             return;
         }
 
@@ -408,7 +410,7 @@ public class C501_MM_Rule_Discover implements Schedulable {
         String strSoql = C501_MassMerge_SharedCode.GetC501AccountMergeQuery_v2();
         strSoql += ' AND Merge_Metric__c = \'' + mergeMetric.Id + '\'';
 
-        System.debug('***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::ProcessReportByAccounts strSoql: ' + strSoql);
+        System.debug(LoggingLevel.DEBUG, '***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::ProcessReportByAccounts strSoql: ' + strSoql);
 
         for(C501_Account_Merge__c existingMerge : Database.query(strSoql)) {
                 existingAccountIds.add(existingMerge.Account_Id__c);
@@ -527,6 +529,7 @@ public class C501_MM_Rule_Discover implements Schedulable {
             mergeAccounts.put(uniqueId, new C501_Account_Merge__c(
                 Unique_Id__c = uniqueId,
                 Merge_Confidence__c = mergeMetric.Confidence__c,
+                Account__c = minId,
                 Account_Id__c = minId,
                 Merge_Target_Account__c = maxId,
                 Merge_Metric__c = mergeMetric.Id
@@ -540,6 +543,7 @@ public class C501_MM_Rule_Discover implements Schedulable {
             if (matches > 2) {
                 insertMergeMembers.add(
                     new C501_Account_Merge_Member__c(
+                        Account__c = minId,
                         Account_Id__c = minId,
                         Merge_Metric__c = mergeMetric.Id,
                         Unique_Id__c = mergeMetric.Id + minId,
@@ -548,6 +552,7 @@ public class C501_MM_Rule_Discover implements Schedulable {
 
                 insertMergeMembers.add(
                     new C501_Account_Merge_Member__c(
+                        Account__c = maxId,
                         Account_Id__c = maxId,
                         Merge_Metric__c = mergeMetric.Id,
                         Unique_Id__c = mergeMetric.Id + maxId,
@@ -574,9 +579,9 @@ public class C501_MM_Rule_Discover implements Schedulable {
                             continue;
                         }
 
-                        System.debug('***** C501_MM_Rule_Discover::ProcessReportByAccounts Database.SaveResult Error');
-                        System.debug(statusCode + ': ' + resultError.getMessage());
-                        System.debug('Fields that affected this error: ' + resultError.getFields());
+                        System.debug(LoggingLevel.ERROR, '***** C501_MM_Rule_Discover::ProcessReportByAccounts Database.SaveResult Error');
+                        System.debug(LoggingLevel.ERROR, statusCode + ': ' + resultError.getMessage());
+                        System.debug(LoggingLevel.ERROR, 'Fields that affected this error: ' + resultError.getFields());
                     }                        
                 }
             }
@@ -589,7 +594,7 @@ public class C501_MM_Rule_Discover implements Schedulable {
                 }
             }
 
-            System.debug('***** C501_MM_Rule_Discover::ProcessReportByAccounts numberOfIds: ' + numberOfIds);
+            System.debug(LoggingLevel.DEBUG, '***** C501_MM_Rule_Discover::ProcessReportByAccounts numberOfIds: ' + numberOfIds);
             Database.update(insertMergeMembers, false);
         }
 
@@ -598,6 +603,11 @@ public class C501_MM_Rule_Discover implements Schedulable {
     }
 
     public void ProcessReportByContacts(C501_Merge_Metric__c mergeMetric, String foriegnKey, List<String> detailColumnsChecked, List<Reports.ReportFilter> reportFilters, String additionalGroupByField) {
+
+        // Only process Contact from Contact Source_Object queries (e.g., From Contact in a SOQL Query)
+        if (mergeMetric.Source_Object__c <> 'Contact') {
+            return;
+        }
 
         // Find Contact matches across Accounts
         //
@@ -660,27 +670,29 @@ public class C501_MM_Rule_Discover implements Schedulable {
 
         String strSoqlLimit = ' LIMIT ' + String.valueOf(C501_MassMerge_SharedCode.GetMaximumLimitSize_v2(groupByFields.size()));
 
-        System.debug('***** C501_MM_Rule_Discover:ProcessReportByContacts aggregate SOQL');
-        System.debug(strSoqlSelect);
-        System.debug(strSoqlFrom);
-        System.debug(strSoqlWhere);
-        System.debug(strSoqlGroupBy);
-        System.debug(strSoqlHaving);
-        System.debug(strSoqlOrderBy);
-        System.debug(strSoqlLimit);
+        System.debug(LoggingLevel.DEBUG, '***** C501_MM_Rule_Discover:ProcessReportByContacts aggregate SOQL');
+        System.debug(LoggingLevel.DEBUG, strSoqlSelect);
+        System.debug(LoggingLevel.DEBUG, strSoqlFrom);
+        System.debug(LoggingLevel.DEBUG, strSoqlWhere);
+        System.debug(LoggingLevel.DEBUG, strSoqlGroupBy);
+        System.debug(LoggingLevel.DEBUG, strSoqlHaving);
+        System.debug(LoggingLevel.DEBUG, strSoqlOrderBy);
+        System.debug(LoggingLevel.DEBUG, strSoqlLimit);
 
         AggregateResult[] allAggregatedByContacts;
         try {
-            System.debug('***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::ProcessReportByContacts strSoql: ' + strSoqlSelect + strSoqlFrom + strSoqlWhere + strSoqlGroupBy + strSoqlHaving + strSoqlOrderBy + strSoqlLimit);
+            System.debug(LoggingLevel.DEBUG, '***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::ProcessReportByContacts strSoql: ' + strSoqlSelect + strSoqlFrom + strSoqlWhere + strSoqlGroupBy + strSoqlHaving + strSoqlOrderBy + strSoqlLimit);
 
     		allAggregatedByContacts = Database.Query(strSoqlSelect + strSoqlFrom + strSoqlWhere + strSoqlGroupBy + strSoqlHaving + strSoqlOrderBy + strSoqlLimit);
         }
         catch (System.LimitException exLimit) {
-            System.debug('***** C501_MM_Rule_Discover:ProcessReportByAccounts SOQL System.LimitException Error: ' + exLimit.getMessage());
+            System.debug(LoggingLevel.ERROR, '***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::ProcessReportByContacts strSoql: ' + strSoqlSelect + strSoqlFrom + strSoqlWhere + strSoqlGroupBy + strSoqlHaving + strSoqlOrderBy + strSoqlLimit);
+            System.debug(LoggingLevel.ERROR, '***** C501_MM_Rule_Discover:ProcessReportByContacts SOQL System.LimitException Error: ' + exLimit.getMessage());
             return;
         }
         catch (Exception ex) {
-            System.debug('***** C501_MM_Rule_Discover:ProcessReportByAccounts SOQL Error: ' + ex.getMessage());
+            System.debug(LoggingLevel.ERROR, '***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::ProcessReportByContacts strSoql: ' + strSoqlSelect + strSoqlFrom + strSoqlWhere + strSoqlGroupBy + strSoqlHaving + strSoqlOrderBy + strSoqlLimit);
+            System.debug(LoggingLevel.ERROR, '***** C501_MM_Rule_Discover:ProcessReportByContacts SOQL Error: ' + ex.getMessage());
             return;
         }
 
@@ -698,6 +710,7 @@ public class C501_MM_Rule_Discover implements Schedulable {
             mergeContacts.put(uniqueId, new C501_Contact_Merge__c(
                 Unique_Id__c = uniqueId,
                 Merge_Confidence__c = mergeMetric.Confidence__c,
+                Contact__c = minId,
                 Contact_Id__c = minId,
                 Merge_Target_Contact__c = maxId,
                 Merge_Metric__c = mergeMetric.Id

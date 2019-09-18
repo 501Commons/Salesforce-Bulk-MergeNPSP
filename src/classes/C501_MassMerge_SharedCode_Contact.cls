@@ -45,7 +45,7 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
     // the list of Contacts
     global List<SelectOption> ListObjectsWithConfidence(String mergeRule, Decimal fromMergeConfidence, Decimal toMergeConfidence) {
 
-        System.debug('***** C501_MassMerge_SharedCode_Contact::ListObjectsWithConfidence - mergeRule: ' + mergeRule 
+        System.debug(LoggingLevel.DEBUG, '***** C501_MassMerge_SharedCode_Contact::ListObjectsWithConfidence - mergeRule: ' + mergeRule 
             + ' fromMergeConfidence: ' + fromMergeConfidence.toPlainString()
             + ' toMergeConfidence: ' + toMergeConfidence.toPlainString());
 
@@ -129,7 +129,7 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
         String strSoql = C501_MassMerge_SharedCode.GetC501ContactMergeQuery_v2();
         strSoql += ' AND Merge_Metric__r.Name = \'' + mergeMetricName + '\'';
 
-        System.debug('***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::InsertObjectMergeCandidates strSoql: ' + strSoql);
+        System.debug(LoggingLevel.DEBUG, '***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::InsertObjectMergeCandidates strSoql: ' + strSoql);
 
         for (C501_Contact_Merge__c mergeObject :Database.query(strSoql)) {
 
@@ -190,9 +190,9 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
                                 continue;
                             }
 
-                            System.debug('***** C501_MassMerge_SharedCode_Contact::InsertObjectMergeCandidates Database.SaveResult Error');
-                            System.debug(statusCode + ': ' + resultError.getMessage());
-                            System.debug('Fields that affected this error: ' + resultError.getFields());
+                            System.debug(LoggingLevel.ERROR, '***** C501_MassMerge_SharedCode_Contact::InsertObjectMergeCandidates Database.SaveResult Error');
+                            System.debug(LoggingLevel.ERROR, statusCode + ': ' + resultError.getMessage());
+                            System.debug(LoggingLevel.ERROR, 'Fields that affected this error: ' + resultError.getFields());
                         }                        
                     }
                 }
@@ -217,7 +217,7 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
         String strSoql = C501_MassMerge_SharedCode.GetC501ContactMergeQuery_v2();
         strSoql += ' AND Merge_Metric__r.Name = :mergeMetricName AND Merge_Action__c <> \'Ignore\'';
 
-        System.debug('***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::ProcessObjectMergeCandidates strSoql: ' + strSoql);
+        System.debug(LoggingLevel.DEBUG, '***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::ProcessObjectMergeCandidates strSoql: ' + strSoql);
 
         for(C501_Contact_Merge__c mergeObject : Database.Query(strSoql)) {
 
@@ -271,8 +271,8 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
         // Jobs with Status = 'Holding' applies to batch jobs in the Apex flex queue (max allowed 100)
         //  https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/api/sforce_api_objects_asyncapexjob.htm
         List<AsyncApexJob> flexQueueJobs = [SELECT Id FROM AsyncApexJob WHERE Status = 'Holding'];
-        System.debug('***** C501_MassMerge_SharedCode_Contact::ProcessObjectMerges - flexQueueJobs ' + flexQueueJobs);
-        System.debug('***** C501_MassMerge_SharedCode_Contact::ProcessObjectMerges - QueuableJobs ' + Limits.getQueueableJobs() + ' of ' + Limits.getLimitQueueableJobs());
+        System.debug(LoggingLevel.DEBUG, '***** C501_MassMerge_SharedCode_Contact::ProcessObjectMerges - flexQueueJobs ' + flexQueueJobs);
+        System.debug(LoggingLevel.DEBUG, '***** C501_MassMerge_SharedCode_Contact::ProcessObjectMerges - QueuableJobs ' + Limits.getQueueableJobs() + ' of ' + Limits.getLimitQueueableJobs());
         Integer remainingFlexQueueJobs = Limits.getLimitQueueableJobs() - flexQueueJobs.size();
 
         Map<String, Decimal> mergeMetricMap = new Map<String, Decimal>();
@@ -309,7 +309,7 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
             if (!mergeMetricMap.containsKey(mergeCandidate.Merge_Metric__c)) {
                 String strSoql = C501_MassMerge_SharedCode.GetC501MergeMetricQuery_v2();
 
-                System.debug('***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::ProcessObjectMerges strSoql: ' + strSoql);
+                System.debug(LoggingLevel.DEBUG, '***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::ProcessObjectMerges strSoql: ' + strSoql);
 
                 mergeMetrics = Database.Query(strSoql);
 
@@ -420,18 +420,18 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
         }
 
         strSoql += ' Id from Contact where Id IN ' + C501_MassMerge_SharedCode.GetSafeSoqlList_v2(mergeCandidates);
-        //System.debug('***** C501_MassMerge_SharedCode::ObjectsFieldMerge - The Contact query is: ' + query);
+        //System.debug(LoggingLevel.DEBUG, '***** C501_MassMerge_SharedCode::ObjectsFieldMerge - The Contact query is: ' + query);
         
         List<Contact> objectList;
         try {
-            System.debug('***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::ObjectsFieldMerge strSoql: ' + strSoql);
+            System.debug(LoggingLevel.DEBUG, '***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::ObjectsFieldMerge strSoql: ' + strSoql);
 
             objectList = Database.query(strSoql); // Query the records
 
             // Ensure we got back the same number of records as expected. In case any record got deleted/moved since last search.
             if (objectList == null || objectList.size() != mergeCandidates.size()) {
 
-                System.debug('***** C501_MassMerge_SharedCode::ObjectsFieldMerge Query failed to return expected number of objects');
+                System.debug(LoggingLevel.ERROR, '***** C501_MassMerge_SharedCode::ObjectsFieldMerge Query failed to return expected number of objects');
                 return;
             }
 
@@ -454,7 +454,7 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
                         try{
                             masterRecord.put(fieldName, objectItem.get(fieldName));
                         } catch (Exception e) {
-                            System.debug('***** C501_MassMerge_SharedCode::ObjectsFieldMerge Update Merge Standard Field - fieldName: ' + fieldName + ' Exception: ' + String.valueOf(e.getMessage()));
+                            System.debug(LoggingLevel.ERROR, '***** C501_MassMerge_SharedCode::ObjectsFieldMerge Update Merge Standard Field - fieldName: ' + fieldName + ' Exception: ' + String.valueOf(e.getMessage()));
                         }
                     }
                     else if (objectItem.get(fieldName) <> null && !String.isBlank(String.valueOf(objectItem.get(fieldName))) &&
@@ -476,7 +476,7 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
                         try{
                             masterRecord.put(fieldName, objectItem.get(fieldName));
                         } catch (Exception e) {
-                            System.debug('***** C501_MassMerge_SharedCode::ObjectsFieldMerge Update Merge Custom Field - fieldName: ' + fieldName + ' Exception: ' + String.valueOf(e.getMessage()));
+                            System.debug(LoggingLevel.ERROR, '***** C501_MassMerge_SharedCode::ObjectsFieldMerge Update Merge Custom Field - fieldName: ' + fieldName + ' Exception: ' + String.valueOf(e.getMessage()));
                         }
                     }
                     else if (objectItem.get(fieldName) <> null && !String.isBlank(String.valueOf(objectItem.get(fieldName))) &&
@@ -495,7 +495,7 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
             Database.SaveResult updateResult = Database.update((Contact)masterRecord, false);
             if (!updateResult.isSuccess()) {
                 for (Database.Error err : updateResult.getErrors()) {
-                    System.debug('***** C501_MassMerge_SharedCode::ObjectsMerge Contact Merge Exception: ' + err.getMessage());
+                    System.debug(LoggingLevel.ERROR, '***** C501_MassMerge_SharedCode::ObjectsMerge Contact Merge Exception: ' + err.getMessage());
                 }
             }
 
@@ -504,14 +504,14 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
                 for (Database.SaveResult insertResult :insertResults) {
                     if (!insertResult.isSuccess()) {
                         for (Database.Error err : insertResult.getErrors()) {
-                            System.debug('***** C501_MassMerge_SharedCode::ObjectsMerge Contact Merge History Exception: ' + err.getMessage());
+                            System.debug(LoggingLevel.ERROR, '***** C501_MassMerge_SharedCode::ObjectsMerge Contact Merge History Exception: ' + err.getMessage());
                         }
                     }
                 }
             }
 
         } catch (Exception e) {
-            System.debug('***** C501_MassMerge_SharedCode::ObjectsFieldMerge update fields exception: ' + String.valueOf(e.getMessage()));
+            System.debug(LoggingLevel.ERROR, '***** C501_MassMerge_SharedCode::ObjectsFieldMerge update fields exception: ' + String.valueOf(e.getMessage()));
         }
     }
 
@@ -531,7 +531,7 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
         for(Database.MergeResult res : objectResults) {
             if (!res.isSuccess()) {
                 for (Database.Error err : res.getErrors()) {
-                    System.debug('***** C501_MassMerge_SharedCode::ObjectsMerge Contact Merge Exception: ' + err.getMessage());
+                    System.debug(LoggingLevel.ERROR, '***** C501_MassMerge_SharedCode::ObjectsMerge Contact Merge Exception: ' + err.getMessage());
                 }
 
                 throw new C501_MassMerge_SharedCode_ContactException('Contact Merge Attempt - ' + String.valueOf(res.getErrors()));
@@ -546,7 +546,7 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
         String strSoql = C501_MassMerge_SharedCode.GetC501ContactMergeQuery_v2();
         strSoql += ' AND (Contact_Id__c = null OR Merge_Target_Contact__c = null OR Contact_Id__c in ' + C501_MassMerge_SharedCode.GetSafeSoqlList_v2(objectIds) + ' OR Merge_Target_Contact__c in ' + C501_MassMerge_SharedCode.GetSafeSoqlList_v2(objectIds) + ')';
 
-        System.debug('***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::ObjectsMerge strSoql: ' + strSoql);
+        System.debug(LoggingLevel.DEBUG, '***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::ObjectsMerge strSoql: ' + strSoql);
         
         List<C501_Contact_Merge__c> deleteMerges = Database.query(strSoql);
 

@@ -83,7 +83,7 @@ public class C501_MM_Rule_Merge implements Schedulable {
 
         strSoql += ' ORDER BY Last_Merge_Date__c ASC';
 
-        System.debug('***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::ProcessMergeMetrics strSoql: ' + strSoql);
+        System.debug(LoggingLevel.DEBUG, '***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::ProcessMergeMetrics strSoql: ' + strSoql);
 
         List<C501_Merge_Metric__c> mergeMetrics = Database.Query(strSoql);
 
@@ -121,7 +121,7 @@ public class C501_MM_Rule_Merge implements Schedulable {
                     if (report.LastModifiedDate <> null && (mergeMetric.Source_Report_LastModifiedDate__c == null || mergeMetric.Source_Report_LastModifiedDate__c <> report.LastModifiedDate)) {
 
                         reportChangeDetected = true;
-                        System.debug('***** C501_MM_Rule_Merge:ProcessMergeMetrics - Report Change Detected - Merge Metric Name: ' + mergeMetric.Name + ' Id: ' + mergeMetric.Id + ' Report: ' + report.DeveloperName + ' report.LastModifiedDate: ' + report.LastModifiedDate  + ' mergeMetric.Source_Report_LastModifiedDate__c: ' + mergeMetric.Source_Report_LastModifiedDate__c);
+                        System.debug(LoggingLevel.DEBUG, '***** C501_MM_Rule_Merge:ProcessMergeMetrics - Report Change Detected - Merge Metric Name: ' + mergeMetric.Name + ' Id: ' + mergeMetric.Id + ' Report: ' + report.DeveloperName + ' report.LastModifiedDate: ' + report.LastModifiedDate  + ' mergeMetric.Source_Report_LastModifiedDate__c: ' + mergeMetric.Source_Report_LastModifiedDate__c);
 
                         mergeMetric.Source_Report_LastModifiedDate__c = report.LastModifiedDate;
                         mergeMetricsUpdate.add(mergeMetric);
@@ -134,7 +134,7 @@ public class C501_MM_Rule_Merge implements Schedulable {
             if (reportChangeDetected || !reportFound) {
 
                 if (!reportFound) {
-                    System.debug('***** C501_MM_Rule_Merge:ProcessMergeMetrics - Report Not Found - Merge Metric Name: ' + mergeMetric.Name + ' Id: ' + mergeMetric.Id);
+                    System.debug(LoggingLevel.ERROR, '***** C501_MM_Rule_Merge:ProcessMergeMetrics - Report Not Found - Merge Metric Name: ' + mergeMetric.Name + ' Id: ' + mergeMetric.Id);
                 }
 
                 // Queue merge metric to delete children since report changed or report not found
@@ -143,7 +143,7 @@ public class C501_MM_Rule_Merge implements Schedulable {
                 String strSoqlAccountMergesDelete = C501_MassMerge_SharedCode.GetC501AccountMergeQuery_v2();
                 strSoqlAccountMergesDelete += ' AND Merge_Metric__c = \'' + mergeMetric.Id + '\'';
 
-                System.debug('***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::ProcessMergeMetrics strSoql: ' + strSoqlAccountMergesDelete);
+                System.debug(LoggingLevel.DEBUG, '***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::ProcessMergeMetrics strSoql: ' + strSoqlAccountMergesDelete);
 
                 List<C501_Account_Merge__c> accountMergesDelete = Database.query(strSoqlAccountMergesDelete);
                 if (!accountMergesDelete.isEmpty()) {
@@ -153,7 +153,7 @@ public class C501_MM_Rule_Merge implements Schedulable {
                 String strSoqlContactMergesDelete = C501_MassMerge_SharedCode.GetC501ContactMergeQuery_v2();
                 strSoqlContactMergesDelete += ' AND Merge_Metric__c = \'' + mergeMetric.Id + '\'';
 
-                System.debug('***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::ProcessMergeMetrics strSoql: ' + strSoqlContactMergesDelete);
+                System.debug(LoggingLevel.DEBUG, '***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::ProcessMergeMetrics strSoql: ' + strSoqlContactMergesDelete);
 
                 List<C501_Contact_Merge__c> contactMergesDelete = Database.query(strSoqlContactMergesDelete);
                 if (!contactMergesDelete.isEmpty()) {

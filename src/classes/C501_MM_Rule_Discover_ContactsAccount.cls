@@ -95,7 +95,7 @@ public class C501_MM_Rule_Discover_ContactsAccount implements Schedulable {
 
         strSoql += ' ORDER BY Last_Discover_Date__c ASC NULLS FIRST';
 
-        System.debug('***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::ProcessMergeMetrics strSoql: ' + strSoql);
+        System.debug(LoggingLevel.DEBUG, '***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::ProcessMergeMetrics strSoql: ' + strSoql);
 
         List<C501_Merge_Metric__c> mergeMetrics = Database.Query(strSoql);
 

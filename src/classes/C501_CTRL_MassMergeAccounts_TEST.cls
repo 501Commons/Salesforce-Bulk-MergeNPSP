@@ -84,6 +84,7 @@ public class C501_CTRL_MassMergeAccounts_TEST {
         C501_Account_Merge__c objectMerge = new C501_Account_Merge__c(
                 Unique_Id__c = 'TESTDATA Name ' + listAccounts[0].Id,
                 Merge_Metric__c = mergeMetrics[0].Id,
+                Account__c = listAccounts[0].Id,
                 Account_Id__c = listAccounts[0].Id,
                 Merge_Target_Account__c = listAccounts[1].Id,
                 Merge_Confidence__c = 100.0,
@@ -127,6 +128,7 @@ public class C501_CTRL_MassMergeAccounts_TEST {
         C501_Account_Merge__c objectMerge = new C501_Account_Merge__c(
                 Unique_Id__c = 'TESTDATA Name ' + listAccounts[0].Id,
                 Merge_Metric__c = mergeMetrics[0].Id,
+                Account__c = listAccounts[0].Id,
                 Account_Id__c = listAccounts[0].Id,
                 Merge_Target_Account__c = listAccounts[1].Id,
                 Merge_Confidence__c = 100.0,
@@ -149,7 +151,7 @@ public class C501_CTRL_MassMergeAccounts_TEST {
 
         Id masterObjectId = [SELECT Id FROM Account WHERE Name LIKE '%TESTDATA%' ORDER BY Id ASC LIMIT 1].Id;
 
-        System.Debug('*****CodeCoverageTests - masterObjectId: ' + masterObjectId);
+        System.debug(LoggingLevel.DEBUG, '*****CodeCoverageTests - masterObjectId: ' + masterObjectId);
         Test.StartTest();
 
         //point to our VF page
@@ -209,7 +211,7 @@ public class C501_CTRL_MassMergeAccounts_TEST {
 
         ctrl.SaveAccounts();
 
-        System.debug('***** C501_CTRL_MassMergeAccounts_TEST::CodeCoverageTests' + ctrl.strSaveResults);
+        System.debug(LoggingLevel.DEBUG, '***** C501_CTRL_MassMergeAccounts_TEST::CodeCoverageTests' + ctrl.strSaveResults);
         //System.Assert(ctrl.strSaveResults.startsWith('Error'));
         ctrl.ChangeRule();
         ctrl.SaveAccounts();      

@@ -79,9 +79,9 @@ global with sharing class C501_MassMerge_SharedCode {
             return '(\'\')';
         }
 
-        System.debug('***** C501_MassMerge_SharedCode::GetSafeSoqlList strCleanList: ' + strCleanList);
+        System.debug(LoggingLevel.DEBUG, '***** C501_MassMerge_SharedCode::GetSafeSoqlList strCleanList: ' + strCleanList);
         String safeSoqlList = '(\'' + String.join(strCleanList, '\',\'') + '\')';
-        System.debug('***** C501_MassMerge_SharedCode::GetSafeSoqlList safeSoqlList: ' + safeSoqlList);
+        System.debug(LoggingLevel.DEBUG, '***** C501_MassMerge_SharedCode::GetSafeSoqlList safeSoqlList: ' + safeSoqlList);
 
         return safeSoqlList;
     }
@@ -247,7 +247,7 @@ global with sharing class C501_MassMerge_SharedCode {
         
         String strSoql = C501_MassMerge_SharedCode.GetC501MergeMetricQuery_v2();
 
-        System.debug('*****C501_MassMerge_SharedCode::GetC501MergeMetricQuery_v2 strSoql: ' + strSoql);
+        System.debug(LoggingLevel.DEBUG, '*****C501_MassMerge_SharedCode::GetC501MergeMetricQuery_v2 strSoql: ' + strSoql);
 
         List<C501_Merge_Metric__c> mergeMetrics = Database.Query(strSoql);
 
@@ -311,7 +311,7 @@ global with sharing class C501_MassMerge_SharedCode {
         String strSoql = C501_MassMerge_SharedCode.GetC501MergeMetricQuery_v2();
         strSoql += ' AND Name = \'' + mergeMetricName + '\'';
 
-        System.debug('*****C501_MassMerge_SharedCode::ObjectsMerge_Contact strSoql: ' + strSoql);
+        System.debug(LoggingLevel.DEBUG, '*****C501_MassMerge_SharedCode::ObjectsMerge_Contact strSoql: ' + strSoql);
 
         List<C501_Merge_Metric__c> mergeMetrics = Database.Query(strSoql);
 
@@ -359,7 +359,7 @@ global with sharing class C501_MassMerge_SharedCode {
 
             if (accountId <> masterAccountId && accountMembers.get(accountId) <= 1) {
 
-                System.debug('*****C501_MassMerge_SharedCode::ObjectsMerge_Contact queue empty accountId: ' + accountId + ' for merge into masterAccountId: ' + masterAccountId);
+                System.debug(LoggingLevel.DEBUG, '*****C501_MassMerge_SharedCode::ObjectsMerge_Contact queue empty accountId: ' + accountId + ' for merge into masterAccountId: ' + masterAccountId);
 
                 // Create an account merge because the duplicate account now has no children
                 String maxId = (masterAccountId > accountId) ? masterAccountId : accountId;
@@ -368,6 +368,7 @@ global with sharing class C501_MassMerge_SharedCode {
                 accountMergeInserts.put(uniqueId, new C501_Account_Merge__c(
                     Unique_Id__c = uniqueId,
                     Merge_Confidence__c = mergeMetrics[0].Confidence__c,
+                    Account__c = masterAccountId,
                     Account_Id__c = masterAccountId,
                     Merge_Target_Account__c = accountId,
                     Merge_Metric__c = mergeMetrics[0].Id
@@ -380,7 +381,7 @@ global with sharing class C501_MassMerge_SharedCode {
         
         strSoql += ' AND (Account_Id__c = null OR Merge_Target_Account__c = null OR Account_Id__c in ' + C501_MassMerge_SharedCode.GetSafeSoqlList_v2(contactAccounts.values()) + ' OR Merge_Target_Account__c in ' + C501_MassMerge_SharedCode.GetSafeSoqlList_v2(contactAccounts.values()) + ')';
 
-        System.debug('*****C501_MassMerge_SharedCode::ObjectsMerge_Contact strSoql: ' + strSoql);
+        System.debug(LoggingLevel.DEBUG, '*****C501_MassMerge_SharedCode::ObjectsMerge_Contact strSoql: ' + strSoql);
 
         List<C501_Account_Merge__c> deleteMerges = Database.query(strSoql);
 
@@ -452,7 +453,7 @@ global with sharing class C501_MassMerge_SharedCode {
 
     public static Integer ProcessObjectMergeCandidates_Account_v2(C501_Merge_Metric__c mergeMetric, List<C501_Account_Merge__c> pendingAutoMerges, Map<Id, Id> contactHouseholdMap) {
 
-        System.debug('*****C501_MassMerge_SharedCode::ProcessObjectMergeCandidates_Account pendingAutoMerges: ' + pendingAutoMerges);
+        System.debug(LoggingLevel.DEBUG, '*****C501_MassMerge_SharedCode::ProcessObjectMergeCandidates_Account pendingAutoMerges: ' + pendingAutoMerges);
 
         if (String.isBlank(mergeMetric.AutoMerge_Objects__c)) {
             return 0;
@@ -463,7 +464,7 @@ global with sharing class C501_MassMerge_SharedCode {
             automergeObjects = mergeMetric.AutoMerge_Objects__c.split(';');
         }
 
-        System.debug('*****C501_MassMerge_SharedCode::ProcessObjectMergeCandidates_Account automergeObjects: ' + automergeObjects);
+        System.debug(LoggingLevel.DEBUG, '*****C501_MassMerge_SharedCode::ProcessObjectMergeCandidates_Account automergeObjects: ' + automergeObjects);
 
         if (automergeObjects.contains('Account')) {
 
@@ -666,6 +667,7 @@ global with sharing class C501_MassMerge_SharedCode {
 
         insert listOpportunityHouseholds.values();
         insert listContacts;
+        
 
         //C501_MassMerge_SharedCode.PrintSalesforceStructure_v2();
     }
@@ -688,7 +690,7 @@ global with sharing class C501_MassMerge_SharedCode {
         String strSoql = C501_MassMerge_SharedCode.GetC501MergeMetricQuery_v2();
         strSoql += ' AND Name LIKE \'%' + queryNameCriteria + '%\'';
 
-        System.debug('*****C501_MassMerge_SharedCode::TestDiscoverHelper_v3 strSoql: ' + strSoql);
+        System.debug(LoggingLevel.DEBUG, '*****C501_MassMerge_SharedCode::TestDiscoverHelper_v3 strSoql: ' + strSoql);
 
         List<C501_Merge_Metric__c> mergeMetrics = Database.Query(strSoql);
         System.Assert(mergeMetrics.size() > 0);
@@ -739,12 +741,12 @@ global with sharing class C501_MassMerge_SharedCode {
 
     public static void PrintSalesforceLimits_v2() {
 
-        System.debug('***** C501_MassMerge_SharedCode::NearSalesforceLimits - Aggregate Queries ' + Limits.getAggregateQueries() + ' of ' + Limits.getLimitAggregateQueries());
-        System.debug('***** C501_MassMerge_SharedCode::NearSalesforceLimits - DML Rows ' + Limits.getDMLRows() + ' of ' + Limits.getLimitDMLRows());
-        System.debug('***** C501_MassMerge_SharedCode::NearSalesforceLimits - DML Statments ' + Limits.getDMLStatements() + ' of ' + Limits.getLimitDMLStatements());
-        System.debug('***** C501_MassMerge_SharedCode::NearSalesforceLimits - Queies ' + Limits.getQueries() + ' of ' + Limits.getLimitQueries());
-        System.debug('***** C501_MassMerge_SharedCode::NearSalesforceLimits - Query Rows ' + Limits.getQueryRows() + ' of ' + Limits.getLimitQueryRows());
-        System.debug('***** C501_MassMerge_SharedCode::NearSalesforceLimits - Sosl Queries ' + Limits.getSoslQueries() + ' of ' + Limits.getLimitSoslQueries());
+        System.debug(LoggingLevel.DEBUG, '***** C501_MassMerge_SharedCode::NearSalesforceLimits - Aggregate Queries ' + Limits.getAggregateQueries() + ' of ' + Limits.getLimitAggregateQueries());
+        System.debug(LoggingLevel.DEBUG, '***** C501_MassMerge_SharedCode::NearSalesforceLimits - DML Rows ' + Limits.getDMLRows() + ' of ' + Limits.getLimitDMLRows());
+        System.debug(LoggingLevel.DEBUG, '***** C501_MassMerge_SharedCode::NearSalesforceLimits - DML Statments ' + Limits.getDMLStatements() + ' of ' + Limits.getLimitDMLStatements());
+        System.debug(LoggingLevel.DEBUG, '***** C501_MassMerge_SharedCode::NearSalesforceLimits - Queies ' + Limits.getQueries() + ' of ' + Limits.getLimitQueries());
+        System.debug(LoggingLevel.DEBUG, '***** C501_MassMerge_SharedCode::NearSalesforceLimits - Query Rows ' + Limits.getQueryRows() + ' of ' + Limits.getLimitQueryRows());
+        System.debug(LoggingLevel.DEBUG, '***** C501_MassMerge_SharedCode::NearSalesforceLimits - Sosl Queries ' + Limits.getSoslQueries() + ' of ' + Limits.getLimitSoslQueries());
     }
 
     // Legacy supported global method - managed package
@@ -780,27 +782,27 @@ global with sharing class C501_MassMerge_SharedCode {
         // https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/apex_methods_system_limits.htm
 
         if (Limits.getAggregateQueries() > ((Limits.getLimitAggregateQueries() / 10) * percentageMultiple)) {
-            System.debug('***** C501_MassMerge_SharedCode::NearSalesforceLimits - Aggregate Queries - Query Rows ' + String.valueOf(percentageMultiple) + '0% of Limit - ' + Limits.getAggregateQueries() + ' of ' + Limits.getLimitAggregateQueries());
+            System.debug(LoggingLevel.DEBUG, '***** C501_MassMerge_SharedCode::NearSalesforceLimits - Aggregate Queries - Query Rows ' + String.valueOf(percentageMultiple) + '0% of Limit - ' + Limits.getAggregateQueries() + ' of ' + Limits.getLimitAggregateQueries());
             nearLimit = true;
         }
         if (Limits.getDMLRows() > ((Limits.getLimitDMLRows() / 10) * percentageMultiple)) {
-            System.debug('***** C501_MassMerge_SharedCode::NearSalesforceLimits - DML Rows - Query Rows ' + String.valueOf(percentageMultiple) + '0% of Limit - ' + Limits.getDMLRows() + ' of ' + Limits.getLimitDMLRows());
+            System.debug(LoggingLevel.DEBUG, '***** C501_MassMerge_SharedCode::NearSalesforceLimits - DML Rows - Query Rows ' + String.valueOf(percentageMultiple) + '0% of Limit - ' + Limits.getDMLRows() + ' of ' + Limits.getLimitDMLRows());
             nearLimit = true;
         }
         if (Limits.getDMLStatements() > ((Limits.getLimitDMLStatements() / 10) * percentageMultiple)) {
-            System.debug('***** C501_MassMerge_SharedCode::NearSalesforceLimits - DML Statments - Query Rows ' + String.valueOf(percentageMultiple) + '0% of Limit - ' + Limits.getDMLStatements() + ' of ' + Limits.getLimitDMLStatements());
+            System.debug(LoggingLevel.DEBUG, '***** C501_MassMerge_SharedCode::NearSalesforceLimits - DML Statments - Query Rows ' + String.valueOf(percentageMultiple) + '0% of Limit - ' + Limits.getDMLStatements() + ' of ' + Limits.getLimitDMLStatements());
             nearLimit = true;
         }
         if (Limits.getQueries() > ((Limits.getLimitQueries() / 10) * percentageMultiple)) {
-            System.debug('***** C501_MassMerge_SharedCode::NearSalesforceLimits - Queies - Query Rows ' + String.valueOf(percentageMultiple) + '0% of Limit - ' + Limits.getQueries() + ' of ' + Limits.getLimitQueries());
+            System.debug(LoggingLevel.DEBUG, '***** C501_MassMerge_SharedCode::NearSalesforceLimits - Queies - Query Rows ' + String.valueOf(percentageMultiple) + '0% of Limit - ' + Limits.getQueries() + ' of ' + Limits.getLimitQueries());
             nearLimit = true;
         }
         if (Limits.getQueryRows() > ((Limits.getLimitQueryRows() / 10) * percentageMultiple)) {
-            System.debug('***** C501_MassMerge_SharedCode::NearSalesforceLimits - Query Rows ' + String.valueOf(percentageMultiple) + '0% of Limit - ' + Limits.getQueryRows() + ' of ' + Limits.getLimitQueryRows());
+            System.debug(LoggingLevel.DEBUG, '***** C501_MassMerge_SharedCode::NearSalesforceLimits - Query Rows ' + String.valueOf(percentageMultiple) + '0% of Limit - ' + Limits.getQueryRows() + ' of ' + Limits.getLimitQueryRows());
             nearLimit = true;
         }
         if (Limits.getSoslQueries() > ((Limits.getLimitSoslQueries() / 10) * percentageMultiple)) {
-            System.debug('***** C501_MassMerge_SharedCode::NearSalesforceLimits - Sosl Queries - Query Rows ' + String.valueOf(percentageMultiple) + '0% of Limit - ' + Limits.getSoslQueries() + ' of ' + Limits.getLimitSoslQueries());
+            System.debug(LoggingLevel.DEBUG, '***** C501_MassMerge_SharedCode::NearSalesforceLimits - Sosl Queries - Query Rows ' + String.valueOf(percentageMultiple) + '0% of Limit - ' + Limits.getSoslQueries() + ' of ' + Limits.getLimitSoslQueries());
             nearLimit = true;
         }
 
@@ -814,36 +816,36 @@ global with sharing class C501_MassMerge_SharedCode {
 
     public static void PrintSalesforceStructure_v2() {
 
-        System.debug('***** C501_MassMerge_SharedCode::PrintSalesforceStructure');
+        System.debug(LoggingLevel.DEBUG, '***** C501_MassMerge_SharedCode::PrintSalesforceStructure');
 
         C501_MassMerge_SharedCode.PrintSalesforceLimits_v2();
 
 /*
         for (Account account :[select Id, Name, Website, BillingStreet from Account WHERE Name LIKE 'TESTDATA%']) {
-            System.debug('***** C501_MassMerge_SharedCode::PrintSalesforceStructure - ' + String.valueOf(account));
+            System.debug(LoggingLevel.DEBUG, '***** C501_MassMerge_SharedCode::PrintSalesforceStructure - ' + String.valueOf(account));
         }
         for (Contact contact :[select Id, Account.Name, LastName, FirstName, Birthdate, Email from Contact WHERE LastName LIKE 'TESTDATA%']) {
-            System.debug('***** C501_MassMerge_SharedCode::PrintSalesforceStructure - ' + String.valueOf(contact));
+            System.debug(LoggingLevel.DEBUG, '***** C501_MassMerge_SharedCode::PrintSalesforceStructure - ' + String.valueOf(contact));
         }
         for (Opportunity opportunity :[select Id, Name from Opportunity WHERE Name LIKE 'TESTDATA%']) {
-            System.debug('***** C501_MassMerge_SharedCode::PrintSalesforceStructure - ' + String.valueOf(opportunity));
+            System.debug(LoggingLevel.DEBUG, '***** C501_MassMerge_SharedCode::PrintSalesforceStructure - ' + String.valueOf(opportunity));
         }
 */       
         String strSoql = C501_MassMerge_SharedCode.GetC501MergeMetricQuery_v2();
         String strSoqlAccountMerges = C501_MassMerge_SharedCode.GetC501AccountMergeQuery_v2();
         String strSoqlContactMerges = C501_MassMerge_SharedCode.GetC501ContactMergeQuery_v2();
 
-        System.debug('*****C501_MassMerge_SharedCode::PrintSalesforceStructure strSoql: ' + strSoql);
+        System.debug(LoggingLevel.DEBUG, '*****C501_MassMerge_SharedCode::PrintSalesforceStructure strSoql: ' + strSoql);
 
         for (C501_Merge_Metric__c mergeMetric :Database.Query(strSoql)) {
 
-            System.debug('***** C501_MassMerge_SharedCode::PrintSalesforceStructure - Merge Metric: ' + mergeMetric.Name);
+            System.debug(LoggingLevel.DEBUG, '***** C501_MassMerge_SharedCode::PrintSalesforceStructure - Merge Metric: ' + mergeMetric.Name);
 
             for (C501_Account_Merge__c mergeAccount :Database.query(strSoqlAccountMerges + ' AND Merge_Metric__c = \'' + mergeMetric.Id + '\'')) {
-                System.debug('***** C501_MassMerge_SharedCode::PrintSalesforceStructure - Merge Accounts: ' + String.valueOf(mergeAccount));
+                System.debug(LoggingLevel.DEBUG, '***** C501_MassMerge_SharedCode::PrintSalesforceStructure - Merge Accounts: ' + String.valueOf(mergeAccount));
             }
             for (C501_Contact_Merge__c mergeContact :Database.query(strSoqlContactMerges + ' AND Merge_Metric__c = \'' + mergeMetric.Id + '\'')) {
-                System.debug('***** C501_MassMerge_SharedCode::PrintSalesforceStructure - Merge Contacts: ' + String.valueOf(mergeContact));
+                System.debug(LoggingLevel.DEBUG, '***** C501_MassMerge_SharedCode::PrintSalesforceStructure - Merge Contacts: ' + String.valueOf(mergeContact));
             }
         }
     }
