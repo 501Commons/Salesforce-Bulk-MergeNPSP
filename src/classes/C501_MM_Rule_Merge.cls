@@ -53,15 +53,11 @@ public class C501_MM_Rule_Merge implements Schedulable {
 
     public void execute(SchedulableContext SC) {
 
-        C501_MassMerge_SharedCode.InitializeMassMergeInstances_v2();
-
         String strSoql = C501_MassMerge_SharedCode.GetC501MergeMetricQuery_v2();
         this.ProcessMergeMetrics(strSoql);
     }
 
     public void executeMetricById(Id mergeMetricId) {
-
-        C501_MassMerge_SharedCode.InitializeMassMergeInstances_v2();
 
         String strSoql = C501_MassMerge_SharedCode.GetC501MergeMetricQuery_v2();
 

@@ -277,13 +277,32 @@ global with sharing class C501_MassMerge_SharedCode {
                         Source_Object__c = (report.DeveloperName.contains('Account') ? 'Account' : 'Contact'),
                         Source_Object_Account_Id__c = (report.DeveloperName.contains('Account') ? 'Id' : 'AccountId'),
                         Source_Object_Contact_Id__c = (report.DeveloperName.contains('Contact') ? 'Id' : 'Id'),
-                        AutoMerge_Percentage__c = 100.0
+                        AutoMerge_Percentage__c = 100.0,
+                        Unique_Id__c = report.Id
                     ));
                 }
         }
 
         if (!mergeMetricsInsert.isEmpty()) {
-            insert mergeMetricsInsert;
+            Database.SaveResult[] insertResults = Database.insert(mergeMetricsInsert, false);
+
+            for (Database.SaveResult result : insertResults) {
+                if (!result.isSuccess()) {
+                    for(Database.Error resultError : result.getErrors()) {
+
+                        String statusCode = String.valueOf(resultError.getStatusCode());
+
+                        // Ignore DUPLICATE_VALUE because just trying to insert and not checking if already there to reduce SOQL calls - let the DB block
+                        if (statusCode.contains('DUPLICATE_VALUE')) {
+                            continue;
+                        }
+
+                        System.debug(LoggingLevel.ERROR, '***** C501_MassMerge_SharedCode::InitializeMassMergeInstances_v2 Database.SaveResult Error');
+                        System.debug(LoggingLevel.ERROR, statusCode + ': ' + resultError.getMessage());
+                        System.debug(LoggingLevel.ERROR, 'Fields that affected this error: ' + resultError.getFields());
+                    }                        
+                }
+            }
         }
     }
 
@@ -325,7 +344,8 @@ global with sharing class C501_MassMerge_SharedCode {
                 Source_Object__c = 'Account',
                 Source_Object_Account_Id__c = 'Id',
                 Source_Object_Contact_Id__c = 'Id',
-                Description__c = mergeMetricName
+                Description__c = mergeMetricName,
+                Unique_Id__c = 'User_Merge_Rule_Account_No_Contacts'
             ));
 
             insert mergeMetrics;
@@ -547,11 +567,6 @@ global with sharing class C501_MassMerge_SharedCode {
             // Schedule discover every 10 minutes otherwise schedule merge
             if (math.mod(i, 10) == 0) {
 
-                scheduleJobName = C501_MM_Rule_Discover.class.getName() + '_' + (triggerNumber <= 9 ? '0' : '') + String.valueOf(triggerNumber++);
-                if (!scheduledJobs.contains(scheduleJobName) && !Test.isRunningTest()) {
-                    System.schedule(scheduleJobName, cronExpression, new C501_MM_Rule_Discover());
-                }
-
                 scheduleJobName = C501_MM_Rule_Discover_Accounts.class.getName() + '_' + (triggerNumber <= 9 ? '0' : '') + String.valueOf(triggerNumber++);
                 if (!scheduledJobs.contains(scheduleJobName) && !Test.isRunningTest()) {
                     System.schedule(scheduleJobName, cronExpression, new C501_MM_Rule_Discover_Accounts());
@@ -699,7 +714,6 @@ global with sharing class C501_MassMerge_SharedCode {
             C501_MM_Rule_Discover_Accounts.get().executeMetricById(mergeMetric.Id);
             C501_MM_Rule_Discover_ContactsAccount.get().executeMetricById(mergeMetric.Id);
             C501_MM_Rule_Discover_ContactsAccounts.get().executeMetricById(mergeMetric.Id);
-            C501_MM_Rule_Discover.get().executeMetricById(mergeMetric.Id);
             mergeMetric.AutoMerge_Objects__c = 'Account;Contacts Within Account;Contacts Across Accounts';
         }
 

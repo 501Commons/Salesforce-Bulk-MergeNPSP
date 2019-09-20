@@ -33,7 +33,7 @@
 //  1) Debug -> Open Execute Anonymous Window
 //  2) paste code
 /*
-      C501_MM_Rule_Discover.get().execute(null);
+      C501_MM_Rule_Discover.get().DiscoverGeneralProcessing();
 */
 //  3) click Execute
 //
@@ -46,7 +46,7 @@
     }
 */
 
-public class C501_MM_Rule_Discover implements Schedulable {
+public class C501_MM_Rule_Discover {
 
 	// only need one instance of this class per transaction
 	private static C501_MM_Rule_Discover instance;
@@ -59,38 +59,12 @@ public class C501_MM_Rule_Discover implements Schedulable {
     public void C501_MM_Rule_Discover() {
     }
 
-    @future
-    public static void executeFuture() {
-
-        C501_MassMerge_SharedCode.InitializeMassMergeInstances_v2();
-
-        String strSoql = C501_MassMerge_SharedCode.GetC501MergeMetricQuery_v2();
-        C501_MM_Rule_Discover.get().ProcessMergeMetrics(strSoql);
-    }
-
-    public void execute(SchedulableContext SC) {
+    public void DiscoverGeneralProcessing() {
 
         C501_MassMerge_SharedCode.InitializeMassMergeInstances_v2();
 
         String strSoql = C501_MassMerge_SharedCode.GetC501MergeMetricQuery_v2();
         this.ProcessMergeMetrics(strSoql);
-    }
-
-    public void executeMetricById(Id mergeMetricId) {
-
-        C501_MassMerge_SharedCode.InitializeMassMergeInstances_v2();
-
-        String strSoql = C501_MassMerge_SharedCode.GetC501MergeMetricQuery_v2();
-
-        // Add in specific Id query
-        strSoql += ' AND Id = \'' + mergeMetricId + '\'';
-
-        this.ProcessMergeMetrics(strSoql);
-    }
-
-    @future
-    public static void executeMetricFuture(Id mergeMetricId) {
-        C501_MM_Rule_Discover.get().executeMetricById(mergeMetricId);
     }
 
     public void ProcessMergeMetrics(String strSoql) {
@@ -158,7 +132,7 @@ public class C501_MM_Rule_Discover implements Schedulable {
 
             List<C501_Account_Merge__c> accountMergesDelete = Database.query(strSoqlAccountMergesDelete);
             if (!accountMergesDelete.isEmpty()) {
-                delete accountMergesDelete;
+                Database.delete(accountMergesDelete, False);
             }
 
             String strSoqlContactMergesDelete = C501_MassMerge_SharedCode.GetC501ContactMergeQuery_v2();
@@ -169,7 +143,7 @@ public class C501_MM_Rule_Discover implements Schedulable {
 
             List<C501_Contact_Merge__c> contactMergesDelete = Database.query(strSoqlContactMergesDelete);
             if (!contactMergesDelete.isEmpty()) {
-                delete contactMergesDelete;
+                Database.delete(contactMergesDelete, False);
             }
         }
 
@@ -652,7 +626,7 @@ public class C501_MM_Rule_Discover implements Schedulable {
         List<String> groupByFields = new List<String>();
         for (String column :detailColumnsChecked) {
 
-            if (column.contains(mergeMetric.Source_Object_Contact_Id__c)) {
+            if (column.endswithIgnoreCase(mergeMetric.Source_Object_Contact_Id__c)) {
                 continue;
             }
 
@@ -979,16 +953,15 @@ public class C501_MM_Rule_Discover implements Schedulable {
             return 'Account.Phone';
         }
 
+        // Check for Source Object in Column Name
+        else if (columnFieldName.startsWithIgnoreCase(mergeMetric.Source_Object__c + '.')) {
+            String modifiedColumnFieldName = columnFieldName.split('\\.')[1];
+            return modifiedColumnFieldName;
+        }
+
         // Check for Custom Field
         else if (columnFieldName.endsWithIgnoreCase('__c')) {
             return columnFieldName;
-        }
-
-        // Check for Source Object in Column Name
-        else if (columnFieldName.startsWithIgnoreCase(mergeMetric.Source_Object__c + '.')) {
-
-            String modifiedColumnFieldName = columnFieldName.split('\\.')[1];
-            return modifiedColumnFieldName;
         }
 
         return null;

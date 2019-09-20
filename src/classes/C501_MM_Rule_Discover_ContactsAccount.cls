@@ -89,6 +89,9 @@ public class C501_MM_Rule_Discover_ContactsAccount implements Schedulable {
 
     public void ProcessMergeMetrics(String strSoql) {
 
+        // Trigger the Discover General Processing
+        C501_MM_Rule_Discover.get().DiscoverGeneralProcessing();        
+
  		//
 		// Perform all SOQL Queries outside of loop to avoid Salesforce Governor Limits: https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/apex_gov_limits.htm
 		//

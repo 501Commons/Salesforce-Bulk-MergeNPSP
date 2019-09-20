@@ -105,6 +105,7 @@
         <members>C501_Merge_Metric__c.Total_Ignore__c</members>
         <members>C501_Merge_Metric__c.Total_Unassigned_Accounts__c</members>
         <members>C501_Merge_Metric__c.Total_Unassigned_Contacts__c</members>
+        <members>C501_Merge_Metric__c.Unique_Id__c</members>
         <members>Contact.C501_Household_Id__c</members>
         <members>Contact.C501_Mailing_Address__c</members>
         <members>Contact.C501_Merge_Action__c</members>

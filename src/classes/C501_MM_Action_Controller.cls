@@ -46,7 +46,6 @@ public with sharing class C501_MM_Action_Controller {
         C501_MM_Rule_Discover_Accounts.executeMetricFuture(Id);
         C501_MM_Rule_Discover_ContactsAccount.executeMetricFuture(Id);
         C501_MM_Rule_Discover_ContactsAccounts.executeMetricFuture(Id);
-        C501_MM_Rule_Discover.executeMetricFuture(Id);
 
         System.debug(LoggingLevel.DEBUG, '*****C501_MM_Action_Controller::discoverTrigger After executeMetric');
 
