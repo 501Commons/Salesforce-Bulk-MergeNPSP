@@ -120,6 +120,7 @@ public class C501_MM_Rule_Merge implements Schedulable {
                         System.debug(LoggingLevel.DEBUG, '***** C501_MM_Rule_Merge:ProcessMergeMetrics - Report Change Detected - Merge Metric Name: ' + mergeMetric.Name + ' Id: ' + mergeMetric.Id + ' Report: ' + report.DeveloperName + ' report.LastModifiedDate: ' + report.LastModifiedDate  + ' mergeMetric.Source_Report_LastModifiedDate__c: ' + mergeMetric.Source_Report_LastModifiedDate__c);
 
                         mergeMetric.Source_Report_LastModifiedDate__c = report.LastModifiedDate;
+                        mergeMetric.Unique_Id__c = report.Id;
                         mergeMetricsUpdate.add(mergeMetric);
                     }
 
@@ -175,7 +176,7 @@ public class C501_MM_Rule_Merge implements Schedulable {
         }
 
         if (!mergeMetricsUpdate.isEmpty()) {
-            update mergeMetricsUpdate;
+            Database.update(mergeMetricsUpdate, False);
         }
     }
 }

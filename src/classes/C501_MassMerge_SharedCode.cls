@@ -348,7 +348,26 @@ global with sharing class C501_MassMerge_SharedCode {
                 Unique_Id__c = 'User_Merge_Rule_Account_No_Contacts'
             ));
 
-            insert mergeMetrics;
+            Database.SaveResult[] insertResults = Database.insert(mergeMetrics, false);
+
+            for (Database.SaveResult result : insertResults) {
+                if (!result.isSuccess()) {
+                    for(Database.Error resultError : result.getErrors()) {
+
+                        String statusCode = String.valueOf(resultError.getStatusCode());
+
+                        // Ignore DUPLICATE_VALUE because just trying to insert and not checking if already there to reduce SOQL calls - let the DB block
+                        if (statusCode.contains('DUPLICATE_VALUE')) {
+                            continue;
+                        }
+
+                        System.debug(LoggingLevel.ERROR, '***** C501_MassMerge_SharedCode::ObjectsMerge_Contact_v2 Database.SaveResult Error');
+                        System.debug(LoggingLevel.ERROR, statusCode + ': ' + resultError.getMessage());
+                        System.debug(LoggingLevel.ERROR, 'Fields that affected this error: ' + resultError.getFields());
+                    }                        
+                }
+            }
+
         }
 
         Set<Id> contactIds = new Set<Id> { masterContact.Id };
@@ -717,9 +736,9 @@ global with sharing class C501_MassMerge_SharedCode {
             mergeMetric.AutoMerge_Objects__c = 'Account;Contacts Within Account;Contacts Across Accounts';
         }
 
-        update mergeMetrics;
+        Database.update(mergeMetrics, False);
 
-        C501_MassMerge_SharedCode.PrintSalesforceStructure_v2();
+        //C501_MassMerge_SharedCode.PrintSalesforceStructure_v2();
 
         return mergeMetrics;
     }

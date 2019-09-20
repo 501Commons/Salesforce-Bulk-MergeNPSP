@@ -138,7 +138,8 @@ public class C501_MM_Rule_Discover_ContactsAccount implements Schedulable {
             }
 
             mergeMetric.Last_Discover_Date__c = System.now();
-            update mergeMetric;
+            mergeMetric.Unique_Id__c = reportId;
+            Database.update(mergeMetric, False);
 
             discover.ProcessReport(reportId, mergeMetric, 'Contacts Within Account');
         }

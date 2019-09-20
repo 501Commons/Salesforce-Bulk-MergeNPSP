@@ -109,6 +109,7 @@ public class C501_MM_Rule_Discover {
 
                         System.debug(LoggingLevel.DEBUG, '***** C501_MM_Rule_Discover:execute - Merge Metric linked Report changed so clear out all merge candidates: ' + String.valueOf(mergeMetric));
                         mergeMetric.Source_Report_LastModifiedDate__c = report.LastModifiedDate;
+                        mergeMetric.Unique_Id__c = report.Id;
                         mergeMetricsUpdate.add(mergeMetric);
 
                         // Queue merge metric to delete children since report changed
@@ -148,8 +149,7 @@ public class C501_MM_Rule_Discover {
         }
 
         if (!mergeMetricsUpdate.isEmpty()) {
-
-            update mergeMetricsUpdate;
+            Database.update(mergeMetricsUpdate, False);
         }
     }
 
