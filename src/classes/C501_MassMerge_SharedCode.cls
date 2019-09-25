@@ -578,7 +578,8 @@ global with sharing class C501_MassMerge_SharedCode {
         }
 
         String cronExpression, scheduleJobName;
-        Integer triggerNumber = 0;
+        Integer triggerNumberDiscover = 1;
+        Integer triggerNumberMerge = 1;
         for (Integer i = 0; i <= 59; i += 2) {
 
             cronExpression = '0 ' + String.valueOf(i) + ' * * * ?';
@@ -586,24 +587,25 @@ global with sharing class C501_MassMerge_SharedCode {
             // Schedule discover every 10 minutes otherwise schedule merge
             if (math.mod(i, 10) == 0) {
 
-                scheduleJobName = C501_MM_Rule_Discover_Accounts.class.getName() + '_' + (triggerNumber <= 9 ? '0' : '') + String.valueOf(triggerNumber++);
+                scheduleJobName = C501_MM_Rule_Discover_Accounts.class.getName() + '_' + (triggerNumberDiscover <= 9 ? '0' : '') + String.valueOf(triggerNumberDiscover);
                 if (!scheduledJobs.contains(scheduleJobName) && !Test.isRunningTest()) {
                     System.schedule(scheduleJobName, cronExpression, new C501_MM_Rule_Discover_Accounts());
                 }
 
-                scheduleJobName = C501_MM_Rule_Discover_ContactsAccount.class.getName() + '_' + (triggerNumber <= 9 ? '0' : '') + String.valueOf(triggerNumber++);
+                scheduleJobName = C501_MM_Rule_Discover_ContactsAccount.class.getName() + '_' + (triggerNumberDiscover <= 9 ? '0' : '') + String.valueOf(triggerNumberDiscover);
                 if (!scheduledJobs.contains(scheduleJobName) && !Test.isRunningTest()) {
                     System.schedule(scheduleJobName, cronExpression, new C501_MM_Rule_Discover_ContactsAccount());
                 }
 
-                scheduleJobName = C501_MM_Rule_Discover_ContactsAccounts.class.getName() + '_' + (triggerNumber <= 9 ? '0' : '') + String.valueOf(triggerNumber++);
+                scheduleJobName = C501_MM_Rule_Discover_ContactsAccounts.class.getName() + '_' + (triggerNumberDiscover <= 9 ? '0' : '') + String.valueOf(triggerNumberDiscover);
                 if (!scheduledJobs.contains(scheduleJobName) && !Test.isRunningTest()) {
                     System.schedule(scheduleJobName, cronExpression, new C501_MM_Rule_Discover_ContactsAccounts());
                 }
 
+                triggerNumberDiscover++;
             }
             else {
-                scheduleJobName = C501_MM_Rule_Merge.class.getName() + '_' + (triggerNumber <= 9 ? '0' : '') + String.valueOf(triggerNumber++);
+                scheduleJobName = C501_MM_Rule_Merge.class.getName() + '_' + (triggerNumberMerge <= 9 ? '0' : '') + String.valueOf(triggerNumberMerge);
 
                 if (scheduledJobs.contains(scheduleJobName)) {
                     continue;
@@ -612,6 +614,8 @@ global with sharing class C501_MassMerge_SharedCode {
                 if (!Test.isRunningTest()) {
                     System.schedule(scheduleJobName, cronExpression, new C501_MM_Rule_Merge());
                 }
+
+                triggerNumberMerge++;
             }
         }
     }
