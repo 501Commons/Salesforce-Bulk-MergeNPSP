@@ -1,4 +1,4 @@
-Salesforce-Bulk-MergeNPSP-ServiceManagement
+Salesforce-Mass-Merge-ServiceManagement
 ====================
 
 Setup Steps after Deployment

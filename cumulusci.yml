@@ -1,5 +1,5 @@
 project:
-    name: Salesforce-Bulk-MergeNPSP
+    name: Salesforce-Mass-Merge
     package:
         name:  Mass Merge
         namespace: c501mm
