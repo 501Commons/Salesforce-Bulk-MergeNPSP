@@ -1,7 +1,7 @@
 project:
     name: Salesforce-Bulk-MergeNPSP
     package:
-        name:  Mass Merge Automation
+        name:  Mass Merge
         namespace: c501mm
         api_version: '45.0'
 

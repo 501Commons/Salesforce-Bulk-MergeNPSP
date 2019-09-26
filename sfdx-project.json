@@ -4,7 +4,7 @@
     "packageDirectories": [
         {
             "path": "force-app",
-            "package": "501 Commons Mass Merge Automation",
+            "package": "501 Commons Mass Merge",
             "versionName": "Spring '19",
             "versionNumber": "0.1.0.NEXT",
             "default": true
