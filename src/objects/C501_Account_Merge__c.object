@@ -53,32 +53,16 @@
     <enableSharing>true</enableSharing>
     <enableStreamingApi>true</enableStreamingApi>
     <fields>
-        <fullName>Account_Id__c</fullName>
-        <deleteConstraint>Restrict</deleteConstraint>
-        <externalId>false</externalId>
-        <label>Account</label>
-        <referenceTo>Account</referenceTo>
-        <relationshipLabel>Account Merges (Account)</relationshipLabel>
-        <relationshipName>Account_Id_Merges</relationshipName>
-        <required>true</required>
-        <trackTrending>false</trackTrending>
-        <type>Lookup</type>
-    </fields>
-    <fields>
         <fullName>Account__c</fullName>
-        <businessStatus>DeprecateCandidate</businessStatus>
-        <description>Account__c is the Master-Detail so these related records get deleted when master deleted
-Account_Id__c is the Lookup which can be added to permission set to show on contact standard object which isn&apos;t supported for Master-Detail</description>
+        <deleteConstraint>Restrict</deleteConstraint>
         <externalId>false</externalId>
         <label>Account</label>
         <referenceTo>Account</referenceTo>
         <relationshipLabel>Account Merges</relationshipLabel>
         <relationshipName>Account_Merges</relationshipName>
-        <relationshipOrder>0</relationshipOrder>
-        <reparentableMasterDetail>false</reparentableMasterDetail>
+        <required>true</required>
         <trackTrending>false</trackTrending>
-        <type>MasterDetail</type>
-        <writeRequiresMasterRead>false</writeRequiresMasterRead>
+        <type>Lookup</type>
     </fields>
     <fields>
         <fullName>Merge_Action__c</fullName>
@@ -119,7 +103,7 @@ Account_Id__c is the Lookup which can be added to permission set to show on cont
         <referenceTo>C501_Merge_Metric__c</referenceTo>
         <relationshipLabel>Account Merges</relationshipLabel>
         <relationshipName>Account_Merges</relationshipName>
-        <relationshipOrder>1</relationshipOrder>
+        <relationshipOrder>0</relationshipOrder>
         <reparentableMasterDetail>true</reparentableMasterDetail>
         <trackTrending>false</trackTrending>
         <type>MasterDetail</type>

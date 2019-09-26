@@ -38,12 +38,12 @@
 //  This is a workaround for Generic classes since <T> - Templating not supported in Apex
 //
 
-global with sharing class C501_MassMerge_SharedCode_Contact { 
+public with sharing class C501_MassMerge_SharedCode_Contact { 
 
     public class C501_MassMerge_SharedCode_ContactException extends Exception {}
 
     // the list of Contacts
-    global List<SelectOption> ListObjectsWithConfidence(String mergeRule, Decimal fromMergeConfidence, Decimal toMergeConfidence) {
+    public List<SelectOption> ListObjectsWithConfidence(String mergeRule, Decimal fromMergeConfidence, Decimal toMergeConfidence) {
 
         System.debug(LoggingLevel.DEBUG, '***** C501_MassMerge_SharedCode_Contact::ListObjectsWithConfidence - mergeRule: ' + mergeRule 
             + ' fromMergeConfidence: ' + fromMergeConfidence.toPlainString()
@@ -104,12 +104,12 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
         }
 
         List<SelectOption> listSOSorted = new List<SelectOption>();
-        listSOSorted = C501_MassMerge_SharedCode.SelectOptionSortByLabel_v2(listSO);
+        listSOSorted = C501_MassMerge_SharedCode.SelectOptionSortByLabel(listSO);
 
         return listSOSorted;
     }
 
-    global void InsertObjectMergeCandidates(C501_Merge_Metric__c mergeMetric, List<C501_Contact_Merge__c> mergeObjects) {
+    public void InsertObjectMergeCandidates(C501_Merge_Metric__c mergeMetric, List<C501_Contact_Merge__c> mergeObjects) {
 
         //
 		// Perform all DML (Data Manipulation Language) calls (insert, update, merge, delete, restore) outside of loop to avoid Salesforce Governor Limits: https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/apex_gov_limits.htm
@@ -126,7 +126,7 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
             isSandbox = Boolean.valueOf(organizations[0].IsSandbox);
         }
 
-        String strSoql = C501_MassMerge_SharedCode.GetC501ContactMergeQuery_v2();
+        String strSoql = C501_MassMerge_SharedCode.GetC501ContactMergeQuery();
         strSoql += ' AND Merge_Metric__r.Name = \'' + mergeMetricName + '\'';
 
         System.debug(LoggingLevel.DEBUG, '***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::InsertObjectMergeCandidates strSoql: ' + strSoql);
@@ -181,9 +181,9 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
                             String statusCode = String.valueOf(resultError.getStatusCode());
 
                             // Sandbox ignore the INVALID_CROSS_REFERENCE_KEY expection because there is partial data in Sandbox
-//                            if (isSandbox && statusCode.contains('INVALID_CROSS_REFERENCE_KEY')) {
-//                                continue;
-//                            }
+                            if (isSandbox && statusCode.contains('INVALID_CROSS_REFERENCE_KEY')) {
+                                continue;
+                            }
 
                             // Ignore DUPLICATE_VALUE because just trying to insert and not checking if already there to reduce SOQL calls - let the DB block
                             if (statusCode.contains('DUPLICATE_VALUE')) {
@@ -200,7 +200,7 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
 		}
     }
 
-    global Integer ProcessObjectMergeCandidates(C501_Merge_Metric__c mergeMetric) {
+    public Integer ProcessObjectMergeCandidates(C501_Merge_Metric__c mergeMetric) {
 
         //
 		// Perform all DML (Data Manipulation Language) calls (insert, update, merge, delete, restore) outside of loop to avoid Salesforce Governor Limits: https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/apex_gov_limits.htm
@@ -214,7 +214,7 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
 
         Map<Id, Id> ContactHouseholdMap = new Map<Id, Id>();
 
-        String strSoql = C501_MassMerge_SharedCode.GetC501ContactMergeQuery_v2();
+        String strSoql = C501_MassMerge_SharedCode.GetC501ContactMergeQuery();
         strSoql += ' AND Merge_Metric__r.Name = :mergeMetricName AND Merge_Action__c <> \'Ignore\'';
 
         System.debug(LoggingLevel.DEBUG, '***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::ProcessObjectMergeCandidates strSoql: ' + strSoql);
@@ -256,16 +256,16 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
             return 0;
         }
 
-        return C501_MassMerge_SharedCode.ProcessObjectMergeCandidates_Contact_v2(mergeMetric, pendingAutoMerges, ContactHouseholdMap);
+        return C501_MassMerge_SharedCode.ProcessObjectMergeCandidates_Contact(mergeMetric, pendingAutoMerges, ContactHouseholdMap);
     }
 
     // Legacy Method for Managed Package
-    global void ProcessObjectMerges(List<C501_Contact_Merge__c> objectMerges, Boolean batchMerge)
+    public void ProcessObjectMerges(List<C501_Contact_Merge__c> objectMerges, Boolean batchMerge)
     {
         this.ProcessObjectMerges(new List<C501_Merge_Metric__c>(), objectMerges, batchMerge);
     }
 
-    global void ProcessObjectMerges(List<C501_Merge_Metric__c> mergeMetrics, List<C501_Contact_Merge__c> objectMerges, Boolean batchMerge)
+    public void ProcessObjectMerges(List<C501_Merge_Metric__c> mergeMetrics, List<C501_Contact_Merge__c> objectMerges, Boolean batchMerge)
     {
 
         // Jobs with Status = 'Holding' applies to batch jobs in the Apex flex queue (max allowed 100)
@@ -307,7 +307,7 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
 
             // Check Automerge Percentage
             if (!mergeMetricMap.containsKey(mergeCandidate.Merge_Metric__c)) {
-                String strSoql = C501_MassMerge_SharedCode.GetC501MergeMetricQuery_v2();
+                String strSoql = C501_MassMerge_SharedCode.GetC501MergeMetricQuery();
 
                 System.debug(LoggingLevel.DEBUG, '***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::ProcessObjectMerges strSoql: ' + strSoql);
 
@@ -372,7 +372,7 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
         }
     }
 
-    global void ObjectsFieldMerge(Contact masterObject, List<Contact> duplicateObjects) {
+    public void ObjectsFieldMerge(Contact masterObject, List<Contact> duplicateObjects) {
 
         Set<Id> mergeCandidates = new Set<Id> { masterObject.Id };
         for (Contact objectItem :duplicateObjects) {
@@ -401,7 +401,7 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
             }
 */
             // Only include the fields which are updateable and accessible and not hidden, unique, or externalid
-            if (fResult.isUpdateable() && fResult.isAccessible() && !C501_MassMerge_SharedCode.isNPSPHiddenField_v2(fieldname)) {
+            if (fResult.isUpdateable() && fResult.isAccessible() && !C501_MassMerge_SharedCode.isNPSPHiddenField(fieldname)) {
 
                 // If the field is type lookup, then ignore in the merge fields because is handled during the object merge
                 string relName = fResult.getRelationshipName();
@@ -419,7 +419,7 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
             }
         }
 
-        strSoql += ' Id from Contact where Id IN ' + C501_MassMerge_SharedCode.GetSafeSoqlList_v2(mergeCandidates);
+        strSoql += ' Id from Contact where Id IN ' + C501_MassMerge_SharedCode.GetSafeSoqlList(mergeCandidates);
         //System.debug(LoggingLevel.DEBUG, '***** C501_MassMerge_SharedCode::ObjectsFieldMerge - The Contact query is: ' + query);
         
         List<Contact> objectList;
@@ -462,7 +462,6 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
                             
                         insertMergeHistories.add(new C501_Merge_Contact_History__c(
                             Contact__c = masterRecord.Id,
-                            Contact_Id__c = masterRecord.Id,
                             Merge_Value__c = String.valueOf(masterRecord.get(fieldName)),
                             Ignore_Value__c = String.valueOf(objectItem.get(fieldName)),
                             Field__c =  fieldName
@@ -485,7 +484,6 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
 
                         insertMergeHistories.add(new C501_Merge_Contact_History__c(
                             Contact__c = masterRecord.Id,
-                            Contact_Id__c = masterRecord.Id,
                             Merge_Value__c = String.valueOf(masterRecord.get(fieldName)),
                             Ignore_Value__c = String.valueOf(objectItem.get(fieldName)),
                             Field__c =  fieldName
@@ -517,13 +515,13 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
         }
     }
 
-    global void ObjectsMerge(Contact masterObject, List<Contact> duplicateObjects) {
+    public void ObjectsMerge(Contact masterObject, List<Contact> duplicateObjects) {
 
         if (masterObject == null || duplicateObjects == null || duplicateObjects.isEmpty()) {
             return;
         }
 
-        C501_MassMerge_SharedCode.ObjectsMerge_Contact_v2(masterObject, duplicateObjects);
+        C501_MassMerge_SharedCode.ObjectsMerge_Contact(masterObject, duplicateObjects);
  
         // Merge fields into master
         ObjectsFieldMerge(masterObject, duplicateObjects);
@@ -545,8 +543,8 @@ global with sharing class C501_MassMerge_SharedCode_Contact {
             objectIds.add(duplicateObject.Id);
         }
 
-        String strSoql = C501_MassMerge_SharedCode.GetC501ContactMergeQuery_v2();
-        strSoql += ' AND (Contact__c = null OR Merge_Target_Contact__c = null OR Contact__c in ' + C501_MassMerge_SharedCode.GetSafeSoqlList_v2(objectIds) + ' OR Merge_Target_Contact__c in ' + C501_MassMerge_SharedCode.GetSafeSoqlList_v2(objectIds) + ')';
+        String strSoql = C501_MassMerge_SharedCode.GetC501ContactMergeQuery();
+        strSoql += ' AND (Contact__c = null OR Merge_Target_Contact__c = null OR Contact__c in ' + C501_MassMerge_SharedCode.GetSafeSoqlList(objectIds) + ' OR Merge_Target_Contact__c in ' + C501_MassMerge_SharedCode.GetSafeSoqlList(objectIds) + ')';
 
         System.debug(LoggingLevel.DEBUG, '***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::ObjectsMerge strSoql: ' + strSoql);
         

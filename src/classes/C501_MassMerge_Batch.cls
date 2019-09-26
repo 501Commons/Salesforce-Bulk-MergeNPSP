@@ -28,18 +28,18 @@
     POSSIBILITY OF SUCH DAMAGE.
 */
 
-global class C501_MassMerge_Batch implements Database.Batchable<sObject> { 
+public class C501_MassMerge_Batch implements Database.Batchable<sObject> { 
 
-  global String query;
-  global Boolean AccountMerge = false;
-  global Boolean ContactMerge = false;
+  public String query;
+  public Boolean AccountMerge = false;
+  public Boolean ContactMerge = false;
 
-  global Database.querylocator start(Database.BatchableContext BC) {
+  public Database.querylocator start(Database.BatchableContext BC) {
     System.debug(LoggingLevel.DEBUG, '***** C501_MassMerge_Batch::start - query: ' + query);
     return Database.getQueryLocator(query);
   }
 
-  global void execute(Database.BatchableContext info, List<sObject> scope) {
+  public void execute(Database.BatchableContext info, List<sObject> scope) {
     
     if (AccountMerge) {
       List<Account> accountDuplicates = new List<Account>();
@@ -91,6 +91,6 @@ global class C501_MassMerge_Batch implements Database.Batchable<sObject> {
     }
   }
 
-  global void finish(Database.BatchableContext info) {
+  public void finish(Database.BatchableContext info) {
   }
 }

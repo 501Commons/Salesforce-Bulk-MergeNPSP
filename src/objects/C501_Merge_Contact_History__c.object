@@ -53,30 +53,16 @@
     <enableSharing>true</enableSharing>
     <enableStreamingApi>true</enableStreamingApi>
     <fields>
-        <fullName>Contact_Id__c</fullName>
-        <deleteConstraint>Restrict</deleteConstraint>
-        <externalId>false</externalId>
-        <label>Contact</label>
-        <referenceTo>Contact</referenceTo>
-        <relationshipLabel>Merge Contact Histories (Contact)</relationshipLabel>
-        <relationshipName>Merge_Contact_Id_Histories</relationshipName>
-        <required>true</required>
-        <trackTrending>false</trackTrending>
-        <type>Lookup</type>
-    </fields>
-    <fields>
         <fullName>Contact__c</fullName>
-        <businessStatus>DeprecateCandidate</businessStatus>
+        <deleteConstraint>Restrict</deleteConstraint>
         <externalId>false</externalId>
         <label>Contact</label>
         <referenceTo>Contact</referenceTo>
         <relationshipLabel>Merge Contact Histories</relationshipLabel>
         <relationshipName>Merge_Contact_Histories</relationshipName>
-        <relationshipOrder>0</relationshipOrder>
-        <reparentableMasterDetail>false</reparentableMasterDetail>
+        <required>true</required>
         <trackTrending>false</trackTrending>
-        <type>MasterDetail</type>
-        <writeRequiresMasterRead>false</writeRequiresMasterRead>
+        <type>Lookup</type>
     </fields>
     <fields>
         <fullName>Field__c</fullName>
@@ -129,6 +115,6 @@
     </nameField>
     <pluralLabel>Merge Contact Histories</pluralLabel>
     <searchLayouts/>
-    <sharingModel>ControlledByParent</sharingModel>
+    <sharingModel>ReadWrite</sharingModel>
     <visibility>Public</visibility>
 </CustomObject>

@@ -53,13 +53,13 @@ public class C501_MM_Rule_Merge implements Schedulable {
 
     public void execute(SchedulableContext SC) {
 
-        String strSoql = C501_MassMerge_SharedCode.GetC501MergeMetricQuery_v2();
+        String strSoql = C501_MassMerge_SharedCode.GetC501MergeMetricQuery();
         this.ProcessMergeMetrics(strSoql);
     }
 
     public void executeMetricById(Id mergeMetricId) {
 
-        String strSoql = C501_MassMerge_SharedCode.GetC501MergeMetricQuery_v2();
+        String strSoql = C501_MassMerge_SharedCode.GetC501MergeMetricQuery();
 
         // Add in specific Id query
         strSoql += ' AND Id = \'' + mergeMetricId + '\'';
@@ -101,7 +101,7 @@ public class C501_MM_Rule_Merge implements Schedulable {
         Integer batchMergesScheduled = 0;
         for (C501_Merge_Metric__c mergeMetric :mergeMetrics) {
 
-            if (C501_MassMerge_SharedCode.NearSalesforceLimits_v2()) {
+            if (C501_MassMerge_SharedCode.NearSalesforceLimits()) {
                 break;
             }
 
@@ -137,7 +137,7 @@ public class C501_MM_Rule_Merge implements Schedulable {
                 // Queue merge metric to delete children since report changed or report not found
                 //
 
-                String strSoqlAccountMergesDelete = C501_MassMerge_SharedCode.GetC501AccountMergeQuery_v2();
+                String strSoqlAccountMergesDelete = C501_MassMerge_SharedCode.GetC501AccountMergeQuery();
                 strSoqlAccountMergesDelete += ' AND Merge_Metric__c = \'' + mergeMetric.Id + '\'';
 
                 System.debug(LoggingLevel.DEBUG, '***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::ProcessMergeMetrics strSoql: ' + strSoqlAccountMergesDelete);
@@ -147,7 +147,7 @@ public class C501_MM_Rule_Merge implements Schedulable {
                     delete accountMergesDelete;
                 }
 
-                String strSoqlContactMergesDelete = C501_MassMerge_SharedCode.GetC501ContactMergeQuery_v2();
+                String strSoqlContactMergesDelete = C501_MassMerge_SharedCode.GetC501ContactMergeQuery();
                 strSoqlContactMergesDelete += ' AND Merge_Metric__c = \'' + mergeMetric.Id + '\'';
 
                 System.debug(LoggingLevel.DEBUG, '***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::ProcessMergeMetrics strSoql: ' + strSoqlContactMergesDelete);

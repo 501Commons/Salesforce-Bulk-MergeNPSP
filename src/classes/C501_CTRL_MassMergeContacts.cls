@@ -28,16 +28,16 @@
     POSSIBILITY OF SUCH DAMAGE.
 */
 
-global virtual with sharing class C501_CTRL_MassMergeContacts {
+public virtual with sharing class C501_CTRL_MassMergeContacts {
 
     private C501_MassMerge_SharedCode_Contact c501MassMerge_SharedCode_Contact;
     private List<String> listStrFields;
     
-    global boolean redirect { get; private set; }
-    global ID idRedirect { get; private set; }
+    public boolean redirect { get; private set; }
+    public ID idRedirect { get; private set; }
     
     // constructor
-    global C501_CTRL_MassMergeContacts() {
+    public C501_CTRL_MassMergeContacts() {
 
         System.debug(LoggingLevel.DEBUG, '***** C501_CTRL_MassMergeContacts::C501_CTRL_MassMergeContacts Constructor');
 
@@ -99,7 +99,7 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
         return false;
     }
 
-    global List<SelectOption> listSOContacts {
+    public List<SelectOption> listSOContacts {
         get {
             if (listSOContacts == null )
                 listSOContacts = c501MassMerge_SharedCode_Contact.listObjectsWithConfidence(objectFilter.C501_Merge_Rule__c, objectFilter.C501_Merge_Confidence_From__c, objectFilter.C501_Merge_Confidence_To__c);
@@ -110,7 +110,7 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
         set;
         }
 
-    global List<SelectOption> listSORules {
+    public List<SelectOption> listSORules {
         get {
             if (listSORules == null ) {
                 listSORules = new List<System.SelectOption>();
@@ -134,7 +134,7 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
         set;
         }
 
-    global Schema.FieldSet fieldSetActive {
+    public Schema.FieldSet fieldSetActive {
         get {
 
             Schema.FieldSet fieldSetCheck = SObjectType.Contact.FieldSets.MassMergeContacts;
@@ -153,11 +153,11 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
     }
 
     // getter - reference in Visualforce as fields
-    global List<Schema.FieldSetMember> getFields() {
+    public List<Schema.FieldSetMember> getFields() {
         return fieldSetActive.getFields();
     }
 
-    global Contact objectFilter {
+    public Contact objectFilter {
         get {
             if (objectFilter == null) {
                 objectFilter = new Contact();
@@ -172,7 +172,7 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
     }
 
     // the user has changed the Contact dropdown
-    global virtual PageReference ChangeContact() {
+    public virtual PageReference ChangeContact() {
 
         listContacts = null;
         strSaveResults = null;
@@ -181,7 +181,7 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
     }
 
     // the user has changed the Rule dropdown
-    global virtual PageReference ChangeRule() {
+    public virtual PageReference ChangeRule() {
 
         listSOContacts = null;
         objectFilter.Id = null;
@@ -192,7 +192,7 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
     }
 
     // the user has changed the Confidence query
-    global virtual PageReference ChangeMergeConfidence() {
+    public virtual PageReference ChangeMergeConfidence() {
 
         listSOContacts = null;
         objectFilter.Id = null;
@@ -202,7 +202,7 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
         return null;
     }
 
-    global virtual void ResetContacts() {
+    public virtual void ResetContacts() {
 
         System.debug(LoggingLevel.DEBUG, '***** C501_CTRL_MassMergeContacts::ResetContacts');
 
@@ -212,10 +212,10 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
     }
 
     // status string for reporting the results of saving.
-    global String strSaveResults { get; set; }
+    public String strSaveResults { get; set; }
       
     // The list of contacts.
-    global List<Contact> listContacts {
+    public List<Contact> listContacts {
         get {
             if (listContacts == null) {
                 FillListContacts();
@@ -228,13 +228,13 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
     }
         
     // helper function that the client can override, to query for the appropriate fields in contacts.
-    global virtual void FillListContacts() {
+    public virtual void FillListContacts() {
 
 		Map<Id,C501_Contact_Merge__c> contactsMerge = new Map<Id,C501_Contact_Merge__c>();
 
         if (objectFilter.Id <> null) {
         
-            String strSoql = C501_MassMerge_SharedCode.GetC501ContactMergeQuery_v2();
+            String strSoql = C501_MassMerge_SharedCode.GetC501ContactMergeQuery();
             strSoql += ' AND (Contact__c = \'' + objectFilter.Id + '\' OR Merge_Target_Contact__c = \'' + objectFilter.Id + '\') AND Merge_Action__c = null';
             strSoql += ' LIMIT 1';
 
@@ -249,7 +249,6 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
                             Merge_Action__c = contactMerge.Merge_Action__c,
                             Merge_Confidence__c = null,
                             Contact__c = contactMerge.Contact__c,
-                            Contact_Id__c = contactMerge.Contact__c,
                             Merge_Target_Contact__c = contactMerge.Merge_Target_Contact__c,
                             Merge_Metric__c = contactMerge.Merge_Metric__c,
                             Merge_Metric_Name__c = 'Merge ' + contactMerge.Merge_Metric__r.Name
@@ -262,7 +261,6 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
                             Merge_Action__c = contactMerge.Merge_Action__c,
                             Merge_Confidence__c = contactMerge.Merge_Confidence__c,
                             Contact__c = contactMerge.Contact__c,
-                            Contact_Id__c = contactMerge.Contact__c,
                             Merge_Target_Contact__c = contactMerge.Merge_Target_Contact__c,
                             Merge_Metric__c = contactMerge.Merge_Metric__c,
                             Merge_Metric_Name__c = 'Merge ' + contactMerge.Merge_Metric__r.Name
@@ -290,8 +288,8 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
                 strRuleSoql = ' and Merge_Metric__r.Name = \'' + mergeRule + '\'';
             }
 
-            String strSoql = C501_MassMerge_SharedCode.GetC501ContactMergeQuery_v2();
-            strSoql += ' AND (Contact__c in ' + C501_MassMerge_SharedCode.GetSafeSoqlList_v2(objectIds) + ' OR Merge_Target_Contact__c in ' + C501_MassMerge_SharedCode.GetSafeSoqlList_v2(objectIds) + ') AND Merge_Action__c = null';
+            String strSoql = C501_MassMerge_SharedCode.GetC501ContactMergeQuery();
+            strSoql += ' AND (Contact__c in ' + C501_MassMerge_SharedCode.GetSafeSoqlList(objectIds) + ' OR Merge_Target_Contact__c in ' + C501_MassMerge_SharedCode.GetSafeSoqlList(objectIds) + ') AND Merge_Action__c = null';
             strSoql += strRuleSoql;
             strSoql += ' ORDER BY Contact__r.Name ASC';
 
@@ -310,7 +308,6 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
                             Merge_Action__c = contactMerge.Merge_Action__c,
                             Merge_Confidence__c = null,
                             Contact__c = contactMerge.Contact__c,
-                            Contact_Id__c = contactMerge.Contact__c,
                             Merge_Target_Contact__c = contactMerge.Merge_Target_Contact__c,
                             Merge_Metric__c = contactMerge.Merge_Metric__c,
                             Merge_Metric_Name__c = 'Merge ' + mergeBuffer + mergeIndex + ' ' + contactMerge.Merge_Metric__r.Name
@@ -323,7 +320,6 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
                             Merge_Action__c = contactMerge.Merge_Action__c,
                             Merge_Confidence__c = contactMerge.Merge_Confidence__c,
                             Contact__c = contactMerge.Contact__c,
-                            Contact_Id__c = contactMerge.Contact__c,
                             Merge_Target_Contact__c = contactMerge.Merge_Target_Contact__c,
                             Merge_Metric__c = contactMerge.Merge_Metric__c,
                             Merge_Metric_Name__c = 'Merge ' + mergeBuffer + mergeIndex + ' ' + contactMerge.Merge_Metric__r.Name
@@ -340,7 +336,7 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
 
         Set<Id> contactsMergeIds = contactsMerge.keySet();
         
-        strSoql += ' FROM Contact WHERE Id in ' + C501_MassMerge_SharedCode.GetSafeSoqlList_v2(contactsMergeIds);
+        strSoql += ' FROM Contact WHERE Id in ' + C501_MassMerge_SharedCode.GetSafeSoqlList(contactsMergeIds);
         strSoql += ' order by C501_Merge_Metric_Name__c ASC NULLS FIRST';
         
         System.debug(LoggingLevel.DEBUG, '***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::FillListContacts strSoql: ' + strSoql);
@@ -369,7 +365,7 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
     }
     
     // used to track the Id's of all Contact records that get modified.
-    global Set<ID> setContactsIdDirty {
+    public Set<ID> setContactsIdDirty {
         get {
             if (setContactsIdDirty == null) {
                 setContactsIdDirty = new Set<ID>();
@@ -380,7 +376,7 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
     }
     
     // to allow vf page to see how many Contact records are dirty
-    global Integer numberOfRecordsDirty {
+    public Integer numberOfRecordsDirty {
         get { 
             if (setContactsIdDirty == null)
                 return 0;
@@ -391,13 +387,13 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
     
     // this gets called whenever a field in the Contacts datatable is modified.
     // use this to remember which existing Contacts records have been modified.
-    global virtual PageReference ContactsRecordModified() {
+    public virtual PageReference ContactsRecordModified() {
         String strId = ApexPages.currentPage().getParameters().get('usersIdDirtied');
         if (strId != null && strId != '') setContactsIdDirty.add(strId);
         return null;
     }
 
-    global Contact getTargetMerge(Contact masterObject)
+    public Contact getTargetMerge(Contact masterObject)
     {
         for (Contact objectItem :listContacts) {
             if (String.isBlank(objectItem.C501_Merge_Id__c) || String.isBlank(objectItem.Id) || String.isBlank(masterObject.Id) || String.isBlank(masterObject.C501_Merge_Id__c)
@@ -412,7 +408,7 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
     }
 
     //save the Contacts created or modified
-    global virtual PageReference SaveContacts() {
+    public virtual PageReference SaveContacts() {
         
         if (listContacts == null) return null;
         
@@ -444,7 +440,6 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
                         listContactsMergesMaster.put(contact.C501_Merge_Id__c, new C501_Contact_Merge__c(
                             Id = contact.C501_Merge_Id__c,
                             Contact__c = contact.Id,
-                            Contact_Id__c = contact.Id,
                             Merge_Target_Contact__c = targetObject.Id,
                             Merge_Action__c = contact.C501_Merge_Action__c,
                             Merge_Metric__c = contact.C501_Merge_Metric__c,
@@ -472,7 +467,6 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
                         listContactsMergesIgnore.put(contact.C501_Merge_Id__c, new C501_Contact_Merge__c(
                             Id = contact.C501_Merge_Id__c,
                             Contact__c = contact.Id,
-                            Contact_Id__c = contact.Id,
                             Merge_Target_Contact__c = targetObject.Id,
                             Merge_Action__c = contact.C501_Merge_Action__c
                         ));
@@ -509,7 +503,7 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
     }
 
     //save the Contacts modified, and then close the page.
-    global virtual PageReference SaveAndCloseContacts() {
+    public virtual PageReference SaveAndCloseContacts() {
         SaveContacts();
         if (ApexPages.hasMessages(ApexPages.Severity.ERROR) ||
            ApexPages.hasMessages(ApexPages.Severity.FATAL) ||
@@ -520,7 +514,7 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
     }
     
     // user wants to close this page
-    global virtual PageReference Cancel() {
+    public virtual PageReference Cancel() {
         // figure out which object to return to.
         idRedirect = objectFilter.Id;
         
@@ -530,6 +524,6 @@ global virtual with sharing class C501_CTRL_MassMergeContacts {
     }
     
     // this was a which can't be compiled in this class under api 31.  
-    // but because it was marked global, it could not be completely removed.
-    global static void CodeCoverageTests() {}
+    // but because it was marked public, it could not be completely removed.
+    public static void CodeCoverageTests() {}
 }

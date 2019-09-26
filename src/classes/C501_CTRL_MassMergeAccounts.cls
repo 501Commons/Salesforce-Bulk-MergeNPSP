@@ -28,16 +28,16 @@
     POSSIBILITY OF SUCH DAMAGE.
 */
 
-global virtual with sharing class C501_CTRL_MassMergeAccounts {
+public virtual with sharing class C501_CTRL_MassMergeAccounts {
 
     private C501_MassMerge_SharedCode_Account c501MassMerge_SharedCode_Account;
     private List<String> listStrFields;
     
-    global boolean redirect { get; private set; }
-    global ID idRedirect { get; private set; }
+    public boolean redirect { get; private set; }
+    public ID idRedirect { get; private set; }
     
     // constructor
-    global C501_CTRL_MassMergeAccounts() {
+    public C501_CTRL_MassMergeAccounts() {
 
         System.debug(LoggingLevel.DEBUG, '***** C501_CTRL_MassMergeAccounts::C501_CTRL_MassMergeAccounts Constructor');
 
@@ -99,7 +99,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
         return false;
     }
     
-    global List<SelectOption> listSOAccounts {
+    public List<SelectOption> listSOAccounts {
         get {
             if (listSOAccounts == null )
                 listSOAccounts = c501MassMerge_SharedCode_Account.ListObjectsWithConfidence(objectFilter.C501_Merge_Rule__c, objectFilter.C501_Merge_Confidence_From__c, objectFilter.C501_Merge_Confidence_To__c);
@@ -110,7 +110,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
         set;
         }
 
-    global List<SelectOption> listSORules {
+    public List<SelectOption> listSORules {
         get {
             if (listSORules == null ) {
                 listSORules = new List<System.SelectOption>();
@@ -134,7 +134,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
         set;
         }
 
-    global Schema.FieldSet fieldSetActive {
+    public Schema.FieldSet fieldSetActive {
         get {
 
             Schema.FieldSet fieldSetCheck = SObjectType.Account.FieldSets.MassMergeAccounts;
@@ -153,11 +153,11 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
     }
 
     // getter - reference in Visualforce as fields
-    global List<Schema.FieldSetMember> getFields() {
+    public List<Schema.FieldSetMember> getFields() {
         return fieldSetActive.getFields();
     }
 
-    global Account objectFilter {
+    public Account objectFilter {
         get {
             if (objectFilter == null) {
                 objectFilter = new Account();
@@ -172,7 +172,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
     }
 
     // the user has changed the Account dropdown
-    global virtual PageReference ChangeAccount() {
+    public virtual PageReference ChangeAccount() {
 
         listAccounts = null;
         strSaveResults = null;
@@ -181,7 +181,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
     }
 
     // the user has changed the Rule dropdown
-    global virtual PageReference ChangeRule() {
+    public virtual PageReference ChangeRule() {
 
         listSOAccounts = null;
         objectFilter.Id = null;
@@ -192,7 +192,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
     }
 
     // the user has changed the Confidence query
-    global virtual PageReference ChangeMergeConfidence() {
+    public virtual PageReference ChangeMergeConfidence() {
 
         listSOAccounts = null;
         objectFilter.Id = null;
@@ -202,7 +202,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
         return null;
     }
 
-    global virtual void ResetAccounts() {
+    public virtual void ResetAccounts() {
 
         System.debug(LoggingLevel.DEBUG, '***** C501_CTRL_MassMergeAccounts::ResetAccounts');
 
@@ -212,10 +212,10 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
     }
 
     // status string for reporting the results of saving.
-    global String strSaveResults { get; set; }
+    public String strSaveResults { get; set; }
       
     // The list of Accounts.
-    global List<Account> listAccounts {
+    public List<Account> listAccounts {
         get {
             if (listAccounts == null) {
                 FillListAccounts();
@@ -228,7 +228,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
     }
         
     // helper function that the client can override, to query for the appropriate fields in Accounts.
-    global virtual void FillListAccounts() {
+    public virtual void FillListAccounts() {
 
 		Map<Id,C501_Account_Merge__c> accountsMerge = new Map<Id,C501_Account_Merge__c>();
 
@@ -236,7 +236,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
         
             System.debug(LoggingLevel.DEBUG, '***** C501_CTRL_MassMergeAccounts::FillListAccounts objectFilter.Id: ' + objectFilter.Id);
 
-            String strSoql = C501_MassMerge_SharedCode.GetC501AccountMergeQuery_v2();
+            String strSoql = C501_MassMerge_SharedCode.GetC501AccountMergeQuery();
             strSoql += ' AND (Account__c = \'' + objectFilter.Id + '\' OR Merge_Target_Account__c = \'' + objectFilter.Id + '\') AND Merge_Action__c = null';
             strSoql += ' LIMIT 1';
 
@@ -253,7 +253,6 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
                             Merge_Action__c = accountMerge.Merge_Action__c,
                             Merge_Confidence__c = null,
                             Account__c = accountMerge.Account__c,
-                            Account_Id__c = accountMerge.Account__c,
                             Merge_Target_Account__c = accountMerge.Merge_Target_Account__c,
                             Merge_Metric__c = accountMerge.Merge_Metric__c,
                             Merge_Metric_Name__c = 'Merge ' + accountMerge.Merge_Metric__r.Name
@@ -266,7 +265,6 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
                             Merge_Action__c = accountMerge.Merge_Action__c,
                             Merge_Confidence__c = accountMerge.Merge_Confidence__c,
                             Account__c = accountMerge.Account__c,
-                            Account_Id__c = accountMerge.Account__c,
                             Merge_Target_Account__c = accountMerge.Merge_Target_Account__c,
                             Merge_Metric__c = accountMerge.Merge_Metric__c,
                             Merge_Metric_Name__c = 'Merge ' + accountMerge.Merge_Metric__r.Name
@@ -294,8 +292,8 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
                 strRuleSoql = ' and Merge_Metric__r.Name = \'' + mergeRule + '\'';
             }
 
-            String strSoql = C501_MassMerge_SharedCode.GetC501AccountMergeQuery_v2();
-            strSoql += ' AND (Account__c in ' + C501_MassMerge_SharedCode.GetSafeSoqlList_v2(objectIds) + ' OR Merge_Target_Account__c in ' + C501_MassMerge_SharedCode.GetSafeSoqlList_v2(objectIds) + ') AND Merge_Action__c = null';
+            String strSoql = C501_MassMerge_SharedCode.GetC501AccountMergeQuery();
+            strSoql += ' AND (Account__c in ' + C501_MassMerge_SharedCode.GetSafeSoqlList(objectIds) + ' OR Merge_Target_Account__c in ' + C501_MassMerge_SharedCode.GetSafeSoqlList(objectIds) + ') AND Merge_Action__c = null';
             strSoql += strRuleSoql;
             strSoql += ' ORDER BY Account__r.Name ASC';
 
@@ -314,7 +312,6 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
                             Merge_Action__c = accountMerge.Merge_Action__c,
                             Merge_Confidence__c = null,
                             Account__c = accountMerge.Account__c,
-                            Account_Id__c = accountMerge.Account__c,
                             Merge_Target_Account__c = accountMerge.Merge_Target_Account__c,
                             Merge_Metric__c = accountMerge.Merge_Metric__c,
                             Merge_Metric_Name__c = 'Merge ' + mergeBuffer + mergeIndex + ' ' + accountMerge.Merge_Metric__r.Name
@@ -327,7 +324,6 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
                             Merge_Action__c = accountMerge.Merge_Action__c,
                             Merge_Confidence__c = accountMerge.Merge_Confidence__c,
                             Account__c = accountMerge.Account__c,
-                            Account_Id__c = accountMerge.Account__c,
                             Merge_Target_Account__c = accountMerge.Merge_Target_Account__c,
                             Merge_Metric__c = accountMerge.Merge_Metric__c,
                             Merge_Metric_Name__c = 'Merge ' + mergeBuffer + mergeIndex + ' ' + accountMerge.Merge_Metric__r.Name
@@ -344,7 +340,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
 
         Set<Id> accountsMergeIds = accountsMerge.keySet();
 
-        strSoql += ' FROM Account WHERE Id in ' + C501_MassMerge_SharedCode.GetSafeSoqlList_v2(accountsMergeIds);
+        strSoql += ' FROM Account WHERE Id in ' + C501_MassMerge_SharedCode.GetSafeSoqlList(accountsMergeIds);
         strSoql += ' order by C501_Merge_Metric_Name__c ASC NULLS FIRST';
         
         System.debug(LoggingLevel.DEBUG, '***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::FillListAccounts strSoql: ' + strSoql);
@@ -373,7 +369,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
     }
     
     // used to track the Id's of all Account records that get modified.
-    global Set<ID> setAccountsIdDirty {
+    public Set<ID> setAccountsIdDirty {
         get {
             if (setAccountsIdDirty == null) {
                 setAccountsIdDirty = new Set<ID>();
@@ -384,7 +380,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
     }
     
     // to allow vf page to see how many Account records are dirty
-    global Integer numberOfRecordsDirty {
+    public Integer numberOfRecordsDirty {
         get { 
             if (setAccountsIdDirty == null)
                 return 0;
@@ -395,13 +391,13 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
     
     // this gets called whenever a field in the Accounts datatable is modified.
     // use this to remember which existing Accounts records have been modified.
-    global virtual PageReference AccountsRecordModified() {
+    public virtual PageReference AccountsRecordModified() {
         String strId = ApexPages.currentPage().getParameters().get('usersIdDirtied');
         if (strId != null && strId != '') setAccountsIdDirty.add(strId);
         return null;
     }
     
-    global Account getTargetMerge(Account masterObject)
+    public Account getTargetMerge(Account masterObject)
     {
         for (Account objectItem :listAccounts) {
             if (String.isBlank(objectItem.C501_Merge_Id__c) || String.isBlank(objectItem.Id) || String.isBlank(masterObject.Id) || String.isBlank(masterObject.C501_Merge_Id__c)
@@ -416,7 +412,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
     }
 
     //save the Accounts created or modified
-    global virtual PageReference SaveAccounts() {
+    public virtual PageReference SaveAccounts() {
         
         if (listAccounts == null) return null;
         
@@ -448,7 +444,6 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
                         listAccountsMergesMaster.put(account.C501_Merge_Id__c, new C501_Account_Merge__c(
                             Id = account.C501_Merge_Id__c,
                             Account__c = account.Id,
-                            Account_Id__c = account.Id,
                             Merge_Target_Account__c = targetObject.Id,
                             Merge_Action__c = account.C501_Merge_Action__c,
                             Merge_Metric__c = account.C501_Merge_Metric__c,
@@ -476,7 +471,6 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
                         listAccountsMergesIgnore.put(account.C501_Merge_Id__c, new C501_Account_Merge__c(
                             Id = account.C501_Merge_Id__c,
                             Account__c = account.Id,
-                            Account_Id__c = account.Id,
                             Merge_Target_Account__c = targetObject.Id,
                             Merge_Action__c = account.C501_Merge_Action__c
                         ));
@@ -513,7 +507,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
     }
 
     //save the Accounts modified, and then close the page.
-    global virtual PageReference SaveAndCloseAccounts() {
+    public virtual PageReference SaveAndCloseAccounts() {
         SaveAccounts();
         if (ApexPages.hasMessages(ApexPages.Severity.ERROR) ||
            ApexPages.hasMessages(ApexPages.Severity.FATAL) ||
@@ -524,7 +518,7 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
     }
     
     // user wants to close this page
-    global virtual PageReference Cancel() {
+    public virtual PageReference Cancel() {
         // figure out which object to return to.
         idRedirect = objectFilter.Id;
         
@@ -534,6 +528,6 @@ global virtual with sharing class C501_CTRL_MassMergeAccounts {
     }
     
     // this was a which can't be compiled in this class under api 31.  
-    // but because it was marked global, it could not be completely removed.
-    global static void CodeCoverageTests() {}
+    // but because it was marked public, it could not be completely removed.
+    public static void CodeCoverageTests() {}
 }

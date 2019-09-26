@@ -61,9 +61,9 @@ public class C501_MM_Rule_Discover {
 
     public void DiscoverGeneralProcessing() {
 
-        C501_MassMerge_SharedCode.InitializeMassMergeInstances_v2();
+        C501_MassMerge_SharedCode.InitializeMassMergeInstances();
 
-        String strSoql = C501_MassMerge_SharedCode.GetC501MergeMetricQuery_v2();
+        String strSoql = C501_MassMerge_SharedCode.GetC501MergeMetricQuery();
         this.ProcessMergeMetrics(strSoql);
     }
 
@@ -125,9 +125,9 @@ public class C501_MM_Rule_Discover {
 
         if (!mergeMetricDeleteChildren.isEmpty()) {
 
-            String strSoqlAccountMergesDelete = C501_MassMerge_SharedCode.GetC501AccountMergeQuery_v2();
+            String strSoqlAccountMergesDelete = C501_MassMerge_SharedCode.GetC501AccountMergeQuery();
 
-            strSoqlAccountMergesDelete += ' AND Merge_Metric__c in ' + C501_MassMerge_SharedCode.GetSafeSoqlList_v2(mergeMetricDeleteChildren);
+            strSoqlAccountMergesDelete += ' AND Merge_Metric__c in ' + C501_MassMerge_SharedCode.GetSafeSoqlList(mergeMetricDeleteChildren);
 
             System.debug(LoggingLevel.DEBUG, '***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::ProcessMergeMetrics strSoql: ' + strSoqlAccountMergesDelete);
 
@@ -136,9 +136,9 @@ public class C501_MM_Rule_Discover {
                 Database.delete(accountMergesDelete, False);
             }
 
-            String strSoqlContactMergesDelete = C501_MassMerge_SharedCode.GetC501ContactMergeQuery_v2();
+            String strSoqlContactMergesDelete = C501_MassMerge_SharedCode.GetC501ContactMergeQuery();
 
-            strSoqlContactMergesDelete += ' AND Merge_Metric__c in ' + C501_MassMerge_SharedCode.GetSafeSoqlList_v2(mergeMetricDeleteChildren);
+            strSoqlContactMergesDelete += ' AND Merge_Metric__c in ' + C501_MassMerge_SharedCode.GetSafeSoqlList(mergeMetricDeleteChildren);
 
             System.debug(LoggingLevel.DEBUG, '***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::ProcessMergeMetrics strSoql: ' + strSoqlContactMergesDelete);
 
@@ -321,7 +321,7 @@ public class C501_MM_Rule_Discover {
                 if (reportFilter.getValue().contains(',')) {
                     whereInValues = reportFilter.getValue().split(',');
 
-                    whereField = this.CheckReportColumnName(mergeMetric, foriegnKey, reportFilter.getColumn(), true) + ' in ' + C501_MassMerge_SharedCode.GetSafeSoqlList_v2(whereInValues);
+                    whereField = this.CheckReportColumnName(mergeMetric, foriegnKey, reportFilter.getColumn(), true) + ' in ' + C501_MassMerge_SharedCode.GetSafeSoqlList(whereInValues);
                 }
 
                 whereFields.add(whereField);
@@ -350,7 +350,7 @@ public class C501_MM_Rule_Discover {
         String strSoqlHaving = ' HAVING Count(' + mergeMetric.Source_Object_Account_Id__c + ') > 1 ';
         String strSoqlOrderBy = ' ORDER BY Count(' + mergeMetric.Source_Object_Account_Id__c + ') DESC';
 
-        String strSoqlLimit = ' LIMIT ' + String.valueOf(C501_MassMerge_SharedCode.GetMaximumLimitSize_v2(groupByFields.size()));
+        String strSoqlLimit = ' LIMIT ' + String.valueOf(C501_MassMerge_SharedCode.GetMaximumLimitSize(groupByFields.size()));
 
         System.debug(LoggingLevel.DEBUG, '***** C501_MM_Rule_Discover:ProcessReportByAccounts aggregate SOQL');
         System.debug(LoggingLevel.DEBUG, strSoqlSelect);
@@ -381,7 +381,7 @@ public class C501_MM_Rule_Discover {
         // Filter out account ids already associated with merge metric
         Set<Id> existingAccountIds = new Set<Id>();
 
-        String strSoql = C501_MassMerge_SharedCode.GetC501AccountMergeQuery_v2();
+        String strSoql = C501_MassMerge_SharedCode.GetC501AccountMergeQuery();
         strSoql += ' AND Merge_Metric__c = \'' + mergeMetric.Id + '\'';
 
         System.debug(LoggingLevel.DEBUG, '***** ' + String.valueOf(this).substring(0,String.valueOf(this).indexOf(':')) + '::ProcessReportByAccounts strSoql: ' + strSoql);
@@ -504,7 +504,6 @@ public class C501_MM_Rule_Discover {
                 Unique_Id__c = uniqueId,
                 Merge_Confidence__c = mergeMetric.Confidence__c,
                 Account__c = minId,
-                Account_Id__c = minId,
                 Merge_Target_Account__c = maxId,
                 Merge_Metric__c = mergeMetric.Id
             ));
@@ -518,7 +517,6 @@ public class C501_MM_Rule_Discover {
                 insertMergeMembers.add(
                     new C501_Account_Merge_Member__c(
                         Account__c = minId,
-                        Account_Id__c = minId,
                         Merge_Metric__c = mergeMetric.Id,
                         Unique_Id__c = mergeMetric.Id + minId,
                         Potential_Merges__c = matches
@@ -527,7 +525,6 @@ public class C501_MM_Rule_Discover {
                 insertMergeMembers.add(
                     new C501_Account_Merge_Member__c(
                         Account__c = maxId,
-                        Account_Id__c = maxId,
                         Merge_Metric__c = mergeMetric.Id,
                         Unique_Id__c = mergeMetric.Id + maxId,
                         Potential_Merges__c = matches
@@ -536,13 +533,25 @@ public class C501_MM_Rule_Discover {
         }
 
         if (!insertMergeMembers.isEmpty()) {
+           
             Database.SaveResult[] insertResults = Database.insert(insertMergeMembers, false);
+
+            Boolean isSandbox = false;
+            List<Organization> organizations = [SELECT IsSandbox FROM Organization LIMIT 1];
+            if (!organizations.isEmpty()) {
+                isSandbox = Boolean.valueOf(organizations[0].IsSandbox);
+            }
 
             for (Database.SaveResult result : insertResults) {
                 if (!result.isSuccess()) {
                     for(Database.Error resultError : result.getErrors()) {
 
                         String statusCode = String.valueOf(resultError.getStatusCode());
+
+                        // Sandbox ignore the INVALID_CROSS_REFERENCE_KEY expection because there is partial data in Sandbox
+                        if (isSandbox && statusCode.contains('INVALID_CROSS_REFERENCE_KEY')) {
+                            continue;
+                        }
 
                         // Check DUPLICATE_VALUE which means already exists and add as update - let the DB find which ones to update vs insert to save SOQL queries
                         if (statusCode.contains('DUPLICATE_VALUE')) {
@@ -613,7 +622,7 @@ public class C501_MM_Rule_Discover {
                 if (reportFilter.getValue().contains(',')) {
                     whereInValues = reportFilter.getValue().split(',');
 
-                    whereField = this.CheckReportColumnName(mergeMetric, foriegnKey, reportFilter.getColumn(), true) + ' in ' + C501_MassMerge_SharedCode.GetSafeSoqlList_v2(whereInValues);
+                    whereField = this.CheckReportColumnName(mergeMetric, foriegnKey, reportFilter.getColumn(), true) + ' in ' + C501_MassMerge_SharedCode.GetSafeSoqlList(whereInValues);
                 }
 
                 whereFields.add(whereField);
@@ -642,7 +651,7 @@ public class C501_MM_Rule_Discover {
         String strSoqlHaving = ' HAVING Count(' + mergeMetric.Source_Object_Contact_Id__c + ') > 1 ';
         String strSoqlOrderBy = ' ORDER BY Count(' + mergeMetric.Source_Object_Contact_Id__c + ') DESC';
 
-        String strSoqlLimit = ' LIMIT ' + String.valueOf(C501_MassMerge_SharedCode.GetMaximumLimitSize_v2(groupByFields.size()));
+        String strSoqlLimit = ' LIMIT ' + String.valueOf(C501_MassMerge_SharedCode.GetMaximumLimitSize(groupByFields.size()));
 
         System.debug(LoggingLevel.DEBUG, '***** C501_MM_Rule_Discover:ProcessReportByContacts aggregate SOQL');
         System.debug(LoggingLevel.DEBUG, strSoqlSelect);
@@ -685,7 +694,6 @@ public class C501_MM_Rule_Discover {
                 Unique_Id__c = uniqueId,
                 Merge_Confidence__c = mergeMetric.Confidence__c,
                 Contact__c = minId,
-                Contact_Id__c = minId,
                 Merge_Target_Contact__c = maxId,
                 Merge_Metric__c = mergeMetric.Id
             ));
